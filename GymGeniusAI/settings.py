@@ -51,10 +51,12 @@ INSTALLED_APPS = [
     'ai_assistant',
     'notifications',
     'analytics',
-
+    
     'rest_framework',
     'rest_framework_simplejwt',
     'django_crontab',
+    'drf_spectacular',
+    'drf_spectacular_sidecar',
 
 ]
 
@@ -149,6 +151,7 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 # Email configuration
