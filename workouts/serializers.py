@@ -6,23 +6,30 @@ class WorkoutCategorySerializer(serializers.ModelSerializer):
         model = WorkoutCategory
         fields = ['id', 'name', 'description']
 
-class WorkoutSerializer(serializers.ModelSerializer):
-    category = WorkoutCategorySerializer()
-    
-    class Meta:
-        model = Workout
-        fields = ['id', 'title', 'description', 'video_url', 'difficulty', 'category', 'calories_burn', 'duration_minutes']
-
-class WorkoutRoundSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = WorkoutRound
-        fields = ['id', 'workout', 'name', 'round_order']
-
 class ExerciseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Exercise
         fields = ['id', 'round', 'name', 'reps', 'sets', 'rest_seconds', 'video_url', 'tips']
-        
+      
+
+class WorkoutRoundSerializer(serializers.ModelSerializer):
+    exercises = ExerciseSerializer(many=True)
+
+    class Meta:
+        model = WorkoutRound
+        fields = ['id', 'name', 'round_order', 'exercises']
+
+
+
+class WorkoutSerializer(serializers.ModelSerializer):
+    category = WorkoutCategorySerializer()
+    rounds = WorkoutRoundSerializer(many=True)
+
+    class Meta:
+        model = Workout
+        fields = ['id', 'rounds', 'title', 'description', 'video_url', 'difficulty', 'category', 'calories_burn', 'duration_minutes']
+
+  
 class UserWorkoutProgressSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserWorkoutProgress

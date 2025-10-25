@@ -22,6 +22,11 @@ class WorkoutListCreateView(ListCreateAPIView):
     serializer_class = WorkoutSerializer
     permission_classes = [IsActiveUser]
 
+    def get_queryset(self):
+        from .utils import save_generated_workouts
+        save_generated_workouts("general fitness", 30, "beginner", user=self.request.user)
+        return super().get_queryset().filter(user=self.request.user).prefetch_related('rounds__exercises')
+
 class WorkoutDetailView(RetrieveUpdateDestroyAPIView):
     queryset = Workout.objects.all()
     serializer_class = WorkoutSerializer
