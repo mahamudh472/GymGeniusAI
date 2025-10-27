@@ -10,6 +10,12 @@ class Coach(models.Model):
     def __str__(self):
         return self.name
 
+class WeekDay(models.Model):
+    name = models.CharField(max_length=10)
+
+    def __str__(self):
+        return self.name
+
 class UserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
         if not email:
@@ -58,6 +64,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     coach_type = models.ForeignKey(Coach, on_delete=models.SET_NULL, blank=True, null=True)
     subscription_id = models.IntegerField(blank=True, null=True)
     preferred_workout_time = models.TimeField(blank=True, null=True, help_text="Preferred time of day for workouts")
+    preferred_workout_days = models.ManyToManyField(WeekDay, blank=True)
     
     joined_at = models.DateTimeField(auto_now_add=True)
     last_login = models.DateTimeField(blank=True, null=True)

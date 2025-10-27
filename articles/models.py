@@ -1,24 +1,5 @@
 from django.db import models
-
-
-class AdminUser(models.Model):
-    """Admin users for content management"""
-    email = models.EmailField(max_length=255, unique=True)
-    password = models.CharField(max_length=255)
-    role = models.CharField(max_length=50,
-                           choices=[
-                               ('admin', 'Admin'),
-                               ('editor', 'Editor'),
-                               ('content_creator', 'Content Creator'),
-                           ])
-    
-    class Meta:
-        db_table = 'admin_users'
-        verbose_name = 'Admin User'
-        verbose_name_plural = 'Admin Users'
-    
-    def __str__(self):
-        return f"{self.email} - {self.role}"
+from accounts.models import User
 
 
 class Article(models.Model):
@@ -34,7 +15,7 @@ class Article(models.Model):
                                    ('motivation', 'Motivation'),
                                    ('tips', 'Tips'),
                                ])
-    created_by = models.ForeignKey(AdminUser, on_delete=models.CASCADE, related_name='articles')
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='articles')
     created_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:

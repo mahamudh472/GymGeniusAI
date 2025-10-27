@@ -2,13 +2,15 @@ import requests
 from dotenv import load_dotenv
 import os
 import json
+
+from accounts.models import User
 from .serializers import WorkoutSerializer
 from .models import WorkoutCategory, Workout, WorkoutRound, Exercise
 from django.db import transaction
 
-
+# @background(schedule=1)
 @transaction.atomic
-def create_workouts_from_json(data, user=None):
+def create_workouts_from_json(data, user_id=None):
     """
     Creates Workout, WorkoutRound, and Exercise objects from nested JSON.
     
@@ -20,6 +22,7 @@ def create_workouts_from_json(data, user=None):
         list: A list of created Workout objects.
     """
     created_workouts = []
+    user = User.objects.get(id=user_id) if user_id else None
 
     for workout_data in data:
         # --- CATEGORY ---
@@ -62,16 +65,17 @@ def create_workouts_from_json(data, user=None):
                 )
 
         created_workouts.append(workout)
+        print(f"Created workout: {workout.title}")
 
     return created_workouts
-
 
 def save_generated_workouts(goal, duration_minutes, difficulty, user=None):
     """Generate a workout plan and persist it using WorkoutSerializer.
     Returns a list of serialized saved workouts.
     """
+    print("Generating workouts...")
     workout_list = generate_workout_plan(goal, duration_minutes, difficulty)
-    return create_workouts_from_json(workout_list, user=user)
+    return create_workouts_from_json(workout_list, user_id=user)
 
     # if not isinstance(workout_list, list):
     #     raise ValueError("Expected the generated workout plan to be a list.")

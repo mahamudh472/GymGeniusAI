@@ -8,10 +8,9 @@ class UserGallery(models.Model):
     image_url = models.URLField(max_length=255)
     image_type = models.CharField(max_length=20,
                                   choices=[
-                                      ('before', 'Before'),
-                                      ('after', 'After'),
-                                      ('progress', 'Progress'),
-                                      ('achievement', 'Achievement'),
+                                      ('front', 'Front'),
+                                      ('side', 'Side'),
+                                      ('back', 'Back'),
                                   ])
     ai_detected = models.BooleanField(default=False, help_text="AI body composition analysis")
     uploaded_at = models.DateTimeField(auto_now_add=True)

@@ -11,3 +11,6 @@ class AIConversationSerializer(serializers.ModelSerializer):
     class Meta:
         model = AIConversation
         fields = ['id', 'user', 'created_at', 'messages']
+
+class UserInputSerializer(serializers.Serializer):
+    user_input = serializers.CharField(max_length=2000)
