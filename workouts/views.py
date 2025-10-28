@@ -23,8 +23,8 @@ class WorkoutListCreateView(ListCreateAPIView):
     permission_classes = [IsActiveUser]
 
     def get_queryset(self):
-        from .tasks import fetch_external_api
-        fetch_external_api.delay("general fitness", 30, "beginner", user_id=self.request.user.id)
+        # from .tasks import fetch_external_api
+        # fetch_external_api.delay("general fitness", 30, "beginner", user_id=self.request.user.id)
         return super().get_queryset().filter(user=self.request.user).prefetch_related('rounds__exercises')
 
 class WorkoutDetailView(RetrieveUpdateDestroyAPIView):

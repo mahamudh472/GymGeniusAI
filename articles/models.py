@@ -5,6 +5,7 @@ from accounts.models import User
 class Article(models.Model):
     """Articles and fitness tips"""
     title = models.CharField(max_length=255)
+    description = models.TextField()
     content = models.TextField()
     media_url = models.URLField(max_length=255, blank=True, null=True)
     category = models.CharField(max_length=100,

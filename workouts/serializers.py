@@ -29,6 +29,10 @@ class WorkoutSerializer(serializers.ModelSerializer):
         model = Workout
         fields = ['id', 'rounds', 'title', 'description', 'video_url', 'difficulty', 'category', 'calories_burn', 'duration_minutes']
 
+class WorkoutOnlySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Workout
+        fields = ['id', 'title', 'description', 'video_url', 'difficulty', 'calories_burn', 'duration_minutes']
   
 class UserWorkoutProgressSerializer(serializers.ModelSerializer):
     class Meta:

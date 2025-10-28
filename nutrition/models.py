@@ -17,6 +17,7 @@ class MealCategory(models.Model):
 
 class Meal(models.Model):
     """Meal plans and recipes"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='meals')
     title = models.CharField(max_length=150)
     image_url = models.URLField(max_length=255, blank=True, null=True)
     category = models.ForeignKey(MealCategory, on_delete=models.CASCADE, related_name='meals')

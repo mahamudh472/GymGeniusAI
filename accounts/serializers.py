@@ -46,6 +46,7 @@ class PasswordResetSerializer(serializers.Serializer):
     
 
 class UserSerializer(serializers.ModelSerializer):
+    avatar = serializers.ImageField(required=False, allow_null=True)
     preferred_workout_days = WeekDaySerializer(many=True, read_only=True)
     preferred_workout_day_ids = serializers.PrimaryKeyRelatedField(
         queryset=WeekDay.objects.all(),
@@ -55,11 +56,11 @@ class UserSerializer(serializers.ModelSerializer):
     )
     class Meta:
         model = User
-        fields = ['id', 'email', 'phone_number', 
-                  'first_name', 'last_name', 'gender', 
-                  'age', 'date_of_birth', 'height_cm', 
-                  'weight_kg', 'goal', 'activity_level', 
-                  'coach_type', 'preferred_workout_time', 
+        fields = ['id', 'email', 'phone_number', 'avatar',
+                  'first_name', 'last_name', 'gender',
+                  'age', 'date_of_birth', 'height_cm',
+                  'weight_kg', 'goal', 'activity_level',
+                  'coach_type', 'preferred_workout_time',
                   'preferred_workout_days', 'preferred_workout_day_ids', 'joined_at']
     
 

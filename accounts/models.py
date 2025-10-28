@@ -43,6 +43,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_verified = models.BooleanField(default=False)
     
     # Fitness profile fields
+    avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
     gender = models.CharField(max_length=20, blank=True, null=True,
                               choices=[('male', 'Male'), ('female', 'Female'), ('other', 'Other')])
     age = models.IntegerField(blank=True, null=True)
