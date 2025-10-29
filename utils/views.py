@@ -28,6 +28,11 @@ class FavoriteToggleView(generics.CreateAPIView):
         try:
             serializer.is_valid(raise_exception=True)
             favorite = serializer.save()
+            if not favorite.id:
+                return Response(
+                    {"detail": "Removed from favorites."},
+                    status=status.HTTP_200_OK
+                )
             return Response(
                 {"detail": "Added to favorites."},
                 status=status.HTTP_201_CREATED

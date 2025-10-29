@@ -52,7 +52,7 @@ class FavoriteSerializer(serializers.ModelSerializer):
 
     # --- for POST ---
     def create(self, validated_data):
-        """Handle creation of a new Favorite."""
+        """Handle creation/deletion of a Favorite (toggle behavior)."""
         user = self.context['request'].user
         model_name = validated_data.get('content_type')
         object_id = validated_data.get('object_id')
@@ -71,6 +71,13 @@ class FavoriteSerializer(serializers.ModelSerializer):
             content_type=content_type,
             object_id=object_id
         )
+        
+        if not created:
+            # Already exists, so remove it
+            favorite.delete()
+            # Return a deleted instance for response handling
+            favorite.id = None
+        
         return favorite
 
 class FAQSerializer(serializers.ModelSerializer):

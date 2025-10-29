@@ -11,12 +11,12 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.generics import RetrieveAPIView, GenericAPIView
 from accounts.serializers import (
     CustomTokenObtainPairSerializer, 
-    PasswordResetSerializer, 
+    ResetPasswordConfirmSerializer,
     RegisterSerializer, 
-    ResetPasswordConfirmSerializer, 
     UserSerializer, 
     VerifyEmailSerializer,
-    CoachSerializer
+    CoachSerializer,
+    ChangePasswordSerializer
 )
 from .models import User, OTP, Coach
 from .permissions import IsActiveUser
@@ -75,37 +75,37 @@ class VerifyEmailView(GenericAPIView):
         
         return Response({"error": "Invalid OTP"}, status=status.HTTP_400_BAD_REQUEST)
 
-class PasswordResetView(GenericAPIView):
-    serializer_class = PasswordResetSerializer
+# class PasswordResetView(GenericAPIView):
+#     serializer_class = PasswordResetSerializer
 
-    def post(self, request):
-        serializer = self.serializer_class(data=request.data)
-        if serializer.is_valid():
-            old_password = serializer.validated_data.get('old_password')
+#     def post(self, request):
+#         serializer = self.serializer_class(data=request.data)
+#         if serializer.is_valid():
+#             old_password = serializer.validated_data.get('old_password')
 
-        user = User.objects.filter(email=serializer.validated_data.get('email')).first()
-        if not user:
-            return Response({"error": "User with this email does not exist"}, status=status.HTTP_400_BAD_REQUEST)
-        if not user.check_password(old_password):
-            return Response({"error": "Old password is incorrect"}, status=status.HTTP_400_BAD_REQUEST)
+#         user = User.objects.filter(email=serializer.validated_data.get('email')).first()
+#         if not user:
+#             return Response({"error": "User with this email does not exist"}, status=status.HTTP_400_BAD_REQUEST)
+#         if not user.check_password(old_password):
+#             return Response({"error": "Old password is incorrect"}, status=status.HTTP_400_BAD_REQUEST)
 
-        otp = str(random.randint(1000, 9999))
-        OTP.objects.create(
-            user=user,
-            code=otp,
-            purpose='password_reset',
-            expires_at=timezone.now() + timezone.timedelta(minutes=10)
-        )
-        print(f"Sending OTP {otp} to email {user.email}")
-        send_mail(
-            'Password Reset OTP',
-            f'Your OTP for password reset is: {otp}',
-            settings.DEFAULT_FROM_EMAIL,
-            [user.email],
-        )
+#         otp = str(random.randint(1000, 9999))
+#         OTP.objects.create(
+#             user=user,
+#             code=otp,
+#             purpose='password_reset',
+#             expires_at=timezone.now() + timezone.timedelta(minutes=10)
+#         )
+#         print(f"Sending OTP {otp} to email {user.email}")
+#         send_mail(
+#             'Password Reset OTP',
+#             f'Your OTP for password reset is: {otp}',
+#             settings.DEFAULT_FROM_EMAIL,
+#             [user.email],
+#         )
 
 
-        return Response({"message": "Password reset link sent"}, status=status.HTTP_200_OK)
+#         return Response({"message": "Otp sent successfully"}, status=status.HTTP_200_OK)
     
 class PasswordResetConfirmView(GenericAPIView):
     serializer_class = ResetPasswordConfirmSerializer
@@ -167,3 +167,49 @@ class CoachListView(GenericAPIView):
         coaches = Coach.objects.all()
         serializer = self.serializer_class(coaches, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+class SendOTPView(APIView):
+    def post(self, request):
+        email = request.data.get('email')
+        purpose = request.data.get('purpose')
+
+        user = User.objects.filter(email=email).first()
+        if not user:
+            return Response({"error": "User with this email does not exist"}, status=status.HTTP_400_BAD_REQUEST)
+
+        otp = str(random.randint(1000, 9999))
+        OTP.objects.create(
+            user=user,
+            code=otp,
+            purpose=purpose,
+            expires_at=timezone.now() + timezone.timedelta(minutes=10)
+        )
+        print(f"Sending OTP {otp} to email {user.email} for purpose {purpose}")
+        send_mail(
+            'Your OTP Code',
+            f'Your OTP for {purpose} is: {otp}',
+            settings.DEFAULT_FROM_EMAIL,
+            [user.email],
+        )
+
+        return Response({"message": "Otp sent successfully"}, status=status.HTTP_200_OK)
+
+class ChangePasswordView(GenericAPIView):
+    serializer_class = ChangePasswordSerializer
+    permission_classes = [IsAuthenticated, IsActiveUser]
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            user = request.user
+            if not user:
+                return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+            if not user.check_password(serializer.validated_data.get('old_password')):
+                return Response({"error": "Old password is incorrect"}, status=status.HTTP_400_BAD_REQUEST)
+
+            user.set_password(serializer.validated_data.get('new_password'))
+            user.save()
+            return Response({"message": "Password changed successfully"}, status=status.HTTP_200_OK)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
