@@ -4,12 +4,12 @@ from .models import Favorite, FAQ, ContactOption
 from drf_spectacular.utils import extend_schema_field, OpenApiTypes
 
 # Import your actual content serializers
-from workouts.serializers import WorkoutSerializer, WorkoutOnlySerializer
+from workouts.serializers import UserWorkoutListSerializer
 from articles.serializers import ArticleSerializer
 # from videos.serializers import VideoSerializer
 
 FAVORITE_SERIALIZERS = {
-    'workout': WorkoutOnlySerializer,
+    'userworkout': UserWorkoutListSerializer,
     'article': ArticleSerializer,
     # 'video': VideoSerializer,
 }

@@ -2,94 +2,199 @@ from django.db import models
 from accounts.models import User
 
 
-class WorkoutCategory(models.Model):
-    """Categories for workouts"""
+class ExerciseCategory(models.Model):
+    """Categories for exercises (e.g., Cardio, Strength, Flexibility)"""
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True, null=True)
     
     class Meta:
-        db_table = 'workout_categories'
-        verbose_name = 'Workout Category'
-        verbose_name_plural = 'Workout Categories'
+        db_table = 'exercise_categories'
+        verbose_name = 'Exercise Category'
+        verbose_name_plural = 'Exercise Categories'
     
     def __str__(self):
         return self.name
 
 
-class Workout(models.Model):
-    """Workout programs"""
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='workouts', blank=True, null=True)
-    title = models.CharField(max_length=255)
-    description = models.TextField(blank=True, null=True)
-    video_url = models.URLField(max_length=255, blank=True, null=True)
-    difficulty = models.CharField(max_length=20,
-                                 choices=[
-                                     ('beginner', 'Beginner'),
-                                     ('intermediate', 'Intermediate'),
-                                     ('advanced', 'Advanced'),
-                                 ])
-    category = models.ForeignKey(WorkoutCategory, on_delete=models.CASCADE, related_name='workouts')
-    calories_burn = models.IntegerField(help_text="Estimated calories burned")
-    duration_minutes = models.IntegerField(help_text="Duration in minutes")
-    
-    class Meta:
-        db_table = 'workouts'
-        verbose_name = 'Workout'
-        verbose_name_plural = 'Workouts'
-    
-    def __str__(self):
-        return self.title
-
-
-class WorkoutRound(models.Model):
-    """Rounds within a workout"""
-    workout = models.ForeignKey(Workout, on_delete=models.CASCADE, related_name='rounds')
-    name = models.CharField(max_length=100)
-    round_order = models.IntegerField(help_text="Order of the round")
-    
-    class Meta:
-        db_table = 'workout_rounds'
-        verbose_name = 'Workout Round'
-        verbose_name_plural = 'Workout Rounds'
-        ordering = ['round_order']
-    
-    def __str__(self):
-        return f"{self.workout.title} - {self.name}"
-
-
 class Exercise(models.Model):
-    """Exercises within a workout round"""
-    round = models.ForeignKey(WorkoutRound, on_delete=models.CASCADE, related_name='exercises')
-    name = models.CharField(max_length=150)
-    reps = models.IntegerField(blank=True, null=True, help_text="Number of repetitions")
-    sets = models.IntegerField(blank=True, null=True, help_text="Number of sets")
-    rest_seconds = models.IntegerField(blank=True, null=True, help_text="Rest time in seconds")
-    video_url = models.URLField(max_length=255, blank=True, null=True)
+    """Pre-built exercises that can be used in user workouts"""
+    DIFFICULTY_CHOICES = [
+        ('beginner', 'Beginner'),
+        ('intermediate', 'Intermediate'),
+        ('advanced', 'Advanced'),
+    ]
+    
+    name = models.CharField(max_length=150, unique=True)
+    description = models.TextField(blank=True, null=True)
+    video_url = models.URLField(max_length=500, blank=True, null=True)
+    
+    # Exercise classification
+    muscle_group = models.CharField(max_length=100, blank=True, null=True, 
+                                    help_text="e.g., Chest, Back, Legs, Arms, Core, Full Body")
+    category = models.ForeignKey(ExerciseCategory, on_delete=models.SET_NULL, 
+                                 related_name='exercises', null=True, blank=True)
+    difficulty = models.CharField(max_length=20, choices=DIFFICULTY_CHOICES, default='beginner')
+    
+    # Default parameters (AI can customize these per user)
+    default_sets = models.IntegerField(default=3, help_text="Default number of sets")
+    default_reps = models.IntegerField(default=10, help_text="Default number of repetitions")
+    default_duration_seconds = models.IntegerField(blank=True, null=True, 
+                                                   help_text="Default duration in seconds (for timed exercises)")
+    default_rest_time = models.IntegerField(default=60, help_text="Default rest time in seconds")
+    
+    # Metadata
+    calories_per_rep = models.FloatField(default=0.5, help_text="Estimated calories burned per rep")
+    equipment_needed = models.CharField(max_length=255, blank=True, null=True,
+                                       help_text="e.g., Dumbbells, Barbell, None")
     tips = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
         db_table = 'exercises'
         verbose_name = 'Exercise'
         verbose_name_plural = 'Exercises'
+        ordering = ['name']
     
     def __str__(self):
         return self.name
 
 
-class UserWorkoutProgress(models.Model):
-    """Track user workout progress"""
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='workout_progress')
-    workout = models.ForeignKey(Workout, on_delete=models.CASCADE)
-    completed_rounds = models.JSONField(default=list, help_text="List of completed round IDs")
-    date = models.DateField()
-    calories_burned = models.FloatField(blank=True, null=True)
-    duration_minutes = models.IntegerField(blank=True, null=True)
+class UserWorkout(models.Model):
+    """User-specific workout dynamically created by AI or manually"""
+    DIFFICULTY_CHOICES = [
+        ('beginner', 'Beginner'),
+        ('intermediate', 'Intermediate'),
+        ('advanced', 'Advanced'),
+    ]
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='workouts')
+    name = models.CharField(max_length=255)
+    description = models.TextField(blank=True, null=True)
+    
+    # Workout metadata
+    created_by_ai = models.BooleanField(default=False, help_text="Whether this was created by AI")
+    difficulty = models.CharField(max_length=20, choices=DIFFICULTY_CHOICES, blank=True, null=True)
+    estimated_duration = models.IntegerField(blank=True, null=True, 
+                                            help_text="Estimated duration in minutes")
+    estimated_calories = models.IntegerField(blank=True, null=True, 
+                                            help_text="Estimated calories to burn")
+    
+    # Status and timestamps
+    is_active = models.BooleanField(default=True, help_text="Whether this workout is currently active")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     
     class Meta:
-        db_table = 'user_workout_progress'
-        verbose_name = 'User Workout Progress'
-        verbose_name_plural = 'User Workout Progress'
-        ordering = ['-date']
+        db_table = 'user_workouts'
+        verbose_name = 'User Workout'
+        verbose_name_plural = 'User Workouts'
+        ordering = ['-created_at']
     
     def __str__(self):
-        return f"{self.user.email} - {self.workout.title} - {self.date}"
+        return f"{self.user.email} - {self.name}"
+    
+    def calculate_estimates(self):
+        """Calculate estimated duration and calories based on exercises"""
+        user_exercises = self.user_exercises.all()
+        total_duration = 0
+        total_calories = 0
+        
+        for user_ex in user_exercises:
+            # Duration = (sets * (reps * time_per_rep + rest_time))
+            # Assuming ~3 seconds per rep
+            exercise_time = user_ex.sets * (user_ex.reps * 3 + user_ex.rest_time)
+            total_duration += exercise_time
+            
+            # Calories = sets * reps * calories_per_rep
+            total_calories += user_ex.sets * user_ex.reps * user_ex.exercise.calories_per_rep
+        
+        self.estimated_duration = total_duration // 60  # Convert to minutes
+        self.estimated_calories = int(total_calories)
+        self.save()
+
+
+class UserExercise(models.Model):
+    """Exercises within a user's workout with customized parameters"""
+    user_workout = models.ForeignKey(UserWorkout, on_delete=models.CASCADE, related_name='user_exercises')
+    exercise = models.ForeignKey(Exercise, on_delete=models.CASCADE, related_name='user_exercises')
+    
+    # Customized parameters (can differ from exercise defaults)
+    sets = models.IntegerField(default=3, help_text="Number of sets")
+    reps = models.IntegerField(default=10, help_text="Number of repetitions per set")
+    duration_seconds = models.IntegerField(blank=True, null=True, 
+                                          help_text="Duration in seconds (for timed exercises)")
+    rest_time = models.IntegerField(default=60, help_text="Rest time in seconds between sets")
+    
+    # Exercise order and notes
+    order = models.IntegerField(default=0, help_text="Order of exercise in workout")
+    notes = models.TextField(blank=True, null=True, 
+                            help_text="AI-generated or custom notes for this exercise")
+    
+    class Meta:
+        db_table = 'user_exercises'
+        verbose_name = 'User Exercise'
+        verbose_name_plural = 'User Exercises'
+        ordering = ['order']
+        unique_together = ['user_workout', 'exercise', 'order']
+    
+    def __str__(self):
+        return f"{self.user_workout.name} - {self.exercise.name}"
+    
+    def save(self, *args, **kwargs):
+        # If not customized, use exercise defaults
+        if self.sets is None:
+            self.sets = self.exercise.default_sets
+        if self.reps is None:
+            self.reps = self.exercise.default_reps
+        if self.duration_seconds is None:
+            self.duration_seconds = self.exercise.default_duration_seconds
+        if self.rest_time is None:
+            self.rest_time = self.exercise.default_rest_time
+        super().save(*args, **kwargs)
+
+
+class WorkoutProgress(models.Model):
+    """Track user workout completion and progress"""
+    user_workout = models.ForeignKey(UserWorkout, on_delete=models.CASCADE, related_name='progress_records')
+    completed_at = models.DateTimeField(auto_now_add=True)
+    
+    # Completion tracking
+    completed_exercises = models.JSONField(default=list, 
+                                          help_text="List of completed user_exercise IDs")
+    completion_percentage = models.FloatField(default=0.0, 
+                                             help_text="Percentage of exercises completed")
+    
+    # Actual metrics
+    actual_duration = models.IntegerField(blank=True, null=True, 
+                                         help_text="Actual duration in minutes")
+    actual_calories = models.FloatField(blank=True, null=True, 
+                                       help_text="Actual calories burned")
+    
+    # User feedback
+    notes = models.TextField(blank=True, null=True)
+    rating = models.IntegerField(blank=True, null=True, 
+                                help_text="User rating (1-5)")
+    difficulty_rating = models.CharField(max_length=20, blank=True, null=True,
+                                        choices=[
+                                            ('too_easy', 'Too Easy'),
+                                            ('just_right', 'Just Right'),
+                                            ('too_hard', 'Too Hard'),
+                                        ])
+    
+    class Meta:
+        db_table = 'workout_progress'
+        verbose_name = 'Workout Progress'
+        verbose_name_plural = 'Workout Progress Records'
+        ordering = ['-completed_at']
+    
+    def __str__(self):
+        return f"{self.user_workout.user.email} - {self.user_workout.name} - {self.completed_at.date()}"
+    
+    def calculate_completion_percentage(self):
+        """Calculate completion percentage based on completed exercises"""
+        total_exercises = self.user_workout.user_exercises.count()
+        if total_exercises == 0:
+            return 0.0
+        completed_count = len(self.completed_exercises)
+        return (completed_count / total_exercises) * 100
