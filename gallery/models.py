@@ -13,6 +13,8 @@ class UserGallery(models.Model):
                                       ('back', 'Back'),
                                   ])
     ai_detected = models.BooleanField(default=False, help_text="AI body composition analysis")
+    ai_summary = models.TextField(blank=True, null=True,
+                                  help_text="AI-generated summary of body composition")
     uploaded_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:

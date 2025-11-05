@@ -1,6 +1,6 @@
 from django.db import models
 from accounts.models import User
-
+from random import randint
 
 class ExerciseCategory(models.Model):
     """Categories for exercises (e.g., Cardio, Strength, Flexibility)"""
@@ -24,7 +24,7 @@ class Exercise(models.Model):
         ('advanced', 'Advanced'),
     ]
     
-    name = models.CharField(max_length=150, unique=True)
+    name = models.CharField(max_length=150, unique=True, default=f"Unnamed Exercise_{models.functions.Now()}_{randint(1000,9999)}")
     description = models.TextField(blank=True, null=True)
     video_url = models.URLField(max_length=500, blank=True, null=True)
     
@@ -69,7 +69,7 @@ class UserWorkout(models.Model):
     ]
     
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='workouts')
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, default=f"Unnamed Workout_{models.functions.Now()}_{randint(1000,9999)}")
     description = models.TextField(blank=True, null=True)
     
     # Workout metadata

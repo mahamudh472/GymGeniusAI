@@ -1,100 +1,29 @@
 [
     {
-        "rounds": [
+        "name": "Exercise name",
+        "description": "A brief description of the exercise.",
+        "category": "Exercise category",
+        "video_url": "URL to exercise video",
+        "muscle_group": "Targeted muscle group",
+        "difficulty": "Exercise difficulty level",
+        "equipment": "Required equipment, comma separated or None",
+        "tips": "Additional tips for performing the exercise"
+    },
+    {
+        "workout_name": "Full Body Beginner Workout",
+        "description": "A beginner-friendly full body workout routine.",
+        "difficulty": "Beginner",
+        "estimated_duration": "45 minutes",
+        "estimated_calories": "300-400 calories",
+        "exercises": [
             {
-                "name": "Round 1",
-                "round_order": 1,
-                "exercises": [
-                    {
-                        "name": "Barbell Bench Press",
-                        "reps": 8,
-                        "sets": 4,
-                        "rest_seconds": 60,
-                        "video_url": null,
-                        "tips": "Keep your back flat on the bench and drive through your heels for stability."
-                    }
-                ]
-            },
-            {
-                "name": "Round 2",
-                "round_order": 2,
-                "exercises": [
-                    {
-                        "name": "Barbell Squat",
-                        "reps": 10,
-                        "sets": 4,
-                        "rest_seconds": 60,
-                        "video_url": null,
-                        "tips": "Keep your chest up and push through your heels."
-                    }
-                ]
-            },
-            {
-                "name": "Round 3",
-                "round_order": 3,
-                "exercises": [
-                    {
-                        "name": "Pull-Up",
-                        "reps": 8,
-                        "sets": 4,
-                        "rest_seconds": 60,
-                        "video_url": null,
-                        "tips": "Engage your core and pull your chest towards the bar."
-                    }
-                ]
-            },
-            {
-                "name": "Round 4",
-                "round_order": 4,
-                "exercises": [
-                    {
-                        "name": "Dumbbell Shoulder Press",
-                        "reps": 12,
-                        "sets": 3,
-                        "rest_seconds": 45,
-                        "video_url": null,
-                        "tips": "Keep your core tight and press the dumbbells directly overhead."
-                    }
-                ]
-            },
-            {
-                "name": "Round 5",
-                "round_order": 5,
-                "exercises": [
-                    {
-                        "name": "Barbell Row",
-                        "reps": 10,
-                        "sets": 4,
-                        "rest_seconds": 60,
-                        "video_url": null,
-                        "tips": "Keep your back straight and pull the barbell towards your lower chest."
-                    }
-                ]
-            },
-            {
-                "name": "Round 6",
-                "round_order": 6,
-                "exercises": [
-                    {
-                        "name": "Plank",
-                        "reps": 1,
-                        "sets": 3,
-                        "rest_seconds": 30,
-                        "video_url": null,
-                        "tips": "Hold the position, keeping your body in a straight line."
-                    }
-                ]
+                "name": "Bodyweight Squats",
+                "sets": 3,
+                "reps": 12,
+                "duration_seconds": 300,
+                "rest_time": "60 seconds",
+                "notes": "Keep your back straight and knees aligned with your toes."
             }
-        ],
-        "title": "Upper Body Strength",
-        "description": "Focus on compound movements for muscle growth.",
-        "video_url": null,
-        "difficulty": "intermediate",
-        "category": {
-            "name": "Upper Body",
-            "description": "Upper body exercises."
-        },
-        "calories_burn": 550,
-        "duration_minutes": 60
+        ]
     }
 ]
