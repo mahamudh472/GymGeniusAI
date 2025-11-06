@@ -1,0 +1,202 @@
+[
+  {
+    "name": "Push-up",
+    "description": "A classic bodyweight exercise that works the chest, shoulders, and triceps.",
+    "category": "Strength",
+    "video_url": "https://www.youtube.com/watch?v=IODxDxX7oi4",
+    "muscle_group": "Chest, Shoulders, Triceps",
+    "difficulty": "Beginner",
+    "equipment": "None",
+    "tips": "Keep your body in a straight line from head to heels."
+  },
+  {
+    "name": "Squat",
+    "description": "A fundamental lower body exercise that targets the quads, hamstrings, and glutes.",
+    "category": "Strength",
+    "video_url": "https://www.youtube.com/watch?v=ultWZbFYM1c",
+    "muscle_group": "Quadriceps, Hamstrings, Glutes",
+    "difficulty": "Beginner",
+    "equipment": "None",
+    "tips": "Descend as if sitting back into a chair."
+  },
+  {
+    "name": "Plank",
+    "description": "An isometric core exercise that strengthens the entire core musculature.",
+    "category": "Strength",
+    "video_url": "https://www.youtube.com/watch?v=ASdvN_Xok6o",
+    "muscle_group": "Core",
+    "difficulty": "Beginner",
+    "equipment": "None",
+    "tips": "Keep your body in a straight line, engaging your abs."
+  },
+  {
+    "name": "Lunges",
+    "description": "A unilateral leg exercise that improves balance and strengthens the quads, hamstrings, and glutes.",
+    "category": "Strength",
+    "video_url": "https://www.youtube.com/watch?v=QOIC7yQ9_P0",
+    "muscle_group": "Quadriceps, Hamstrings, Glutes",
+    "difficulty": "Beginner",
+    "equipment": "None",
+    "tips": "Ensure your front knee doesn't go past your toes."
+  },
+  {
+    "name": "Deadlift",
+    "description": "A full-body compound exercise that builds strength in the back, glutes, and hamstrings.",
+    "category": "Strength",
+    "video_url": "https://www.youtube.com/watch?v=ytGa3-ImEcc",
+    "muscle_group": "Back, Glutes, Hamstrings",
+    "difficulty": "Intermediate",
+    "equipment": "Barbell, Weights",
+    "tips": "Maintain a flat back throughout the lift."
+  },
+  {
+    "name": "Overhead Press",
+    "description": "A strength exercise that targets the shoulders and triceps.",
+    "category": "Strength",
+    "video_url": "https://www.youtube.com/watch?v=B-P6L-y3h3E",
+    "muscle_group": "Shoulders, Triceps",
+    "difficulty": "Intermediate",
+    "equipment": "Barbell or Dumbbells",
+    "tips": "Keep your core tight to stabilize your body."
+  },
+  {
+    "name": "Bench Press",
+    "description": "A compound exercise for the chest, shoulders, and triceps.",
+    "category": "Strength",
+    "video_url": "https://www.youtube.com/watch?v=gS6gD1x-n7A",
+    "muscle_group": "Chest, Shoulders, Triceps",
+    "difficulty": "Intermediate",
+    "equipment": "Barbell, Bench",
+    "tips": "Keep your feet flat on the floor and arch your lower back slightly."
+  },
+  {
+    "name": "Pull-up",
+    "description": "A challenging bodyweight exercise that works the back and biceps.",
+    "category": "Strength",
+    "video_url": "https://www.youtube.com/watch?v=eGo4IYStimQ",
+    "muscle_group": "Back, Biceps",
+    "difficulty": "Intermediate",
+    "equipment": "Pull-up bar",
+    "tips": "Engage your lats to pull yourself up."
+  },
+  {
+    "name": "Rows (Dumbbell or Barbell)",
+    "description": "Exercises that target the back muscles, improving posture and strength.",
+    "category": "Strength",
+    "video_url": "https://www.youtube.com/watch?v=pYg8NIDu12U",
+    "muscle_group": "Back",
+    "difficulty": "Beginner",
+    "equipment": "Dumbbells or Barbell",
+    "tips": "Squeeze your shoulder blades together at the top of the movement."
+  },
+  {
+    "name": "Burpees",
+    "description": "A full-body calisthenics exercise that combines a squat, push-up, and jump.",
+    "category": "Cardio, Strength",
+    "video_url": "https://www.youtube.com/watch?v=dZgVcT4M2Kk",
+    "muscle_group": "Full Body",
+    "difficulty": "Intermediate",
+    "equipment": "None",
+    "tips": "Focus on fluid movement between each step."
+  },
+  {
+    "name": "Mountain Climbers",
+    "description": "A dynamic core exercise that also provides a cardiovascular workout.",
+    "category": "Cardio, Core",
+    "video_url": "https://www.youtube.com/watch?v=nmwTgJ9m0V4",
+    "muscle_group": "Core, Quadriceps",
+    "difficulty": "Beginner",
+    "equipment": "None",
+    "tips": "Keep your core engaged and avoid letting your hips sag."
+  },
+  {
+    "name": "Bicep Curls",
+    "description": "An isolation exercise for building bicep strength and size.",
+    "category": "Strength",
+    "video_url": "https://www.youtube.com/watch?v=sU142_mR740",
+    "muscle_group": "Biceps",
+    "difficulty": "Beginner",
+    "equipment": "Dumbbells",
+    "tips": "Keep your elbows tucked in and avoid swinging the weights."
+  },
+  {
+    "name": "Tricep Extensions (Overhead)",
+    "description": "An isolation exercise for targeting the triceps.",
+    "category": "Strength",
+    "video_url": "https://www.youtube.com/watch?v=N46m4f8dC3I",
+    "muscle_group": "Triceps",
+    "difficulty": "Beginner",
+    "equipment": "Dumbbell",
+    "tips": "Keep your upper arms stationary."
+  },
+  {
+    "name": "Calf Raises",
+    "description": "An exercise to strengthen the calf muscles.",
+    "category": "Strength",
+    "video_url": "https://www.youtube.com/watch?v=2K7X00qL9Gk",
+    "muscle_group": "Calves",
+    "difficulty": "Beginner",
+    "equipment": "None or Dumbbells",
+    "tips": "Go through a full range of motion, pausing at the top."
+  },
+  {
+    "name": "Leg Press",
+    "description": "A machine-based exercise for building lower body strength.",
+    "category": "Strength",
+    "video_url": "https://www.youtube.com/watch?v=GvCBJm_Yk9s",
+    "muscle_group": "Quadriceps, Hamstrings, Glutes",
+    "difficulty": "Beginner",
+    "equipment": "Leg Press Machine",
+    "tips": "Ensure your lower back stays pressed against the pad."
+  },
+  {
+    "name": "Lat Pulldown",
+    "description": "A machine-based exercise that targets the latissimus dorsi (lats) muscles.",
+    "category": "Strength",
+    "video_url": "https://www.youtube.com/watch?v=0YG29x7s1a8",
+    "muscle_group": "Back",
+    "difficulty": "Beginner",
+    "equipment": "Lat Pulldown Machine",
+    "tips": "Pull the bar down towards your upper chest, squeezing your shoulder blades."
+  },
+  {
+    "name": "Russian Twists",
+    "description": "A core exercise that works the obliques and rectus abdominis.",
+    "category": "Core",
+    "video_url": "https://www.youtube.com/watch?v=wkD8rjkodJE",
+    "muscle_group": "Core, Obliques",
+    "difficulty": "Beginner",
+    "equipment": "None or Medicine Ball",
+    "tips": "Keep your back straight and twist from your torso."
+  },
+  {
+    "name": "Box Jumps",
+    "description": "A plyometric exercise that improves explosive power in the legs.",
+    "category": "Plyometrics, Cardio",
+    "video_url": "https://www.youtube.com/watch?v=DxJmQ_P9i7E",
+    "muscle_group": "Quadriceps, Glutes, Hamstrings",
+    "difficulty": "Intermediate",
+    "equipment": "Plyo Box",
+    "tips": "Land softly with bent knees to absorb the impact."
+  },
+  {
+    "name": "Kettlebell Swings",
+    "description": "A dynamic exercise that targets the glutes, hamstrings, and lower back.",
+    "category": "Strength, Cardio",
+    "video_url": "https://www.youtube.com/watch?v=5rT8yG27Hk8",
+    "muscle_group": "Glutes, Hamstrings, Lower Back, Core",
+    "difficulty": "Intermediate",
+    "equipment": "Kettlebell",
+    "tips": "Hinge at your hips, using your glutes to drive the kettlebell up."
+  },
+  {
+    "name": "Bird Dog",
+    "description": "A core stability exercise that strengthens the back and improves balance.",
+    "category": "Core, Stability",
+    "video_url": "https://www.youtube.com/watch?v=ES0A3-qT_5o",
+    "muscle_group": "Core, Lower Back",
+    "difficulty": "Beginner",
+    "equipment": "None",
+    "tips": "Keep your core engaged and your back flat, moving slowly and controlled."
+  }
+]

@@ -77,49 +77,43 @@ def save_generated_workouts(goal, duration_minutes, difficulty, user=None):
     workout_list = generate_workout_plan(goal, duration_minutes, difficulty)
     return create_workouts_from_json(workout_list, user_id=user)
 
-    # if not isinstance(workout_list, list):
-    #     raise ValueError("Expected the generated workout plan to be a list.")
-
-    # saved_serialized = []
-    # errors = []
-
-    # for workout in workout_list:
-    #     serializer = WorkoutSerializer(data=workout)
-    #     try:
-    #         serializer.is_valid(raise_exception=True)
-    #         serializer.save()
-    #         saved_serialized.append(serializer.data)
-    #     except Exception as exc:
-    #         errors.append({"title": workout.get("title"), "error": str(exc)})
-
-    # if errors:
-    #     raise Exception(f"Failed to save some workouts: {errors}")
-
-    # return saved_serialized
 
 # Load environment variables
 load_dotenv()
-openrouter_api_key = os.getenv("OPENROUTER_API_KEY")
-model = "deepseek/deepseek-chat-v3.1:free"
+# openrouter_api_key = os.getenv("OPENROUTER_API_KEY")
+# model = "deepseek/deepseek-chat-v3.1:free"
+
+from openai import OpenAI
+openai_api_key = os.getenv("OPENAI_API_KEY")
+model = "gpt-4o"
+o = OpenAI(api_key=openai_api_key)
+
 
 def get_ai_response(prompt):
     """Send a chat completion request to OpenRouter."""
-    url = "https://openrouter.ai/api/v1/chat/completions"
-    headers = {
-        "Authorization": f"Bearer {openrouter_api_key}",
-        "Content-Type": "application/json"
-    }
-    data = {
-        "model": model,
-        "messages": [
+    # url = "https://openrouter.ai/api/v1/chat/completions"
+    # headers = {
+    #     "Authorization": f"Bearer {openrouter_api_key}",
+    #     "Content-Type": "application/json"
+    # }
+    # data = {
+    #     "model": model,
+    #     "messages": [
+    #         {
+    #             "role": "user",
+    #             "content": prompt
+    #         }
+    #     ]
+    # }
+    response = o.chat.completions.create(
+        model=model,
+        messages=[
             {
                 "role": "user",
                 "content": prompt
             }
         ]
-    }
-
-    response = requests.post(url, headers=headers, json=data)
+    )
 
     if response.status_code == 200:
         result = response.json()

@@ -194,3 +194,5 @@ CORS_ALLOW_HEADERS = [
     'x-csrftoken',
     'x-requested-with',
 ]
+
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
