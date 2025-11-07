@@ -66,6 +66,11 @@ class FavoriteSerializer(serializers.ModelSerializer):
             valid_types = ", ".join(ContentType.objects.values_list('model', flat=True))
             raise serializers.ValidationError(f"Invalid content type: {model_name}. Valid types are: {valid_types}")
 
+        # Validate that the object exists
+        model_class = content_type.model_class()
+        if not model_class.objects.filter(pk=object_id).exists():
+            raise serializers.ValidationError(f"Object with id {object_id} does not exist for type {model_name}.")
+
         favorite, created = Favorite.objects.get_or_create(
             user=user,
             content_type=content_type,

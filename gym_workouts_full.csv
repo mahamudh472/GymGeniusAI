@@ -1,0 +1,94 @@
+Muscle Group,Level,Equipment Type,Exercise Name,Description,Target Muscles
+Chest,Beginner,Machine,Chest Press Machine,Press handles forward to engage chest.,"Chest, Triceps, Shoulders"
+Chest,Beginner,Machine,Pec Deck (Butterfly Machine),Bring arms together in front of you to target chest.,Chest
+Chest,Beginner,Machine,Seated Chest Fly Machine,Squeeze chest as you bring handles together.,Chest
+Chest,Beginner,Dumbbell,Flat Dumbbell Press,Press dumbbells upward while lying flat on a bench.,"Chest, Triceps, Shoulders"
+Chest,Beginner,Dumbbell,Incline Dumbbell Press,Press dumbbells upward on an incline bench.,"Upper Chest, Shoulders"
+Chest,Beginner,Dumbbell,Dumbbell Flyes (Flat Bench),Open arms wide and squeeze chest to bring dumbbells together.,Chest
+Chest,Intermediate,Machine,Cable Crossover,Pull cables together in front of body.,Chest
+Chest,Intermediate,Machine,Incline Chest Press Machine,Press handles upward on an incline.,Upper Chest
+Chest,Intermediate,Dumbbell,Incline Dumbbell Fly,Perform fly motion on incline bench.,Upper Chest
+Chest,Intermediate,Dumbbell,Dumbbell Pullover,Extend arms over chest and pull weight over head.,"Chest, Lats"
+Chest,Intermediate,Dumbbell,Neutral Grip Dumbbell Press,Press dumbbells with palms facing each other.,"Chest, Triceps"
+Chest,Advanced,Machine,Iso-Lateral Chest Press,Press each arm independently for balanced strength.,"Chest, Triceps"
+Chest,Advanced,Machine,Single-Arm Cable Fly,Perform chest fly using one arm at a time.,Chest
+Chest,Advanced,Dumbbell,Alternating Dumbbell Press,Press dumbbells one arm at a time.,"Chest, Triceps"
+Chest,Advanced,Dumbbell,Decline Dumbbell Press,Press dumbbells on a decline bench.,Lower Chest
+Chest,Advanced,Dumbbell,Dumbbell Squeeze Press,Press dumbbells together to activate inner chest.,Inner Chest
+Back,Beginner,Machine,Lat Pulldown,Pull bar down to chest to engage lats.,"Lats, Biceps"
+Back,Beginner,Machine,Seated Row Machine,Pull handles toward you keeping back straight.,"Back, Biceps"
+Back,Beginner,Machine,Assisted Pull-Up Machine,Perform assisted pull-ups to build strength.,"Lats, Biceps"
+Back,Beginner,Dumbbell,One-Arm Dumbbell Row,Row dumbbell upward while keeping back flat.,"Lats, Rear Delts"
+Back,Beginner,Dumbbell,Dumbbell Deadlift,Lift dumbbells from floor using hip hinge.,"Back, Hamstrings, Glutes"
+Back,Intermediate,Machine,Iso-Lateral Row Machine,Pull handles independently to improve balance.,"Lats, Rhomboids"
+Back,Intermediate,Machine,Reverse Grip Lat Pulldown,Pull with underhand grip for bicep focus.,"Lats, Biceps"
+Back,Intermediate,Dumbbell,Incline Dumbbell Row,Row dumbbells on an incline bench.,Upper Back
+Back,Intermediate,Dumbbell,Dumbbell Pullover (Back Focus),Pull dumbbell over chest focusing on lats.,Lats
+Back,Intermediate,Dumbbell,Dumbbell Shrugs,Lift shoulders upward to work traps.,Traps
+Back,Advanced,Machine,Plate-Loaded Row Machine,Use plates for resistance to strengthen back.,"Lats, Rhomboids"
+Back,Advanced,Machine,Weighted Pull-Up (Machine or Band),Perform pull-ups with extra weight or resistance.,"Lats, Biceps"
+Back,Advanced,Dumbbell,Renegade Rows,Row dumbbells from push-up position.,"Lats, Core"
+Back,Advanced,Dumbbell,Dumbbell Deadlift to Row,Perform deadlift followed by row.,"Back, Glutes"
+Back,Advanced,Dumbbell,Single-Arm Dumbbell High Row,Pull dumbbell to upper ribs with control.,Upper Back
+Shoulders,Beginner,Machine,Shoulder Press Machine,Press handles overhead to target shoulders.,"Deltoids, Triceps"
+Shoulders,Beginner,Machine,Lateral Raise Machine,Raise arms outward to shoulder height.,Lateral Delts
+Shoulders,Beginner,Dumbbell,Seated Dumbbell Press,Press dumbbells overhead while seated.,"Shoulders, Triceps"
+Shoulders,Beginner,Dumbbell,Dumbbell Front Raise,Lift dumbbells forward to shoulder height.,Front Delts
+Shoulders,Beginner,Dumbbell,Dumbbell Lateral Raise,Lift dumbbells outward to sides.,Lateral Delts
+Shoulders,Intermediate,Machine,Reverse Pec Deck (Rear Delt Machine),Pull arms backward to target rear delts.,Rear Delts
+Shoulders,Intermediate,Machine,Cable Lateral Raise,Raise arm sideways using cable for tension.,Lateral Delts
+Shoulders,Intermediate,Dumbbell,Arnold Press,Rotate wrists while pressing upward.,Front & Lateral Delts
+Shoulders,Intermediate,Dumbbell,Dumbbell Upright Row,Pull dumbbells up to chest level.,"Traps, Shoulders"
+Shoulders,Intermediate,Dumbbell,Dumbbell Rear Delt Fly,Bend forward and lift dumbbells outward.,Rear Delts
+Shoulders,Advanced,Machine,Iso-Lateral Shoulder Press,Press independently for balanced shoulders.,"Deltoids, Triceps"
+Shoulders,Advanced,Machine,Cable Face Pull,Pull cable toward face keeping elbows high.,"Rear Delts, Traps"
+Shoulders,Advanced,Dumbbell,Standing Dumbbell Press,Press dumbbells overhead standing for stability.,"Deltoids, Core"
+Shoulders,Advanced,Dumbbell,Dumbbell Clean and Press,Clean dumbbells to shoulders and press overhead.,"Full Shoulders, Core"
+Shoulders,Advanced,Dumbbell,Seated Dumbbell Lateral Raise Dropset,Perform lateral raises reducing weight each set.,Lateral Delts
+Arms,Beginner,Machine,Bicep Curl Machine,Curl handles to strengthen biceps.,Biceps
+Arms,Beginner,Machine,Tricep Pushdown (Cable),Push bar downward to engage triceps.,Triceps
+Arms,Beginner,Dumbbell,Dumbbell Bicep Curl,Curl dumbbells up to shoulder level.,Biceps
+Arms,Beginner,Dumbbell,Dumbbell Hammer Curl,Curl dumbbells with neutral grip.,"Biceps, Forearms"
+Arms,Beginner,Dumbbell,Overhead Dumbbell Tricep Extension,Extend dumbbell overhead to work triceps.,Triceps
+Arms,Intermediate,Machine,Preacher Curl Machine,Curl with elbows supported for isolation.,Biceps
+Arms,Intermediate,Machine,Cable Rope Overhead Extension,Extend arms overhead using rope attachment.,Triceps
+Arms,Intermediate,Dumbbell,Incline Dumbbell Curl,Curl dumbbells while seated on incline bench.,Biceps (Long Head)
+Arms,Intermediate,Dumbbell,Dumbbell Concentration Curl,Curl one arm while seated for isolation.,Biceps Peak
+Arms,Intermediate,Dumbbell,Dumbbell Skull Crusher,Extend dumbbells from forehead position.,Triceps
+Arms,Advanced,Machine,Reverse Grip Cable Pushdown,Push bar down using underhand grip.,Triceps
+Arms,Advanced,Machine,Iso-Lateral Bicep Curl Machine,Work each bicep independently.,Biceps
+Arms,Advanced,Dumbbell,Zottman Curl,"Curl up palms facing up, lower palms down.","Biceps, Forearms"
+Arms,Advanced,Dumbbell,Cross-Body Hammer Curl,Curl dumbbell across torso.,"Biceps, Brachialis"
+Arms,Advanced,Dumbbell,Dumbbell Kickback,Extend elbow back to target triceps.,Triceps
+Legs,Beginner,Machine,Leg Press,Press platform away with legs.,"Quads, Glutes, Hamstrings"
+Legs,Beginner,Machine,Leg Extension,Extend legs to work quads.,Quadriceps
+Legs,Beginner,Machine,Seated Leg Curl,Curl legs downward to engage hamstrings.,Hamstrings
+Legs,Beginner,Dumbbell,Goblet Squat,Hold dumbbell to chest and squat down.,"Quads, Glutes"
+Legs,Beginner,Dumbbell,Dumbbell Step-Up,Step up onto platform holding dumbbells.,"Quads, Glutes"
+Legs,Beginner,Dumbbell,Dumbbell Deadlift,Lift dumbbells using hip hinge.,"Glutes, Hamstrings"
+Legs,Intermediate,Machine,Hack Squat Machine,Perform squats at angle to target quads.,"Quads, Glutes"
+Legs,Intermediate,Machine,Standing Calf Raise Machine,Raise heels upward to strengthen calves.,Calves
+Legs,Intermediate,Machine,Lying Leg Curl Machine,Curl legs upward while lying face down.,Hamstrings
+Legs,Intermediate,Dumbbell,Bulgarian Split Squat,Lunge with rear foot elevated.,"Quads, Glutes"
+Legs,Intermediate,Dumbbell,Dumbbell Lunge,Step forward and lower knee.,"Quads, Glutes"
+Legs,Intermediate,Dumbbell,Dumbbell Romanian Deadlift,Lower dumbbells keeping legs slightly bent.,"Hamstrings, Glutes"
+Legs,Advanced,Machine,Smith Machine Squat,Perform squats with guided bar path.,"Quads, Glutes"
+Legs,Advanced,Machine,Vertical Leg Press,Press weight vertically using legs.,"Quads, Hamstrings"
+Legs,Advanced,Dumbbell,Dumbbell Front Squat,Hold dumbbells at shoulders and squat.,"Quads, Core"
+Legs,Advanced,Dumbbell,Dumbbell Jump Squat,Explosive squat with dumbbells for power.,"Quads, Glutes"
+Legs,Advanced,Dumbbell,Walking Lunge,Alternate lunges while walking.,"Quads, Glutes"
+Core,Beginner,Machine,Ab Crunch Machine,Crunch forward to engage abs.,Abs
+Core,Beginner,Dumbbell,Dumbbell Side Bend,Bend sideways holding dumbbell.,Obliques
+Core,Beginner,Dumbbell,Weighted Sit-Up,Hold dumbbell on chest during sit-up.,Abs
+Core,Intermediate,Machine,Cable Rope Crunch,Pull rope down while crunching.,Abs
+Core,Intermediate,Dumbbell,Dumbbell Russian Twist,Twist torso side to side holding dumbbell.,"Obliques, Abs"
+Core,Intermediate,Dumbbell,Dumbbell Leg Raise Hold,Hold dumbbell between feet and raise legs.,Lower Abs
+Core,Advanced,Machine,Decline Ab Bench (Weighted),Crunch upward on decline bench.,Abs
+Core,Advanced,Dumbbell,Dumbbell Windmill,Rotate torso holding dumbbell overhead.,"Obliques, Core"
+Core,Advanced,Dumbbell,Dumbbell V-Sit Twist,Hold dumbbell and twist torso in V-sit.,"Abs, Obliques"
+Full Body,Beginner,Dumbbell,Dumbbell Squat to Press,Squat down then press dumbbells overhead.,Full Body
+Full Body,Beginner,Machine,Machine Chest Press + Row Combo,Circuit combining press and row.,"Chest, Back"
+Full Body,Intermediate,Dumbbell,Dumbbell Clean to Press,Lift dumbbells to shoulders then press up.,"Full Body, Core"
+Full Body,Intermediate,Dumbbell,Dumbbell Deadlift to Squat Combo,Deadlift then squat for total body.,Full Body
+Full Body,Advanced,Dumbbell,Dumbbell Snatch,Explosively lift dumbbell overhead.,"Full Body, Power"
+Full Body,Advanced,Dumbbell,Dumbbell Thruster,Front squat then press overhead.,"Full Body, Legs, Shoulders"

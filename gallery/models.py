@@ -5,7 +5,7 @@ from accounts.models import User
 class UserGallery(models.Model):
     """User progress photos and gallery"""
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='gallery_images')
-    image_url = models.URLField(max_length=255)
+    image = models.ImageField(upload_to='user_gallery/')
     image_type = models.CharField(max_length=20,
                                   choices=[
                                       ('front', 'Front'),

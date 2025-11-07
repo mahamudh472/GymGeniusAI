@@ -1,0 +1,16 @@
+
+
+- Need to generate the 4 Coachs initially.
+    > Coachs = [
+        ["John", "Tough love,no excuses, big results"],
+        ["Selma", "Warm, supportive amd emotionally smart"],
+        ["Jara", "Sass, humor amd max motivation"],
+        ["Chris", "Professional, focused and efficient"]
+        ]
+- Need to generate WeekDay objects
+    > days = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"]
+- Need to run redis server
+    sudo systemctl start redis
+
+- Run celery worker
+    -> celery -A GymGeniusAI worker --loglevel=info

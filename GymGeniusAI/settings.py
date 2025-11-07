@@ -46,7 +46,7 @@ INSTALLED_APPS = [
     'workouts',
     'nutrition',
     'community',
-    'gallery',
+    'gallery.apps.GalleryConfig',
     'articles',
     'ai_assistant',
     'notifications',

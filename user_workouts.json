@@ -1,0 +1,516 @@
+[
+    {
+        "workout_name": "Full Body Beginner Workout",
+        "description": "A beginner-friendly full body workout routine targeting all major muscle groups.",
+        "difficulty": "Beginner",
+        "estimated_duration": "45",
+        "estimated_calories": 350,
+        "exercises": [
+            {
+                "name": "Chest Press Machine",
+                "sets": 3,
+                "reps": 12,
+                "duration_seconds": 240,
+                "rest_time": "60",
+                "notes": "Press handles forward to engage chest. Keep your back flat against the pad."
+            },
+            {
+                "name": "Lat Pulldown",
+                "sets": 3,
+                "reps": 12,
+                "duration_seconds": 240,
+                "rest_time": "60",
+                "notes": "Pull bar down to chest to engage lats. Control the movement on the way up."
+            },
+            {
+                "name": "Leg Press",
+                "sets": 3,
+                "reps": 15,
+                "duration_seconds": 300,
+                "rest_time": "90",
+                "notes": "Press platform away with legs. Keep feet shoulder-width apart."
+            },
+            {
+                "name": "Shoulder Press Machine",
+                "sets": 3,
+                "reps": 10,
+                "duration_seconds": 240,
+                "rest_time": "60",
+                "notes": "Press handles overhead to target shoulders. Avoid arching your back."
+            },
+            {
+                "name": "Dumbbell Bicep Curl",
+                "sets": 3,
+                "reps": 12,
+                "duration_seconds": 180,
+                "rest_time": "45",
+                "notes": "Curl dumbbells up to shoulder level. Keep elbows stationary."
+            }
+        ]
+    },
+    {
+        "workout_name": "Chest & Triceps Power",
+        "description": "Intermediate workout focusing on chest and triceps development.",
+        "difficulty": "Intermediate",
+        "estimated_duration": "50",
+        "estimated_calories": 450,
+        "exercises": [
+            {
+                "name": "Flat Dumbbell Press",
+                "sets": 4,
+                "reps": 10,
+                "duration_seconds": 320,
+                "rest_time": "90",
+                "notes": "Press dumbbells upward while lying flat on a bench. Lower with control."
+            },
+            {
+                "name": "Cable Crossover",
+                "sets": 3,
+                "reps": 12,
+                "duration_seconds": 240,
+                "rest_time": "60",
+                "notes": "Pull cables together in front of body. Squeeze chest at the peak contraction."
+            },
+            {
+                "name": "Incline Dumbbell Press",
+                "sets": 3,
+                "reps": 10,
+                "duration_seconds": 240,
+                "rest_time": "75",
+                "notes": "Press dumbbells upward on an incline bench. Focus on upper chest engagement."
+            },
+            {
+                "name": "Cable Rope Overhead Extension",
+                "sets": 3,
+                "reps": 12,
+                "duration_seconds": 240,
+                "rest_time": "60",
+                "notes": "Extend arms overhead using rope attachment. Keep elbows pointed forward."
+            },
+            {
+                "name": "Overhead Dumbbell Tricep Extension",
+                "sets": 3,
+                "reps": 12,
+                "duration_seconds": 240,
+                "rest_time": "60",
+                "notes": "Extend dumbbell overhead to work triceps. Keep core tight."
+            }
+        ]
+    },
+    {
+        "workout_name": "Back & Biceps Builder",
+        "description": "Comprehensive back and biceps workout for muscle growth and strength.",
+        "difficulty": "Intermediate",
+        "estimated_duration": "55",
+        "estimated_calories": 470,
+        "exercises": [
+            {
+                "name": "Seated Row Machine",
+                "sets": 4,
+                "reps": 12,
+                "duration_seconds": 320,
+                "rest_time": "75",
+                "notes": "Pull handles toward you keeping back straight. Squeeze shoulder blades together."
+            },
+            {
+                "name": "One-Arm Dumbbell Row",
+                "sets": 3,
+                "reps": 10,
+                "duration_seconds": 360,
+                "rest_time": "60",
+                "notes": "Row dumbbell upward while keeping back flat. Perform both sides."
+            },
+            {
+                "name": "Reverse Grip Lat Pulldown",
+                "sets": 3,
+                "reps": 12,
+                "duration_seconds": 240,
+                "rest_time": "60",
+                "notes": "Pull with underhand grip for bicep focus. Control the eccentric phase."
+            },
+            {
+                "name": "Dumbbell Shrugs",
+                "sets": 3,
+                "reps": 15,
+                "duration_seconds": 240,
+                "rest_time": "60",
+                "notes": "Lift shoulders upward to work traps. Hold at the top for 1 second."
+            },
+            {
+                "name": "Incline Dumbbell Curl",
+                "sets": 3,
+                "reps": 10,
+                "duration_seconds": 240,
+                "rest_time": "60",
+                "notes": "Curl dumbbells while seated on incline bench. Targets the long head of biceps."
+            },
+            {
+                "name": "Dumbbell Hammer Curl",
+                "sets": 3,
+                "reps": 12,
+                "duration_seconds": 180,
+                "rest_time": "45",
+                "notes": "Curl dumbbells with neutral grip. Works biceps and forearms."
+            }
+        ]
+    },
+    {
+        "workout_name": "Leg Day Destroyer",
+        "description": "High-intensity leg workout targeting quads, hamstrings, and glutes.",
+        "difficulty": "Advanced",
+        "estimated_duration": "60",
+        "estimated_calories": 575,
+        "exercises": [
+            {
+                "name": "Hack Squat Machine",
+                "sets": 4,
+                "reps": 12,
+                "duration_seconds": 360,
+                "rest_time": "120",
+                "notes": "Perform squats at angle to target quads. Go deep for full range of motion."
+            },
+            {
+                "name": "Bulgarian Split Squat",
+                "sets": 3,
+                "reps": 10,
+                "duration_seconds": 360,
+                "rest_time": "90",
+                "notes": "Lunge with rear foot elevated. Perform both legs."
+            },
+            {
+                "name": "Dumbbell Romanian Deadlift",
+                "sets": 4,
+                "reps": 12,
+                "duration_seconds": 320,
+                "rest_time": "90",
+                "notes": "Lower dumbbells keeping legs slightly bent. Feel the stretch in hamstrings."
+            },
+            {
+                "name": "Lying Leg Curl Machine",
+                "sets": 3,
+                "reps": 12,
+                "duration_seconds": 240,
+                "rest_time": "60",
+                "notes": "Curl legs upward while lying face down. Squeeze hamstrings at the top."
+            },
+            {
+                "name": "Walking Lunge",
+                "sets": 3,
+                "reps": 20,
+                "duration_seconds": 300,
+                "rest_time": "75",
+                "notes": "Alternate lunges while walking. Keep torso upright."
+            },
+            {
+                "name": "Standing Calf Raise Machine",
+                "sets": 4,
+                "reps": 15,
+                "duration_seconds": 240,
+                "rest_time": "45",
+                "notes": "Raise heels upward to strengthen calves. Full range of motion."
+            }
+        ]
+    },
+    {
+        "workout_name": "Shoulder Sculpting Session",
+        "description": "Complete shoulder workout targeting all three deltoid heads.",
+        "difficulty": "Intermediate",
+        "estimated_duration": "45",
+        "estimated_calories": 415,
+        "exercises": [
+            {
+                "name": "Seated Dumbbell Press",
+                "sets": 4,
+                "reps": 10,
+                "duration_seconds": 320,
+                "rest_time": "90",
+                "notes": "Press dumbbells overhead while seated. Keep core engaged."
+            },
+            {
+                "name": "Dumbbell Lateral Raise",
+                "sets": 3,
+                "reps": 12,
+                "duration_seconds": 240,
+                "rest_time": "60",
+                "notes": "Lift dumbbells outward to sides. Stop at shoulder height."
+            },
+            {
+                "name": "Dumbbell Front Raise",
+                "sets": 3,
+                "reps": 12,
+                "duration_seconds": 240,
+                "rest_time": "60",
+                "notes": "Lift dumbbells forward to shoulder height. Control the descent."
+            },
+            {
+                "name": "Dumbbell Rear Delt Fly",
+                "sets": 3,
+                "reps": 15,
+                "duration_seconds": 240,
+                "rest_time": "60",
+                "notes": "Bend forward and lift dumbbells outward. Focus on rear delts."
+            },
+            {
+                "name": "Arnold Press",
+                "sets": 3,
+                "reps": 10,
+                "duration_seconds": 240,
+                "rest_time": "75",
+                "notes": "Rotate wrists while pressing upward. Works front and lateral delts."
+            }
+        ]
+    },
+    {
+        "workout_name": "Core Strength Intensive",
+        "description": "Advanced core workout for building strength and definition.",
+        "difficulty": "Advanced",
+        "estimated_duration": "35",
+        "estimated_calories": 300,
+        "exercises": [
+            {
+                "name": "Cable Rope Crunch",
+                "sets": 4,
+                "reps": 15,
+                "duration_seconds": 320,
+                "rest_time": "60",
+                "notes": "Pull rope down while crunching. Focus on abs contraction."
+            },
+            {
+                "name": "Dumbbell Russian Twist",
+                "sets": 3,
+                "reps": 20,
+                "duration_seconds": 300,
+                "rest_time": "45",
+                "notes": "Twist torso side to side holding dumbbell. Count both sides as one rep."
+            },
+            {
+                "name": "Weighted Sit-Up",
+                "sets": 3,
+                "reps": 15,
+                "duration_seconds": 240,
+                "rest_time": "60",
+                "notes": "Hold dumbbell on chest during sit-up. Control the movement."
+            },
+            {
+                "name": "Dumbbell V-Sit Twist",
+                "sets": 3,
+                "reps": 20,
+                "duration_seconds": 300,
+                "rest_time": "60",
+                "notes": "Hold dumbbell and twist torso in V-sit. Engage entire core."
+            },
+            {
+                "name": "Dumbbell Side Bend",
+                "sets": 3,
+                "reps": 15,
+                "duration_seconds": 240,
+                "rest_time": "45",
+                "notes": "Bend sideways holding dumbbell. Targets obliques."
+            }
+        ]
+    },
+    {
+        "workout_name": "Upper Body Strength",
+        "description": "Beginner-friendly upper body workout for building foundational strength.",
+        "difficulty": "Beginner",
+        "estimated_duration": "40",
+        "estimated_calories": 330,
+        "exercises": [
+            {
+                "name": "Pec Deck (Butterfly Machine)",
+                "sets": 3,
+                "reps": 12,
+                "duration_seconds": 240,
+                "rest_time": "60",
+                "notes": "Bring arms together in front of you to target chest. Squeeze at peak."
+            },
+            {
+                "name": "Assisted Pull-Up Machine",
+                "sets": 3,
+                "reps": 8,
+                "duration_seconds": 240,
+                "rest_time": "90",
+                "notes": "Perform assisted pull-ups to build strength. Focus on pulling with back."
+            },
+            {
+                "name": "Lateral Raise Machine",
+                "sets": 3,
+                "reps": 12,
+                "duration_seconds": 240,
+                "rest_time": "60",
+                "notes": "Raise arms outward to shoulder height. Control the movement."
+            },
+            {
+                "name": "Tricep Pushdown (Cable)",
+                "sets": 3,
+                "reps": 12,
+                "duration_seconds": 240,
+                "rest_time": "60",
+                "notes": "Push bar downward to engage triceps. Keep elbows locked at sides."
+            },
+            {
+                "name": "Dumbbell Hammer Curl",
+                "sets": 3,
+                "reps": 12,
+                "duration_seconds": 180,
+                "rest_time": "45",
+                "notes": "Curl dumbbells with neutral grip. Works biceps and forearms."
+            }
+        ]
+    },
+    {
+        "workout_name": "Lower Body Beginner Basics",
+        "description": "Essential leg exercises for beginners to build strength and muscle.",
+        "difficulty": "Beginner",
+        "estimated_duration": "40",
+        "estimated_calories": 370,
+        "exercises": [
+            {
+                "name": "Leg Extension",
+                "sets": 3,
+                "reps": 15,
+                "duration_seconds": 240,
+                "rest_time": "60",
+                "notes": "Extend legs to work quads. Squeeze at the top position."
+            },
+            {
+                "name": "Seated Leg Curl",
+                "sets": 3,
+                "reps": 12,
+                "duration_seconds": 240,
+                "rest_time": "60",
+                "notes": "Curl legs downward to engage hamstrings. Control the movement."
+            },
+            {
+                "name": "Goblet Squat",
+                "sets": 3,
+                "reps": 12,
+                "duration_seconds": 300,
+                "rest_time": "90",
+                "notes": "Hold dumbbell to chest and squat down. Keep chest up and core tight."
+            },
+            {
+                "name": "Dumbbell Step-Up",
+                "sets": 3,
+                "reps": 10,
+                "duration_seconds": 300,
+                "rest_time": "60",
+                "notes": "Step up onto platform holding dumbbells. Alternate legs."
+            },
+            {
+                "name": "Dumbbell Deadlift",
+                "sets": 3,
+                "reps": 12,
+                "duration_seconds": 300,
+                "rest_time": "90",
+                "notes": "Lift dumbbells using hip hinge. Keep back straight throughout."
+            }
+        ]
+    },
+    {
+        "workout_name": "Advanced Push Day",
+        "description": "High-intensity push workout for advanced lifters targeting chest, shoulders, and triceps.",
+        "difficulty": "Advanced",
+        "estimated_duration": "65",
+        "estimated_calories": 625,
+        "exercises": [
+            {
+                "name": "Decline Dumbbell Press",
+                "sets": 4,
+                "reps": 10,
+                "duration_seconds": 320,
+                "rest_time": "90",
+                "notes": "Press dumbbells on a decline bench. Targets lower chest."
+            },
+            {
+                "name": "Dumbbell Squeeze Press",
+                "sets": 3,
+                "reps": 12,
+                "duration_seconds": 300,
+                "rest_time": "75",
+                "notes": "Press dumbbells together to activate inner chest. Maintain constant tension."
+            },
+            {
+                "name": "Standing Dumbbell Press",
+                "sets": 4,
+                "reps": 8,
+                "duration_seconds": 320,
+                "rest_time": "90",
+                "notes": "Press dumbbells overhead standing for stability. Engage core throughout."
+            },
+            {
+                "name": "Seated Dumbbell Lateral Raise Dropset",
+                "sets": 3,
+                "reps": 12,
+                "duration_seconds": 360,
+                "rest_time": "60",
+                "notes": "Perform lateral raises reducing weight each set. Push to failure."
+            },
+            {
+                "name": "Dumbbell Skull Crusher",
+                "sets": 3,
+                "reps": 12,
+                "duration_seconds": 240,
+                "rest_time": "60",
+                "notes": "Extend dumbbells from forehead position. Control the eccentric phase."
+            },
+            {
+                "name": "Dumbbell Kickback",
+                "sets": 3,
+                "reps": 15,
+                "duration_seconds": 240,
+                "rest_time": "45",
+                "notes": "Extend elbow back to target triceps. Keep upper arm stationary."
+            }
+        ]
+    },
+    {
+        "workout_name": "Full Body Functional Training",
+        "description": "Dynamic full body workout combining multiple muscle groups for functional strength.",
+        "difficulty": "Intermediate",
+        "estimated_duration": "50",
+        "estimated_calories": 500,
+        "exercises": [
+            {
+                "name": "Dumbbell Squat to Press",
+                "sets": 3,
+                "reps": 12,
+                "duration_seconds": 360,
+                "rest_time": "90",
+                "notes": "Squat down then press dumbbells overhead. Full body movement."
+            },
+            {
+                "name": "Dumbbell Clean to Press",
+                "sets": 3,
+                "reps": 10,
+                "duration_seconds": 360,
+                "rest_time": "90",
+                "notes": "Lift dumbbells to shoulders then press up. Explosive movement."
+            },
+            {
+                "name": "Dumbbell Lunge",
+                "sets": 3,
+                "reps": 12,
+                "duration_seconds": 360,
+                "rest_time": "75",
+                "notes": "Step forward and lower knee. Alternate legs for each rep."
+            },
+            {
+                "name": "Renegade Rows",
+                "sets": 3,
+                "reps": 10,
+                "duration_seconds": 300,
+                "rest_time": "90",
+                "notes": "Row dumbbells from push-up position. Engages lats and core."
+            },
+            {
+                "name": "Dumbbell Deadlift to Row",
+                "sets": 3,
+                "reps": 10,
+                "duration_seconds": 300,
+                "rest_time": "75",
+                "notes": "Perform deadlift followed by row. Combines back and posterior chain."
+            }
+        ]
+    }
+]

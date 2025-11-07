@@ -2,6 +2,17 @@ from django.db import models
 from accounts.models import User
 from random import randint
 
+
+def generate_exercise_name():
+    """Generate a unique default name for exercises"""
+    return f"Unnamed Exercise_{randint(100000, 999999)}"
+
+
+def generate_workout_name():
+    """Generate a unique default name for workouts"""
+    return f"Unnamed Workout_{randint(100000, 999999)}"
+
+
 class ExerciseCategory(models.Model):
     """Categories for exercises (e.g., Cardio, Strength, Flexibility)"""
     name = models.CharField(max_length=100)
@@ -24,7 +35,7 @@ class Exercise(models.Model):
         ('advanced', 'Advanced'),
     ]
     
-    name = models.CharField(max_length=150, unique=True, default=f"Unnamed Exercise_{models.functions.Now()}_{randint(1000,9999)}")
+    name = models.CharField(max_length=150, unique=True, default=generate_exercise_name)
     description = models.TextField(blank=True, null=True)
     video_url = models.URLField(max_length=500, blank=True, null=True)
     
@@ -69,7 +80,7 @@ class UserWorkout(models.Model):
     ]
     
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='workouts')
-    name = models.CharField(max_length=255, default=f"Unnamed Workout_{models.functions.Now()}_{randint(1000,9999)}")
+    name = models.CharField(max_length=255, default=generate_workout_name)
     description = models.TextField(blank=True, null=True)
     
     # Workout metadata
