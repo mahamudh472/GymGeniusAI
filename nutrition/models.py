@@ -65,8 +65,13 @@ class UserMealPlan(models.Model):
 class UserUploadedMeal(models.Model):
     """User uploaded meal images with AI analysis"""
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='uploaded_meals')
-    image_url = models.URLField(max_length=255)
+    meal_name = models.CharField(max_length=150, blank=True, null=True)
+    estimated_calories = models.IntegerField(blank=True, null=True)
+    image = models.ImageField(upload_to='user_meals/', blank=True, null=True)
     ai_analysis = models.JSONField(default=dict, help_text="AI nutrition analysis")
+    macronutrients = models.JSONField(default=dict, help_text="Macronutrients (protein, carbs, fats)")
+    micronutrients = models.JSONField(default=dict, help_text="Micronutrients (vitamins, minerals)")
+    improvements = models.TextField(blank=True, null=True, help_text="AI suggested improvements")
     created_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
