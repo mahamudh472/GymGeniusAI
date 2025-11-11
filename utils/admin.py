@@ -1,6 +1,16 @@
 from unfold.admin import ModelAdmin
-from .models import FAQ, ContactOption, Favorite
+from .models import FAQ, ContactOption, Favorite, Notification
 from django.contrib import admin
+
+
+@admin.register(Notification)
+class NotificationAdmin(ModelAdmin):
+    list_display = ['user', 'title', 'is_read', 'created_at']
+    list_filter = ['is_read', 'created_at']
+    search_fields = ['user__email', 'title', 'message']
+    ordering = ['-created_at']
+
+
 @admin.register(FAQ)
 class FAQAdmin(ModelAdmin):
     list_display = ['question', 'created_at', 'updated_at']

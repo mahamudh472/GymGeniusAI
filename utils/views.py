@@ -2,13 +2,56 @@
 from rest_framework import generics, permissions, views, filters
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Favorite, FAQ, ContactOption
+from .models import Favorite, FAQ, ContactOption, Notification
 from nutrition.models import Meal
-from .serializers import FavoriteSerializer, FAQSerializer, ContactOptionSerializer
+from .serializers import FavoriteSerializer, FAQSerializer, ContactOptionSerializer, NotificationSerializer
 from rest_framework import serializers
 from workouts.serializers import UserWorkoutListSerializer
 from django_filters.rest_framework import DjangoFilterBackend
 # from nutrition.serializers import MealSerializer
+
+def add_notification(user, title, message, notification_type):
+    """Utility function to add a notification for a user."""
+    Notification.objects.create(
+        user=user,
+        title=title,
+        message=message,
+        notification_type=notification_type
+    )
+
+class NotificationListView(generics.ListAPIView):
+    serializer_class = NotificationSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['notification_type', 'created_at']
+
+    def get_queryset(self):
+        return Notification.objects.filter(user=self.request.user)
+        
+
+class NotificationDetailView(generics.CreateAPIView):
+    serializer_class = NotificationSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        notification = serializer.save()
+        return Response(
+            NotificationSerializer(notification).data,
+            status=status.HTTP_201_CREATED
+        )
+
+class MarkAllNotificationsReadView(views.APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        updated_count = Notification.objects.filter(user=user, is_read=False).update(is_read=True)
+        return Response(
+            {"detail": f"Marked {updated_count} notifications as read."},
+            status=status.HTTP_200_OK
+        )
 
 class FavoriteListView(generics.ListAPIView):
     serializer_class = FavoriteSerializer

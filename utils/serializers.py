@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.contenttypes.models import ContentType
-from .models import Favorite, FAQ, ContactOption
+from .models import Favorite, FAQ, ContactOption, Notification
 from drf_spectacular.utils import extend_schema_field, OpenApiTypes
 
 # Import your actual content serializers
@@ -13,6 +13,27 @@ FAVORITE_SERIALIZERS = {
     'article': ArticleSerializer,
     # 'video': VideoSerializer,
 }
+
+
+class NotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notification
+        fields = [
+            'id',
+            'user',
+            'title',
+            'message',
+            'notification_type',
+            'is_read',
+            'created_at',
+        ]
+        read_only_fields = ['id', 'user', 'created_at']
+        
+    def create(self, validated_data):
+        """Create a new notification for the user."""
+        user = self.context['request'].user
+        notification = Notification.objects.create(user=user, **validated_data)
+        return notification
 
 
 class FavoriteSerializer(serializers.ModelSerializer):
