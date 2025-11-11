@@ -1,10 +1,63 @@
 from rest_framework import generics, permissions
 from rest_framework.response import Response
+from django.utils import timezone
+from datetime import timedelta
 
 from accounts.permissions import IsActiveUser
 from nutrition.models import UserUploadedMeal
 from ai_assistant.utils import analyze_single_meal
 from nutrition.tasks import analyze_uploaded_meal
+
+
+def calculate_meal_streak(user):
+    """
+    Calculate the consecutive days streak of meal uploads for a user.
+    Counts backward from today to find the last consecutive upload days.
+    """
+    # Get all unique dates when user uploaded meals, ordered descending
+    upload_dates = UserUploadedMeal.objects.filter(
+        user=user
+    ).dates('created_at', 'day', order='DESC')
+    
+    if not upload_dates:
+        return 0
+    
+    streak = 0
+    today = timezone.now().date()
+    expected_date = today
+    
+    for upload_date in upload_dates:
+        if upload_date == expected_date:
+            streak += 1
+            expected_date = expected_date - timedelta(days=1)
+        elif upload_date == expected_date + timedelta(days=1):
+            continue
+        else:
+            # Gap found, break the streak
+            break
+    
+    return streak
+
+
+class NutritionHomeView(generics.GenericAPIView):
+    """
+    A simple view to confirm the Nutrition app is reachable.
+    """
+    permission_classes = [IsActiveUser]
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        total_meals = UserUploadedMeal.objects.filter(user=user).count()
+        streak = calculate_meal_streak(user)
+        
+        upload_dates = UserUploadedMeal.objects.filter(user=user).order_by('-created_at').values_list('created_at__date', flat=True).distinct()
+        return Response({
+            "message": "Welcome to the Nutrition Home!", 
+            "total_meals": total_meals,
+            "streak": streak,
+            "upload_dates": list(upload_dates)
+        }, status=200)
+
 
 class UserUploadedMealCreateView(generics.CreateAPIView):
     """

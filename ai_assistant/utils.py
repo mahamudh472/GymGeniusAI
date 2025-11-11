@@ -95,3 +95,122 @@ def analyze_single_meal(base64_image, meal_name="Meal"):
 
     except Exception as e:
         return {"error": str(e)}
+
+
+def fitness_coach_ai(
+    gender,
+    age,
+    weight_kg,
+    height_cm,
+    goal,
+    activity_level,
+    username,
+    coach_name,
+    current_query,
+    image_summary=None,
+    conversation_history=None
+):
+    """
+    Main AI chat handler for FitCoach.
+    Always returns a clean JSON object with plain-text keys:
+      - reply
+      - image_summary
+    """
+    try:
+        chatbot_name = "FitCoach"
+
+        system_message = {
+            "role": "system",
+            "content": f"""
+You are "{chatbot_name}", an AI fitness coach that adopts one of four personas.
+
+## Personas
+- John — tough love, no excuses, best-results mindset.
+- Selma — warm, supportive, emotionally smart.
+- Jara — sassy, humorous, and hyper-motivating.
+- Chris — professional, focused, efficient.
+
+Active persona: {coach_name}
+
+## User Profile
+gender: {gender}
+age: {age}
+weight_kg: {weight_kg}
+height_cm: {height_cm}
+goal: {goal}
+activity_level: {activity_level}
+username: {username}
+
+## Image Analysis Summary
+{image_summary or "No image provided."}
+
+## Behavior Guidelines
+- Always speak as {coach_name}.
+- Be conversational, motivational, and clear.
+- Provide structured workout or nutrition guidance.
+- Use image_summary for posture/mobility cues.
+- Use metric units (kg, cm, km).
+- NEVER comment on attractiveness, race, or emotion.
+- Respond ONLY in JSON format.
+
+## JSON Response Format
+{{
+  "reply": "Main assistant message to the user",
+  "image_summary": "Shortly analyze each portion of muscle from the image"
+}}
+
+Conversation history for context:
+{conversation_history}
+"""
+        }
+
+        user_message = {"role": "user", "content": current_query}
+
+        response = o.chat.completions.create(
+            model="gpt-4o",
+            temperature=0.6,
+            messages=[system_message, user_message],
+        )
+
+        raw_output = response.choices[0].message.content.strip()
+
+        # Try to parse JSON safely
+        try:
+            parsed = json.loads(raw_output)
+        except json.JSONDecodeError:
+            parsed = {
+                "reply": raw_output,
+                "image_summary": image_summary or "N/A"
+            }
+
+        parsed.setdefault("reply", "I'm ready to help you get fitter!")
+        parsed.setdefault("image_summary", image_summary or "N/A")
+
+
+        def clean_text(text):
+            if not isinstance(text, str):
+                return text
+
+            text = re.sub(r"\*\*|##|###|\*", "", text)  # remove markdown
+            text = re.sub(r"\\u[0-9a-fA-F]{4}", "", text)  # remove unicode escapes
+            text = re.sub(r"[\U0001F600-\U0001F64F]", "", text)  # remove emojis
+            text = re.sub(r"[\U0001F300-\U0001F5FF]", "", text)
+            text = re.sub(r"[\U0001F680-\U0001F6FF]", "", text)
+            text = re.sub(r"[\U0001F1E0-\U0001F1FF]", "", text)
+            text = re.sub(r"\s*\n\s*", " ", text)  # collapse newlines
+            text = re.sub(r"\s{2,}", " ", text)  # remove multiple spaces
+            return text.strip()
+
+        parsed["reply"] = clean_text(parsed["reply"])
+        parsed["image_summary"] = clean_text(parsed["image_summary"])
+
+        return parsed
+
+    except Exception as e:
+        print("Error in fitness_coach_ai:", e)
+        return {
+            "reply": f"Error: {str(e)}",
+            "image_summary": image_summary or "N/A"
+        }
+
+

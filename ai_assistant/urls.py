@@ -4,5 +4,5 @@ from . import views
 app_name = 'ai_assistant'
 
 urlpatterns = [
-    path('conversation/', views.ConversationView.as_view(), name='conversation'),
+    path('', views.ConversationMessageView.as_view(), name='conversation-message'),
 ]

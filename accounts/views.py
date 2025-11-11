@@ -139,8 +139,7 @@ class ProfileView(GenericAPIView):
     def get(self, request):
         user = request.user
         serializer = self.serializer_class(user)
-        from .utils import get_details_for_ai
-        print("User details for AI:", get_details_for_ai(user.id))
+
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 class UpdateProfileView(GenericAPIView):
