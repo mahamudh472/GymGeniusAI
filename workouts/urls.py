@@ -9,4 +9,6 @@ urlpatterns = [
     path('', views.UserWorkoutListAPIView.as_view(), name='user-workouts'),
     path('<int:pk>/', views.UserWorkoutDetailAPIView.as_view(), name='user-workout-detail'),
     path('generate-workouts/', views.test, name='generate-workouts'),
+    path('track-progress/', views.TrackWorkoutProgressView.as_view(), name='track-workout-progress'),
+    path('activities/', views.ActivityListView.as_view(), name='activity-list'),
 ]

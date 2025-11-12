@@ -209,3 +209,21 @@ class WorkoutProgress(models.Model):
             return 0.0
         completed_count = len(self.completed_exercises)
         return (completed_count / total_exercises) * 100
+
+
+class Activity(models.Model):
+    """Track user activities with name, duration, and calories burned"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='activities')
+    name = models.CharField(max_length=255, help_text="Name of the activity")
+    duration = models.IntegerField(help_text="Duration in minutes")
+    calories = models.FloatField(help_text="Calories burned during the activity")
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        db_table = 'activities'
+        verbose_name = 'Activity'
+        verbose_name_plural = 'Activities'
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.user.email} - {self.name} ({self.created_at.date()})"

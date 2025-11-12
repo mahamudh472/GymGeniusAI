@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import (
-    ExerciseCategory, Exercise, UserWorkout, UserExercise, WorkoutProgress
+    ExerciseCategory, Exercise, UserWorkout, UserExercise, WorkoutProgress, Activity
 )
 
 
@@ -54,3 +54,20 @@ class WorkoutProgressSerializer(serializers.ModelSerializer):
     class Meta:
         model = WorkoutProgress
         fields = '__all__'
+
+
+class ActivitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Activity
+        fields = '__all__'
+        read_only_fields = ['user', 'created_at']
+
+
+class CompleteExerciseSerializer(serializers.Serializer):
+    """Serializer for marking an exercise as completed in a workout"""
+    user_workout_id = serializers.IntegerField(required=True)
+    user_exercise_id = serializers.IntegerField(required=True)
+    actual_sets = serializers.IntegerField(required=False, allow_null=True)
+    actual_reps = serializers.IntegerField(required=False, allow_null=True)
+    actual_duration = serializers.IntegerField(required=False, allow_null=True, help_text="Actual duration in seconds")
+    notes = serializers.CharField(required=False, allow_blank=True)

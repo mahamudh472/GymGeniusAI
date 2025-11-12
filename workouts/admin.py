@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import (
-    ExerciseCategory, Exercise, UserWorkout, UserExercise, WorkoutProgress
+    ExerciseCategory, Exercise, UserWorkout, UserExercise, WorkoutProgress, Activity
 )
 from unfold.admin import ModelAdmin
 
@@ -94,5 +94,25 @@ class WorkoutProgressAdmin(ModelAdmin):
         }),
         ('Feedback', {
             'fields': ('rating', 'difficulty_rating', 'notes')
+        }),
+    )
+
+
+@admin.register(Activity)
+class ActivityAdmin(ModelAdmin):
+    list_display = ['user', 'name', 'duration', 'calories', 'created_at']
+    list_filter = ['created_at', 'user']
+    search_fields = ['user__email', 'name']
+    ordering = ['-created_at']
+    readonly_fields = ['created_at']
+    fieldsets = (
+        ('Activity Information', {
+            'fields': ('user', 'name')
+        }),
+        ('Metrics', {
+            'fields': ('duration', 'calories')
+        }),
+        ('Timestamp', {
+            'fields': ('created_at',)
         }),
     )
