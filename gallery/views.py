@@ -1,4 +1,6 @@
 from rest_framework.generics import ListCreateAPIView, RetrieveAPIView, GenericAPIView
+from rest_framework import serializers
+from drf_spectacular.utils import extend_schema, inline_serializer
 from .models import UserGallery
 from .serializers import GalleryImageSerializer
 from rest_framework.permissions import IsAuthenticated
@@ -48,7 +50,20 @@ class GalleryDashboardView(GenericAPIView):
     API view to provide dashboard statistics for the user's gallery images.
     """
     permission_classes = [IsAuthenticated]
+    serializer_class = GalleryImageSerializer  # Add serializer_class for schema generation
 
+    @extend_schema(
+        responses={
+            200: inline_serializer(
+                name='GalleryDashboardResponse',
+                fields={
+                    'total_images': serializers.IntegerField(),
+                    'images_last_week': serializers.IntegerField(),
+                    'consecutive_days_streak': serializers.IntegerField(),
+                }
+            )
+        }
+    )
     def get(self, request, *args, **kwargs):
         user = request.user
         total_images = UserGallery.objects.filter(user=user).count()

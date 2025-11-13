@@ -1,6 +1,7 @@
 from django.contrib import admin
 from .models import (
-    ExerciseCategory, Exercise, UserWorkout, UserExercise, WorkoutProgress, Activity
+    ExerciseCategory, Exercise, UserWorkout, UserExercise, WorkoutProgress, Activity,
+    CustomRoutine, CustomRoutineExercise, CustomRoutineExerciseCompletion
 )
 from unfold.admin import ModelAdmin
 
@@ -114,5 +115,69 @@ class ActivityAdmin(ModelAdmin):
         }),
         ('Timestamp', {
             'fields': ('created_at',)
+        }),
+    )
+
+
+class CustomRoutineExerciseInline(admin.TabularInline):
+    model = CustomRoutineExercise
+    extra = 1
+    fields = ['exercise', 'sets', 'reps', 'duration_seconds', 'rest_time', 'order', 'notes']
+    ordering = ['order', 'added_at']
+    autocomplete_fields = ['exercise']
+
+
+@admin.register(CustomRoutine)
+class CustomRoutineAdmin(ModelAdmin):
+    list_display = ['user', 'name', 'created_at', 'updated_at']
+    search_fields = ['user__email', 'name']
+    ordering = ['-created_at']
+    readonly_fields = ['created_at', 'updated_at']
+    inlines = [CustomRoutineExerciseInline]
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('user', 'name', 'description')
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at')
+        }),
+    )
+
+
+@admin.register(CustomRoutineExercise)
+class CustomRoutineExerciseAdmin(ModelAdmin):
+    list_display = ['custom_routine', 'exercise', 'sets', 'reps', 'rest_time', 'order', 'added_at']
+    list_filter = ['custom_routine__user', 'exercise__difficulty']
+    search_fields = ['custom_routine__name', 'exercise__name', 'custom_routine__user__email']
+    ordering = ['custom_routine', 'order', 'added_at']
+    autocomplete_fields = ['exercise', 'custom_routine']
+    readonly_fields = ['added_at']
+
+
+@admin.register(CustomRoutineExerciseCompletion)
+class CustomRoutineExerciseCompletionAdmin(ModelAdmin):
+    list_display = ['user', 'exercise_name', 'actual_sets', 'actual_reps', 'duration_minutes', 'calories_burned', 'completed_at']
+    list_filter = ['completed_at', 'difficulty_rating', 'user']
+    search_fields = ['user__email', 'custom_routine_exercise__exercise__name']
+    ordering = ['-completed_at']
+    readonly_fields = ['completed_at', 'calories_burned']
+    autocomplete_fields = ['user', 'custom_routine_exercise']
+    
+    def exercise_name(self, obj):
+        return obj.custom_routine_exercise.exercise.name
+    exercise_name.short_description = 'Exercise'
+    
+    fieldsets = (
+        ('Exercise Information', {
+            'fields': ('user', 'custom_routine_exercise', 'completed_at')
+        }),
+        ('Performance', {
+            'fields': ('actual_sets', 'actual_reps', 'actual_duration_seconds')
+        }),
+        ('Metrics', {
+            'fields': ('duration_minutes', 'calories_burned')
+        }),
+        ('Feedback', {
+            'fields': ('difficulty_rating', 'notes')
         }),
     )

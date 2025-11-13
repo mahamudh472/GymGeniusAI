@@ -1,11 +1,12 @@
 # favorites/views.py
-from rest_framework import generics, permissions, views, filters
+from rest_framework import generics, permissions, views, filters, serializers
 from rest_framework.response import Response
 from rest_framework import status
+from drf_spectacular.utils import extend_schema, inline_serializer, OpenApiParameter
+from drf_spectacular.types import OpenApiTypes
 from .models import Favorite, FAQ, ContactOption, Notification
 from nutrition.models import Meal
 from .serializers import FavoriteSerializer, FAQSerializer, ContactOptionSerializer, NotificationSerializer
-from rest_framework import serializers
 from workouts.serializers import UserWorkoutListSerializer
 from django_filters.rest_framework import DjangoFilterBackend
 # from nutrition.serializers import MealSerializer
@@ -26,6 +27,9 @@ class NotificationListView(generics.ListAPIView):
     filterset_fields = ['notification_type', 'created_at']
 
     def get_queryset(self):
+        # Protect against unauthenticated requests during schema generation
+        if getattr(self, 'swagger_fake_view', False):
+            return Notification.objects.none()
         return Notification.objects.filter(user=self.request.user)
         
 
@@ -42,9 +46,21 @@ class NotificationDetailView(generics.CreateAPIView):
             status=status.HTTP_201_CREATED
         )
 
-class MarkAllNotificationsReadView(views.APIView):
+class MarkAllNotificationsReadView(generics.GenericAPIView):
     permission_classes = [permissions.IsAuthenticated]
+    serializer_class = NotificationSerializer  # Add serializer_class for schema generation
 
+    @extend_schema(
+        request=None,  # This endpoint doesn't require a request body
+        responses={
+            200: inline_serializer(
+                name='MarkAllNotificationsReadResponse',
+                fields={
+                    'detail': serializers.CharField()
+                }
+            )
+        }
+    )
     def post(self, request, *args, **kwargs):
         user = request.user
         updated_count = Notification.objects.filter(user=user, is_read=False).update(is_read=True)
@@ -86,9 +102,29 @@ class FavoriteToggleView(generics.CreateAPIView):
             raise e
 
 
-class SearchResultsView(views.APIView):
+class SearchResultsView(generics.GenericAPIView):
     permission_classes = [permissions.IsAuthenticated]
+    serializer_class = UserWorkoutListSerializer  # Add serializer_class for schema generation
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name='q',
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description='Search query'
+            )
+        ],
+        responses={
+            200: inline_serializer(
+                name='SearchResultsResponse',
+                fields={
+                    'workouts': UserWorkoutListSerializer(many=True),
+                }
+            )
+        }
+    )
     def get(self, request, *args, **kwargs):
         query = request.query_params.get('q', '')
         user = request.user

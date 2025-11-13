@@ -5,11 +5,12 @@ from django.core.mail import send_mail
 from django.utils import timezone
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, serializers
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.generics import RetrieveAPIView, GenericAPIView
+from drf_spectacular.utils import extend_schema, inline_serializer
 from accounts.serializers import (
     CustomTokenObtainPairSerializer, 
     ResetPasswordConfirmSerializer,
@@ -168,7 +169,24 @@ class CoachListView(GenericAPIView):
         serializer = self.serializer_class(coaches, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-class SendOTPView(APIView):
+class SendOTPView(GenericAPIView):
+    @extend_schema(
+        request=inline_serializer(
+            name='SendOTPRequest',
+            fields={
+                'email': serializers.EmailField(),
+                'purpose': serializers.CharField()
+            }
+        ),
+        responses={
+            200: inline_serializer(
+                name='SendOTPResponse',
+                fields={
+                    'message': serializers.CharField()
+                }
+            )
+        }
+    )
     def post(self, request):
         email = request.data.get('email')
         purpose = request.data.get('purpose')
@@ -214,9 +232,25 @@ class ChangePasswordView(GenericAPIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class LogoutView(APIView):
+class LogoutView(GenericAPIView):
     permission_classes = [IsAuthenticated]
-
+    
+    @extend_schema(
+        request=inline_serializer(
+            name='LogoutRequest',
+            fields={
+                'refresh_token': serializers.CharField()
+            }
+        ),
+        responses={
+            205: inline_serializer(
+                name='LogoutResponse',
+                fields={
+                    'message': serializers.CharField()
+                }
+            )
+        }
+    )
     def post(self, request):
         try:
             refresh_token = request.data.get('refresh_token')

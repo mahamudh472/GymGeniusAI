@@ -55,6 +55,7 @@ class FavoriteSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'created_at', 'type', 'object']
 
     # --- for GET ---
+    @extend_schema_field(OpenApiTypes.STR)
     def get_type(self, obj):
         """Return the type of favorited object (e.g. 'workout', 'article')."""
         return obj.content_type.model

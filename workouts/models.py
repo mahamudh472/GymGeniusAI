@@ -227,3 +227,120 @@ class Activity(models.Model):
     
     def __str__(self):
         return f"{self.user.email} - {self.name} ({self.created_at.date()})"
+
+
+class CustomRoutine(models.Model):
+    """One custom routine per user where they can add their favorite exercises"""
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='custom_routine')
+    name = models.CharField(max_length=255, default="My Custom Routine")
+    description = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'custom_routines'
+        verbose_name = 'Custom Routine'
+        verbose_name_plural = 'Custom Routines'
+    
+    def __str__(self):
+        return f"{self.user.email} - {self.name}"
+
+
+class CustomRoutineExercise(models.Model):
+    """Exercises added to a user's custom routine"""
+    custom_routine = models.ForeignKey(CustomRoutine, on_delete=models.CASCADE, related_name='exercises')
+    exercise = models.ForeignKey(Exercise, on_delete=models.CASCADE, related_name='custom_routines')
+    
+    # Customized parameters (user can customize these)
+    sets = models.IntegerField(null=True, blank=True, help_text="Number of sets")
+    reps = models.IntegerField(null=True, blank=True, help_text="Number of repetitions per set")
+    duration_seconds = models.IntegerField(blank=True, null=True, 
+                                          help_text="Duration in seconds (for timed exercises)")
+    rest_time = models.IntegerField(null=True, blank=True, help_text="Rest time in seconds between sets")
+    
+    # Exercise order and notes
+    order = models.IntegerField(default=0, help_text="Order of exercise in routine")
+    notes = models.TextField(blank=True, null=True)
+    added_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        db_table = 'custom_routine_exercises'
+        verbose_name = 'Custom Routine Exercise'
+        verbose_name_plural = 'Custom Routine Exercises'
+        ordering = ['order', 'added_at']
+        unique_together = ['custom_routine', 'exercise']
+    
+    def __str__(self):
+        return f"{self.custom_routine.user.email} - {self.exercise.name}"
+    
+    def save(self, *args, **kwargs):
+        # If not customized, use exercise defaults
+        if self.sets is None:
+            self.sets = self.exercise.default_sets
+        if self.reps is None:
+            self.reps = self.exercise.default_reps
+        if self.duration_seconds is None:
+            self.duration_seconds = self.exercise.default_duration_seconds
+        if self.rest_time is None:
+            self.rest_time = self.exercise.default_rest_time
+        super().save(*args, **kwargs)
+    
+    def calculate_calories(self):
+        """Calculate estimated calories for this exercise"""
+        if self.sets and self.reps:
+            return self.sets * self.reps * self.exercise.calories_per_rep
+        return 0.0
+    
+    def calculate_duration(self):
+        """Calculate estimated duration in minutes for this exercise"""
+        if self.duration_seconds:
+            # For timed exercises
+            total_seconds = self.sets * self.duration_seconds
+            if self.rest_time:
+                total_seconds += (self.sets - 1) * self.rest_time
+        elif self.sets and self.reps:
+            # For rep-based exercises, assume ~3 seconds per rep
+            total_seconds = self.sets * (self.reps * 3)
+            if self.rest_time:
+                total_seconds += (self.sets - 1) * self.rest_time
+        else:
+            return 0
+        
+        return total_seconds // 60  # Convert to minutes
+
+
+class CustomRoutineExerciseCompletion(models.Model):
+    """Track completion of individual exercises in custom routine"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='custom_exercise_completions')
+    custom_routine_exercise = models.ForeignKey(CustomRoutineExercise, on_delete=models.CASCADE, 
+                                                 related_name='completions')
+    
+    # Actual performance
+    actual_sets = models.IntegerField(help_text="Actual sets completed")
+    actual_reps = models.IntegerField(blank=True, null=True, help_text="Actual reps completed per set")
+    actual_duration_seconds = models.IntegerField(blank=True, null=True, 
+                                                  help_text="Actual duration in seconds")
+    
+    # Metrics
+    duration_minutes = models.IntegerField(help_text="Duration in minutes")
+    calories_burned = models.FloatField(help_text="Estimated calories burned")
+    
+    # Feedback
+    notes = models.TextField(blank=True, null=True)
+    difficulty_rating = models.CharField(max_length=20, blank=True, null=True,
+                                        choices=[
+                                            ('easy', 'Easy'),
+                                            ('moderate', 'Moderate'),
+                                            ('hard', 'Hard'),
+                                        ])
+    
+    completed_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        db_table = 'custom_routine_exercise_completions'
+        verbose_name = 'Custom Routine Exercise Completion'
+        verbose_name_plural = 'Custom Routine Exercise Completions'
+        ordering = ['-completed_at']
+    
+    def __str__(self):
+        return f"{self.user.email} - {self.custom_routine_exercise.exercise.name} - {self.completed_at.date()}"

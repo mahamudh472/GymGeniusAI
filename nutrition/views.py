@@ -1,7 +1,8 @@
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions, serializers
 from rest_framework.response import Response
 from django.utils import timezone
 from datetime import timedelta
+from drf_spectacular.utils import extend_schema, inline_serializer
 
 from accounts.permissions import IsActiveUser
 from nutrition.models import UserUploadedMeal
@@ -45,6 +46,19 @@ class NutritionHomeView(generics.GenericAPIView):
     """
     permission_classes = [IsActiveUser]
 
+    @extend_schema(
+        responses={
+            200: inline_serializer(
+                name='NutritionHomeResponse',
+                fields={
+                    'message': serializers.CharField(),
+                    'total_meals': serializers.IntegerField(),
+                    'streak': serializers.IntegerField(),
+                    'upload_dates': serializers.ListField(child=serializers.DateField()),
+                }
+            )
+        }
+    )
     def get(self, request, *args, **kwargs):
         user = request.user
         total_meals = UserUploadedMeal.objects.filter(user=user).count()
@@ -65,6 +79,35 @@ class UserUploadedMealCreateView(generics.CreateAPIView):
     """
     permission_classes = [permissions.IsAuthenticated, IsActiveUser]
 
+    @extend_schema(
+        request={
+            'multipart/form-data': {
+                'type': 'object',
+                'properties': {
+                    'image': {
+                        'type': 'string',
+                        'format': 'binary'
+                    }
+                }
+            }
+        },
+        responses={
+            201: inline_serializer(
+                name='UserUploadedMealResponse',
+                fields={
+                    'id': serializers.IntegerField(),
+                    'meal_name': serializers.CharField(),
+                    'estimated_calories': serializers.FloatField(),
+                    'ai_analysis': serializers.CharField(),
+                    'macronutrients': serializers.JSONField(),
+                    'micronutrients': serializers.JSONField(),
+                    'improvements': serializers.CharField(),
+                    'created_at': serializers.DateTimeField(),
+                    'message': serializers.CharField(),
+                }
+            )
+        }
+    )
     def post(self, request, *args, **kwargs):
         user = request.user
         image_file = request.FILES.get('image')

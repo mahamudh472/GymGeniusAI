@@ -1,0 +1,1894 @@
+openapi: 3.0.3
+info:
+  title: GymGenius API
+  version: 1.0.0
+  description: API documentation for GymGenius fitness application
+paths:
+  /api/accounts/change-password/:
+    post:
+      operationId: accounts_change_password_create
+      tags:
+      - accounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangePassword'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ChangePassword'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ChangePassword'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangePassword'
+          description: ''
+  /api/accounts/coaches/:
+    get:
+      operationId: accounts_coaches_retrieve
+      tags:
+      - accounts
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Coach'
+          description: ''
+  /api/accounts/login/:
+    post:
+      operationId: accounts_login_create
+      description: |-
+        Takes a set of user credentials and returns an access and refresh JSON web
+        token pair to prove the authentication of those credentials.
+      tags:
+      - accounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomTokenObtainPair'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CustomTokenObtainPair'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CustomTokenObtainPair'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomTokenObtainPair'
+          description: ''
+  /api/accounts/logout/:
+    post:
+      operationId: accounts_logout_create
+      tags:
+      - accounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '205':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogoutResponse'
+          description: ''
+  /api/accounts/password-reset/:
+    post:
+      operationId: accounts_password_reset_create
+      tags:
+      - accounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendOTPRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SendOTPRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SendOTPRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendOTPResponse'
+          description: ''
+  /api/accounts/password-reset-confirm/:
+    post:
+      operationId: accounts_password_reset_confirm_create
+      tags:
+      - accounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetPasswordConfirm'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ResetPasswordConfirm'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ResetPasswordConfirm'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResetPasswordConfirm'
+          description: ''
+  /api/accounts/profile/:
+    get:
+      operationId: accounts_profile_retrieve
+      tags:
+      - accounts
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/accounts/profile/update/:
+    patch:
+      operationId: accounts_profile_update_partial_update
+      tags:
+      - accounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUser'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUser'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUser'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/accounts/register/:
+    post:
+      operationId: accounts_register_create
+      tags:
+      - accounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Register'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Register'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Register'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Register'
+          description: ''
+  /api/accounts/token/refresh/:
+    post:
+      operationId: accounts_token_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - accounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+  /api/accounts/verify-email/:
+    post:
+      operationId: accounts_verify_email_create
+      tags:
+      - accounts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyEmail'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VerifyEmail'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VerifyEmail'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerifyEmail'
+          description: ''
+  /api/ai_assistant/:
+    get:
+      operationId: ai_assistant_retrieve
+      tags:
+      - ai_assistant
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AIConversation'
+          description: ''
+    post:
+      operationId: ai_assistant_create
+      tags:
+      - ai_assistant
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserInput'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserInput'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserInput'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserInput'
+          description: ''
+  /api/articles/:
+    get:
+      operationId: articles_list
+      description: API view to list all articles
+      tags:
+      - articles
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Article'
+          description: ''
+  /api/articles/{id}/:
+    get:
+      operationId: articles_retrieve
+      description: API view to retrieve an article by ID
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - articles
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Article'
+          description: ''
+  /api/articles/create/:
+    post:
+      operationId: articles_create_create
+      description: API view to create a new article
+      tags:
+      - articles
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Article'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Article'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Article'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Article'
+          description: ''
+  /api/gallery/:
+    get:
+      operationId: gallery_list
+      parameters:
+      - in: query
+        name: date
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: end_date
+        schema:
+          type: string
+          format: date
+      - in: query
+        name: image_type
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: start_date
+        schema:
+          type: string
+          format: date
+      tags:
+      - gallery
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedGalleryImageList'
+          description: ''
+    post:
+      operationId: gallery_create
+      tags:
+      - gallery
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GalleryImage'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/GalleryImage'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/GalleryImage'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GalleryImage'
+          description: ''
+  /api/gallery/{id}/:
+    get:
+      operationId: gallery_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - gallery
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GalleryImage'
+          description: ''
+  /api/gallery/dashboard/:
+    get:
+      operationId: gallery_dashboard_retrieve
+      description: API view to provide dashboard statistics for the user's gallery
+        images.
+      tags:
+      - gallery
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GalleryDashboardResponse'
+          description: ''
+  /api/nutrition/:
+    get:
+      operationId: nutrition_retrieve
+      description: A simple view to confirm the Nutrition app is reachable.
+      tags:
+      - nutrition
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NutritionHomeResponse'
+          description: ''
+  /api/nutrition/upload-meal/:
+    post:
+      operationId: nutrition_upload_meal_create
+      description: API view to handle user uploaded meal images.
+      tags:
+      - nutrition
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                image:
+                  type: string
+                  format: binary
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserUploadedMealResponse'
+          description: ''
+  /api/utils/contact-options/:
+    get:
+      operationId: utils_contact_options_list
+      tags:
+      - utils
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ContactOption'
+          description: ''
+  /api/utils/faqs/:
+    get:
+      operationId: utils_faqs_list
+      parameters:
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: type
+        schema:
+          type: string
+          enum:
+          - account
+          - general
+          - service
+        description: |-
+          * `general` - General
+          * `account` - Account
+          * `service` - Service
+      tags:
+      - utils
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FAQ'
+          description: ''
+  /api/utils/favorites/:
+    get:
+      operationId: utils_favorites_list
+      tags:
+      - utils
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Favorite'
+          description: ''
+  /api/utils/favorites/toggle/:
+    post:
+      operationId: utils_favorites_toggle_create
+      tags:
+      - utils
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Favorite'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Favorite'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Favorite'
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Favorite'
+          description: ''
+  /api/utils/notifications/:
+    get:
+      operationId: utils_notifications_list
+      parameters:
+      - in: query
+        name: created_at
+        schema:
+          type: string
+          format: date-time
+      - in: query
+        name: notification_type
+        schema:
+          type: string
+          enum:
+          - reminder
+          - system
+        description: |-
+          * `reminder` - Reminders
+          * `system` - System Alerts
+      tags:
+      - utils
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Notification'
+          description: ''
+  /api/utils/notifications/{id}/:
+    post:
+      operationId: utils_notifications_create
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - utils
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Notification'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Notification'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Notification'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+          description: ''
+  /api/utils/notifications/mark-all-read/:
+    post:
+      operationId: utils_notifications_mark_all_read_create
+      tags:
+      - utils
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarkAllNotificationsReadResponse'
+          description: ''
+  /api/utils/search/:
+    get:
+      operationId: utils_search_retrieve
+      parameters:
+      - in: query
+        name: q
+        schema:
+          type: string
+        description: Search query
+      tags:
+      - utils
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResultsResponse'
+          description: ''
+  /api/workouts/:
+    get:
+      operationId: workouts_list
+      tags:
+      - workouts
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UserWorkoutList'
+          description: ''
+  /api/workouts/{id}/:
+    get:
+      operationId: workouts_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - workouts
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserWorkout'
+          description: ''
+  /api/workouts/activities/:
+    get:
+      operationId: workouts_activities_list
+      description: List all activities for the authenticated user.
+      tags:
+      - workouts
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Activity'
+          description: ''
+  /api/workouts/generate-workouts/:
+    get:
+      operationId: workouts_generate_workouts_retrieve
+      description: Test endpoint to generate workouts for the current user
+      summary: Test endpoint for workout generation
+      tags:
+      - Testing
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TestResponse'
+          description: ''
+    post:
+      operationId: workouts_generate_workouts_create
+      description: Test endpoint to generate workouts for the current user
+      summary: Test endpoint for workout generation
+      tags:
+      - Testing
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TestResponse'
+          description: ''
+  /api/workouts/track-progress/:
+    get:
+      operationId: workouts_track_progress_retrieve
+      description: Get the current workout progress for a specific workout for today's
+        session.
+      summary: Get workout progress
+      parameters:
+      - in: query
+        name: user_workout_id
+        schema:
+          type: integer
+        description: ID of the user workout to get progress for
+        required: true
+        examples:
+          ExampleWorkoutID:
+            value: 1
+            summary: Example workout ID
+      tags:
+      - workouts
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  workout_progress:
+                    type: object
+                  workout_name:
+                    type: string
+                    example: Morning Strength Training
+                  total_exercises:
+                    type: integer
+                    example: 5
+                  completed_exercises:
+                    type: integer
+                    example: 2
+                  completion_percentage:
+                    type: number
+                    example: 40.0
+                  all_completed:
+                    type: boolean
+                    example: false
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: user_workout_id is required
+          description: ''
+    post:
+      operationId: workouts_track_progress_create
+      description: Mark an exercise in a workout as completed. Tracks progress and
+        creates an Activity record when all exercises are completed.
+      summary: Mark exercise as completed
+      tags:
+      - workouts
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompleteExercise'
+            examples:
+              CompleteExerciseExample:
+                value:
+                  user_workout_id: 1
+                  user_exercise_id: 5
+                  actual_sets: 3
+                  actual_reps: 12
+                  actual_duration: 300
+                  notes: Felt great, increased weight
+                summary: Complete Exercise Example
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CompleteExercise'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CompleteExercise'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Exercise marked as completed
+                  workout_progress:
+                    type: object
+                  all_completed:
+                    type: boolean
+                    example: false
+                  activity_created:
+                    type: boolean
+                    example: false
+                  activity:
+                    type: object
+                    nullable: true
+                  completion_percentage:
+                    type: number
+                    example: 33.33
+                  completed_exercises:
+                    type: integer
+                    example: 1
+                  total_exercises:
+                    type: integer
+                    example: 3
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Invalid input
+          description: ''
+components:
+  schemas:
+    AIConversation:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        user:
+          type: string
+          format: uuid
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/AIConversationDetail'
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - messages
+      - user
+    AIConversationDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        sender:
+          $ref: '#/components/schemas/SenderEnum'
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - id
+      - message
+      - sender
+      - timestamp
+    Activity:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          description: Name of the activity
+          maxLength: 255
+        duration:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+          description: Duration in minutes
+        calories:
+          type: number
+          format: double
+          description: Calories burned during the activity
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        user:
+          type: string
+          format: uuid
+          readOnly: true
+      required:
+      - calories
+      - created_at
+      - duration
+      - id
+      - name
+      - user
+    Article:
+      type: object
+      description: Serializer for Article model
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          maxLength: 255
+        content:
+          type: string
+        media_url:
+          type: string
+          format: uri
+          nullable: true
+          maxLength: 255
+        category:
+          $ref: '#/components/schemas/CategoryEnum'
+        created_by:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - category
+      - content
+      - created_at
+      - created_by
+      - id
+      - title
+    BlankEnum:
+      enum:
+      - ''
+    CategoryEnum:
+      enum:
+      - fitness
+      - nutrition
+      - wellness
+      - motivation
+      - tips
+      type: string
+      description: |-
+        * `fitness` - Fitness
+        * `nutrition` - Nutrition
+        * `wellness` - Wellness
+        * `motivation` - Motivation
+        * `tips` - Tips
+    ChangePassword:
+      type: object
+      properties:
+        old_password:
+          type: string
+          writeOnly: true
+        new_password:
+          type: string
+          writeOnly: true
+        confirm_password:
+          type: string
+          writeOnly: true
+      required:
+      - confirm_password
+      - new_password
+      - old_password
+    Coach:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 150
+        behavior:
+          type: string
+          nullable: true
+      required:
+      - id
+      - name
+    CompleteExercise:
+      type: object
+      description: Serializer for marking an exercise as completed in a workout
+      properties:
+        user_workout_id:
+          type: integer
+        user_exercise_id:
+          type: integer
+        actual_sets:
+          type: integer
+          nullable: true
+        actual_reps:
+          type: integer
+          nullable: true
+        actual_duration:
+          type: integer
+          nullable: true
+          description: Actual duration in seconds
+        notes:
+          type: string
+      required:
+      - user_exercise_id
+      - user_workout_id
+    ContactOption:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        icon:
+          type: string
+          format: uri
+        link:
+          type: string
+          format: uri
+          maxLength: 200
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - icon
+      - id
+      - link
+      - name
+      - updated_at
+    CustomTokenObtainPair:
+      type: object
+      properties:
+        email:
+          type: string
+          writeOnly: true
+        password:
+          type: string
+          writeOnly: true
+      required:
+      - email
+      - password
+    DifficultyEnum:
+      enum:
+      - beginner
+      - intermediate
+      - advanced
+      type: string
+      description: |-
+        * `beginner` - Beginner
+        * `intermediate` - Intermediate
+        * `advanced` - Advanced
+    FAQ:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        question:
+          type: string
+          maxLength: 255
+        answer:
+          type: string
+        type:
+          $ref: '#/components/schemas/TypeEnum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - answer
+      - created_at
+      - id
+      - question
+      - type
+      - updated_at
+    Favorite:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        content_type:
+          type: string
+          writeOnly: true
+        object_id:
+          type: integer
+          writeOnly: true
+        type:
+          type: string
+          description: Return the type of favorited object (e.g. 'workout', 'article').
+          readOnly: true
+        object:
+          type: object
+          additionalProperties: {}
+          description: Return serialized representation of the favorited object.
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - object
+      - type
+    GalleryDashboardResponse:
+      type: object
+      properties:
+        total_images:
+          type: integer
+        images_last_week:
+          type: integer
+        consecutive_days_streak:
+          type: integer
+      required:
+      - consecutive_days_streak
+      - images_last_week
+      - total_images
+    GalleryImage:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        user:
+          type: string
+          format: uuid
+          readOnly: true
+        image:
+          type: string
+          format: uri
+        image_type:
+          $ref: '#/components/schemas/ImageTypeEnum'
+        ai_detected:
+          type: boolean
+          description: AI body composition analysis
+        ai_summary:
+          type: string
+          nullable: true
+          description: AI-generated summary of body composition
+        uploaded_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - id
+      - image
+      - image_type
+      - uploaded_at
+      - user
+    GenderEnum:
+      enum:
+      - male
+      - female
+      - other
+      type: string
+      description: |-
+        * `male` - Male
+        * `female` - Female
+        * `other` - Other
+    GoalEnum:
+      enum:
+      - weight_loss
+      - try_ai_coach
+      - gain_endurance
+      type: string
+      description: |-
+        * `weight_loss` - Weight Loss
+        * `try_ai_coach` - Try AI Coach
+        * `gain_endurance` - Gain Endurance
+    ImageTypeEnum:
+      enum:
+      - front
+      - side
+      - back
+      type: string
+      description: |-
+        * `front` - Front
+        * `side` - Side
+        * `back` - Back
+    LogoutRequest:
+      type: object
+      properties:
+        refresh_token:
+          type: string
+      required:
+      - refresh_token
+    LogoutResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+      - message
+    MarkAllNotificationsReadResponse:
+      type: object
+      properties:
+        detail:
+          type: string
+      required:
+      - detail
+    Notification:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        user:
+          type: string
+          format: uuid
+          readOnly: true
+        title:
+          type: string
+          maxLength: 150
+        message:
+          type: string
+        notification_type:
+          $ref: '#/components/schemas/NotificationTypeEnum'
+        is_read:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - message
+      - notification_type
+      - title
+      - user
+    NotificationTypeEnum:
+      enum:
+      - reminder
+      - system
+      type: string
+      description: |-
+        * `reminder` - Reminders
+        * `system` - System Alerts
+    NullEnum:
+      enum:
+      - null
+    NutritionHomeResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        total_meals:
+          type: integer
+        streak:
+          type: integer
+        upload_dates:
+          type: array
+          items:
+            type: string
+            format: date
+      required:
+      - message
+      - streak
+      - total_meals
+      - upload_dates
+    PaginatedGalleryImageList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/GalleryImage'
+    PatchedUser:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        email:
+          type: string
+          format: email
+          maxLength: 255
+        phone_number:
+          type: string
+          nullable: true
+          maxLength: 20
+        avatar:
+          type: string
+          format: uri
+          nullable: true
+        first_name:
+          type: string
+          nullable: true
+          maxLength: 150
+        last_name:
+          type: string
+          nullable: true
+          maxLength: 150
+        gender:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/GenderEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        age:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+          nullable: true
+        date_of_birth:
+          type: string
+          format: date
+          nullable: true
+        height_cm:
+          type: number
+          format: double
+          nullable: true
+        weight_kg:
+          type: number
+          format: double
+          nullable: true
+        goal:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/GoalEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        activity_level:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/DifficultyEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        coach_type:
+          type: integer
+          nullable: true
+        preferred_workout_time:
+          type: string
+          format: time
+          nullable: true
+          description: Preferred time of day for workouts
+        preferred_workout_days:
+          type: array
+          items:
+            $ref: '#/components/schemas/WeekDay'
+          readOnly: true
+        preferred_workout_day_ids:
+          type: array
+          items:
+            type: integer
+            writeOnly: true
+          writeOnly: true
+        joined_at:
+          type: string
+          format: date-time
+          readOnly: true
+    Register:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        email:
+          type: string
+          format: email
+          maxLength: 255
+        phone_number:
+          type: string
+          nullable: true
+          maxLength: 20
+        password:
+          type: string
+          maxLength: 128
+        password2:
+          type: string
+          writeOnly: true
+      required:
+      - email
+      - id
+      - password
+      - password2
+    ResetPasswordConfirm:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        otp:
+          type: string
+          maxLength: 6
+        new_password:
+          type: string
+          writeOnly: true
+      required:
+      - email
+      - new_password
+      - otp
+    SearchResultsResponse:
+      type: object
+      properties:
+        workouts:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserWorkoutList'
+      required:
+      - workouts
+    SendOTPRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        purpose:
+          type: string
+      required:
+      - email
+      - purpose
+    SendOTPResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+      - message
+    SenderEnum:
+      enum:
+      - user
+      - ai
+      type: string
+      description: |-
+        * `user` - User
+        * `ai` - AI Assistant
+    TestResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+      - message
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+      required:
+      - access
+      - refresh
+    TypeEnum:
+      enum:
+      - general
+      - account
+      - service
+      type: string
+      description: |-
+        * `general` - General
+        * `account` - Account
+        * `service` - Service
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        email:
+          type: string
+          format: email
+          maxLength: 255
+        phone_number:
+          type: string
+          nullable: true
+          maxLength: 20
+        avatar:
+          type: string
+          format: uri
+          nullable: true
+        first_name:
+          type: string
+          nullable: true
+          maxLength: 150
+        last_name:
+          type: string
+          nullable: true
+          maxLength: 150
+        gender:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/GenderEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        age:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+          nullable: true
+        date_of_birth:
+          type: string
+          format: date
+          nullable: true
+        height_cm:
+          type: number
+          format: double
+          nullable: true
+        weight_kg:
+          type: number
+          format: double
+          nullable: true
+        goal:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/GoalEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        activity_level:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/DifficultyEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+        coach_type:
+          type: integer
+          nullable: true
+        preferred_workout_time:
+          type: string
+          format: time
+          nullable: true
+          description: Preferred time of day for workouts
+        preferred_workout_days:
+          type: array
+          items:
+            $ref: '#/components/schemas/WeekDay'
+          readOnly: true
+        preferred_workout_day_ids:
+          type: array
+          items:
+            type: integer
+            writeOnly: true
+          writeOnly: true
+        joined_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - email
+      - id
+      - joined_at
+      - preferred_workout_day_ids
+      - preferred_workout_days
+    UserExercise:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        exercise_name:
+          type: string
+          readOnly: true
+        exercise_description:
+          type: string
+          readOnly: true
+        video_url:
+          type: string
+          readOnly: true
+        difficulty_level:
+          type: string
+          readOnly: true
+        sets:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+          description: Number of sets
+        reps:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+          description: Number of repetitions per set
+        duration_seconds:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+          nullable: true
+          description: Duration in seconds (for timed exercises)
+        rest_time:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+          description: Rest time in seconds between sets
+        order:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+          default: 0
+          description: Order of exercise in workout
+        notes:
+          type: string
+          nullable: true
+          description: AI-generated or custom notes for this exercise
+        user_workout:
+          type: integer
+        exercise:
+          type: integer
+      required:
+      - difficulty_level
+      - exercise
+      - exercise_description
+      - exercise_name
+      - id
+      - user_workout
+      - video_url
+    UserInput:
+      type: object
+      properties:
+        user_input:
+          type: string
+          maxLength: 2000
+      required:
+      - user_input
+    UserUploadedMealResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        meal_name:
+          type: string
+        estimated_calories:
+          type: number
+          format: double
+        ai_analysis:
+          type: string
+        macronutrients: {}
+        micronutrients: {}
+        improvements:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        message:
+          type: string
+      required:
+      - ai_analysis
+      - created_at
+      - estimated_calories
+      - id
+      - improvements
+      - macronutrients
+      - meal_name
+      - message
+      - micronutrients
+    UserWorkout:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+          nullable: true
+        estimated_duration:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+          nullable: true
+          description: Estimated duration in minutes
+        estimated_calories:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+          nullable: true
+          description: Estimated calories to burn
+        user_exercises:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserExercise'
+        exercise_count:
+          type: integer
+          readOnly: true
+      required:
+      - exercise_count
+      - id
+      - user_exercises
+    UserWorkoutList:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+          nullable: true
+        estimated_duration:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+          nullable: true
+          description: Estimated duration in minutes
+        estimated_calories:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+          nullable: true
+          description: Estimated calories to burn
+        exercise_count:
+          type: integer
+          readOnly: true
+        difficulty:
+          nullable: true
+          oneOf:
+          - $ref: '#/components/schemas/DifficultyEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+          - $ref: '#/components/schemas/NullEnum'
+      required:
+      - exercise_count
+      - id
+    VerifyEmail:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        otp:
+          type: string
+          maxLength: 6
+      required:
+      - email
+      - otp
+    WeekDay:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 10
+      required:
+      - id
+      - name
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

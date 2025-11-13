@@ -230,4 +230,15 @@ SIMPLE_JWT = {
     'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
 }
 
+# DRF Spectacular Settings
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'GymGenius API',
+    'DESCRIPTION': 'API documentation for GymGenius fitness application',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'ENUM_NAME_OVERRIDES': {
+        'DifficultyEnum': 'workouts.models.Exercise.DIFFICULTY_CHOICES',
+    },
+}
+
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
