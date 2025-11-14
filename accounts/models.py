@@ -67,6 +67,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     preferred_workout_time = models.TimeField(blank=True, null=True, help_text="Preferred time of day for workouts")
     preferred_workout_days = models.ManyToManyField(WeekDay, blank=True)
     
+    daily_calorie_target = models.FloatField(default=0)
+
     joined_at = models.DateTimeField(auto_now_add=True)
     last_login = models.DateTimeField(blank=True, null=True)
     

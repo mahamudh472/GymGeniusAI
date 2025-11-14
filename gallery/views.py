@@ -65,19 +65,25 @@ class GalleryDashboardView(GenericAPIView):
         }
     )
     def get(self, request, *args, **kwargs):
-        user = request.user
-        total_images = UserGallery.objects.filter(user=user).count()
-        
-        one_week_ago = timezone.now() - timedelta(days=7)
-        images_last_week = UserGallery.objects.filter(user=user, uploaded_at__gte=one_week_ago).count()
-        
-        streak = calculate_upload_streak(user)
+        try:
+            user = request.user
+            total_images = UserGallery.objects.filter(user=user).count()
+            
+            one_week_ago = timezone.now() - timedelta(days=7)
+            images_last_week = UserGallery.objects.filter(user=user, uploaded_at__gte=one_week_ago).count()
+            
+            streak = calculate_upload_streak(user)
 
-        return Response({
-            "total_images": total_images,
-            "images_last_week": images_last_week,
-            "consecutive_days_streak": streak,
-        })
+            return Response({
+                "total_images": total_images,
+                "images_last_week": images_last_week,
+                "consecutive_days_streak": streak,
+            })
+        except Exception as e:
+            return Response({
+                "error": "Failed to retrieve gallery statistics.",
+                "detail": str(e)
+            }, status=500)
 
 
 class GalleryImageList(ListCreateAPIView):
@@ -90,6 +96,15 @@ class GalleryImageList(ListCreateAPIView):
     
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+    
+    def create(self, request, *args, **kwargs):
+        try:
+            return super().create(request, *args, **kwargs)
+        except Exception as e:
+            return Response({
+                "error": "Failed to upload image.",
+                "detail": str(e)
+            }, status=500)
 
 class GalleryImageFilter(django_filters.FilterSet):
     date = django_filters.DateFilter(field_name='uploaded_at', lookup_expr='date')

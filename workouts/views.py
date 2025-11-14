@@ -25,6 +25,26 @@ class UserWorkoutListAPIView(generics.ListAPIView):
     serializer_class = UserWorkoutListSerializer
     permission_classes = [IsActiveUser]
 
+    @extend_schema(
+        summary="List user workouts",
+        description="Get a list of all workouts for the authenticated user. Can be filtered by difficulty level.",
+        parameters=[
+            OpenApiParameter(
+                name='difficulty',
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description='Filter workouts by difficulty level',
+                enum=['Beginner', 'Intermediate', 'Advanced']
+            )
+        ],
+        responses={
+            200: UserWorkoutListSerializer(many=True),
+        }
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
     def get_queryset(self):
         queryset = self.queryset.filter(user=self.request.user).prefetch_related('user_exercises__exercise')
         difficulty = self.request.query_params.get('difficulty', None)
@@ -94,84 +114,90 @@ class TrackWorkoutProgressView(APIView):
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
-        user = request.user
-        user_workout_id = serializer.validated_data['user_workout_id']
-        user_exercise_id = serializer.validated_data['user_exercise_id']
-        
-        # Validate that the workout belongs to the user
-        user_workout = get_object_or_404(UserWorkout, id=user_workout_id, user=user)
-        
-        # Validate that the exercise belongs to the workout
-        user_exercise = get_object_or_404(UserExercise, id=user_exercise_id, user_workout=user_workout)
-        
-        # Get or create WorkoutProgress for today's session
-        today = timezone.now().date()
-        workout_progress, created = WorkoutProgress.objects.filter(
-            user_workout=user_workout,
-            completed_at__date=today
-        ).first(), False
-        
-        if not workout_progress:
-            workout_progress = WorkoutProgress.objects.create(
+        try:
+            user = request.user
+            user_workout_id = serializer.validated_data['user_workout_id']
+            user_exercise_id = serializer.validated_data['user_exercise_id']
+            
+            # Validate that the workout belongs to the user
+            user_workout = get_object_or_404(UserWorkout, id=user_workout_id, user=user)
+            
+            # Validate that the exercise belongs to the workout
+            user_exercise = get_object_or_404(UserExercise, id=user_exercise_id, user_workout=user_workout)
+            
+            # Get or create WorkoutProgress for today's session
+            today = timezone.now().date()
+            workout_progress, created = WorkoutProgress.objects.filter(
                 user_workout=user_workout,
-                completed_exercises=[],
-                completion_percentage=0.0
-            )
-            created = True
-        
-        # Add the exercise to completed list if not already there
-        if user_exercise_id not in workout_progress.completed_exercises:
-            workout_progress.completed_exercises.append(user_exercise_id)
+                completed_at__date=today
+            ).first(), False
             
-            # Calculate completion percentage
-            total_exercises = user_workout.user_exercises.count()
-            completed_count = len(workout_progress.completed_exercises)
-            workout_progress.completion_percentage = (completed_count / total_exercises) * 100 if total_exercises > 0 else 0
+            if not workout_progress:
+                workout_progress = WorkoutProgress.objects.create(
+                    user_workout=user_workout,
+                    completed_exercises=[],
+                    completion_percentage=0.0
+                )
+                created = True
             
-            # Save additional notes if provided
-            if serializer.validated_data.get('notes'):
-                existing_notes = workout_progress.notes or ""
-                workout_progress.notes = f"{existing_notes}\nExercise {user_exercise.exercise.name}: {serializer.validated_data['notes']}"
+            # Add the exercise to completed list if not already there
+            if user_exercise_id not in workout_progress.completed_exercises:
+                workout_progress.completed_exercises.append(user_exercise_id)
+                
+                # Calculate completion percentage
+                total_exercises = user_workout.user_exercises.count()
+                completed_count = len(workout_progress.completed_exercises)
+                workout_progress.completion_percentage = (completed_count / total_exercises) * 100 if total_exercises > 0 else 0
+                
+                # Save additional notes if provided
+                if serializer.validated_data.get('notes'):
+                    existing_notes = workout_progress.notes or ""
+                    workout_progress.notes = f"{existing_notes}\nExercise {user_exercise.exercise.name}: {serializer.validated_data['notes']}"
+                
+                workout_progress.save()
             
-            workout_progress.save()
-        
-        # Check if all exercises are completed
-        all_completed = workout_progress.completion_percentage >= 100.0
-        activity_created = False
-        activity_data = None
-        
-        if all_completed:
-            # Calculate actual duration and calories
-            actual_duration = user_workout.estimated_duration or 0
-            actual_calories = user_workout.estimated_calories or 0.0
+            # Check if all exercises are completed
+            all_completed = workout_progress.completion_percentage >= 100.0
+            activity_created = False
+            activity_data = None
             
-            # Update workout progress with actual metrics
-            if not workout_progress.actual_duration:
-                workout_progress.actual_duration = actual_duration
-            if not workout_progress.actual_calories:
-                workout_progress.actual_calories = float(actual_calories)
-            workout_progress.save()
+            if all_completed:
+                # Calculate actual duration and calories
+                actual_duration = user_workout.estimated_duration or 0
+                actual_calories = user_workout.estimated_calories or 0.0
+                
+                # Update workout progress with actual metrics
+                if not workout_progress.actual_duration:
+                    workout_progress.actual_duration = actual_duration
+                if not workout_progress.actual_calories:
+                    workout_progress.actual_calories = float(actual_calories)
+                workout_progress.save()
+                
+                # Create Activity record
+                activity = Activity.objects.create(
+                    user=user,
+                    name=user_workout.name,
+                    duration=actual_duration,
+                    calories=float(actual_calories)
+                )
+                activity_created = True
+                activity_data = ActivitySerializer(activity).data
             
-            # Create Activity record
-            activity = Activity.objects.create(
-                user=user,
-                name=user_workout.name,
-                duration=actual_duration,
-                calories=float(actual_calories)
-            )
-            activity_created = True
-            activity_data = ActivitySerializer(activity).data
-        
-        return Response({
-            'message': 'Exercise marked as completed',
-            'workout_progress': WorkoutProgressSerializer(workout_progress).data,
-            'all_completed': all_completed,
-            'activity_created': activity_created,
-            'activity': activity_data,
-            'completion_percentage': workout_progress.completion_percentage,
-            'completed_exercises': len(workout_progress.completed_exercises),
-            'total_exercises': user_workout.user_exercises.count()
-        }, status=status.HTTP_200_OK)
+            return Response({
+                'message': 'Exercise marked as completed',
+                'workout_progress': WorkoutProgressSerializer(workout_progress).data,
+                'all_completed': all_completed,
+                'activity_created': activity_created,
+                'activity': activity_data,
+                'completion_percentage': workout_progress.completion_percentage,
+                'completed_exercises': len(workout_progress.completed_exercises),
+                'total_exercises': user_workout.user_exercises.count()
+            }, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({
+                'error': 'Failed to track workout progress.',
+                'detail': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     @extend_schema(
         summary="Get workout progress",
@@ -220,33 +246,39 @@ class TrackWorkoutProgressView(APIView):
                 'error': 'user_workout_id is required'
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        user_workout = get_object_or_404(UserWorkout, id=user_workout_id, user=request.user)
-        
-        # Get today's progress
-        today = timezone.now().date()
-        workout_progress = WorkoutProgress.objects.filter(
-            user_workout=user_workout,
-            completed_at__date=today
-        ).first()
-        
-        if not workout_progress:
+        try:
+            user_workout = get_object_or_404(UserWorkout, id=user_workout_id, user=request.user)
+            
+            # Get today's progress
+            today = timezone.now().date()
+            workout_progress = WorkoutProgress.objects.filter(
+                user_workout=user_workout,
+                completed_at__date=today
+            ).first()
+            
+            if not workout_progress:
+                return Response({
+                    'message': 'No progress recorded for today',
+                    'workout_id': user_workout_id,
+                    'workout_name': user_workout.name,
+                    'total_exercises': user_workout.user_exercises.count(),
+                    'completed_exercises': 0,
+                    'completion_percentage': 0.0
+                }, status=status.HTTP_200_OK)
+            
             return Response({
-                'message': 'No progress recorded for today',
-                'workout_id': user_workout_id,
+                'workout_progress': WorkoutProgressSerializer(workout_progress).data,
                 'workout_name': user_workout.name,
                 'total_exercises': user_workout.user_exercises.count(),
-                'completed_exercises': 0,
-                'completion_percentage': 0.0
+                'completed_exercises': len(workout_progress.completed_exercises),
+                'completion_percentage': workout_progress.completion_percentage,
+                'all_completed': workout_progress.completion_percentage >= 100.0
             }, status=status.HTTP_200_OK)
-        
-        return Response({
-            'workout_progress': WorkoutProgressSerializer(workout_progress).data,
-            'workout_name': user_workout.name,
-            'total_exercises': user_workout.user_exercises.count(),
-            'completed_exercises': len(workout_progress.completed_exercises),
-            'completion_percentage': workout_progress.completion_percentage,
-            'all_completed': workout_progress.completion_percentage >= 100.0
-        }, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({
+                'error': 'Failed to retrieve workout progress.',
+                'detail': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class ActivityListView(generics.ListAPIView):
@@ -393,54 +425,75 @@ class ToggleCustomRoutineExerciseView(APIView):
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
-        exercise_id = serializer.validated_data['exercise_id']
-        
-        # Validate that the exercise exists
-        exercise = get_object_or_404(Exercise, id=exercise_id)
-        
-        # Get or create custom routine
-        custom_routine, created = CustomRoutine.objects.get_or_create(
-            user=request.user,
-            defaults={'name': 'My Custom Routine'}
-        )
-        
-        # Check if exercise already exists in custom routine
-        existing_exercise = CustomRoutineExercise.objects.filter(
-            custom_routine=custom_routine,
-            exercise=exercise
-        ).first()
-        
-        if existing_exercise:
-            # Remove the exercise
-            existing_exercise.delete()
-            action = 'removed'
-            message = f'Exercise "{exercise.name}" removed from custom routine'
-            exercise_data = None
-        else:
-            # Add the exercise
-            # Get the next order number
-            max_order = CustomRoutineExercise.objects.filter(
-                custom_routine=custom_routine
-            ).aggregate(max_order=django_models.Max('order'))['max_order']
-            next_order = (max_order or 0) + 1
+        try:
+            exercise_id = serializer.validated_data['exercise_id']
             
-            new_exercise = CustomRoutineExercise.objects.create(
-                custom_routine=custom_routine,
-                exercise=exercise,
-                order=next_order
+            # Validate that the exercise exists
+            exercise = get_object_or_404(Exercise, id=exercise_id)
+            
+            # Get or create custom routine
+            custom_routine, created = CustomRoutine.objects.get_or_create(
+                user=request.user,
+                defaults={'name': 'My Custom Routine'}
             )
-            action = 'added'
-            message = f'Exercise "{exercise.name}" added to custom routine'
-            exercise_data = CustomRoutineExerciseSerializer(new_exercise).data
-        
-        # Return updated custom routine
-        custom_routine.refresh_from_db()
-        return Response({
-            'message': message,
-            'action': action,
-            'exercise': exercise_data,
-            'custom_routine': CustomRoutineSerializer(custom_routine).data
-        }, status=status.HTTP_200_OK)
+            
+            # Check if exercise already exists in custom routine
+            existing_exercise = CustomRoutineExercise.objects.filter(
+                custom_routine=custom_routine,
+                exercise=exercise
+            ).first()
+            
+            if existing_exercise:
+                # Store the order of the deleted exercise
+                deleted_order = existing_exercise.order
+                
+                # Remove the exercise
+                existing_exercise.delete()
+                
+                # Reorder remaining exercises to fill the gap
+                remaining_exercises = CustomRoutineExercise.objects.filter(
+                    custom_routine=custom_routine,
+                    order__gt=deleted_order
+                ).order_by('order')
+                
+                # Decrease the order of all exercises after the deleted one
+                for exercise_to_update in remaining_exercises:
+                    exercise_to_update.order -= 1
+                    exercise_to_update.save()
+                
+                action = 'removed'
+                message = f'Exercise "{exercise.name}" removed from custom routine'
+                exercise_data = None
+            else:
+                # Add the exercise
+                # Get the next order number
+                max_order = CustomRoutineExercise.objects.filter(
+                    custom_routine=custom_routine
+                ).aggregate(max_order=django_models.Max('order'))['max_order']
+                next_order = (max_order or 0) + 1
+                
+                new_exercise = CustomRoutineExercise.objects.create(
+                    custom_routine=custom_routine,
+                    exercise=exercise,
+                    order=next_order
+                )
+                action = 'added'
+                message = f'Exercise "{exercise.name}" added to custom routine'
+                exercise_data = CustomRoutineExerciseSerializer(new_exercise).data
+            
+            # Return updated custom routine
+            custom_routine.refresh_from_db()
+            return Response({
+                'message': message,
+                'action': action,
+                'exercise': exercise_data,
+                'custom_routine': CustomRoutineSerializer(custom_routine).data
+            }, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({
+                'error': 'Failed to toggle exercise in custom routine.',
+                'detail': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class CustomRoutineExercisesListView(generics.ListAPIView):
@@ -523,52 +576,58 @@ class CompleteCustomRoutineExerciseView(APIView):
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
-        user = request.user
-        custom_routine_exercise_id = serializer.validated_data['custom_routine_exercise_id']
-        
-        # Get the custom routine exercise and verify it belongs to the user
-        custom_routine_exercise = get_object_or_404(
-            CustomRoutineExercise,
-            id=custom_routine_exercise_id,
-            custom_routine__user=user
-        )
-        
-        # Calculate calories burned
-        actual_sets = serializer.validated_data['actual_sets']
-        actual_reps = serializer.validated_data.get('actual_reps')
-        
-        if actual_reps:
-            calories_burned = actual_sets * actual_reps * custom_routine_exercise.exercise.calories_per_rep
-        else:
-            # Use default reps if not provided
-            calories_burned = actual_sets * (custom_routine_exercise.reps or 10) * custom_routine_exercise.exercise.calories_per_rep
-        
-        # Create completion record
-        completion = CustomRoutineExerciseCompletion.objects.create(
-            user=user,
-            custom_routine_exercise=custom_routine_exercise,
-            actual_sets=actual_sets,
-            actual_reps=actual_reps,
-            actual_duration_seconds=serializer.validated_data.get('actual_duration_seconds'),
-            duration_minutes=serializer.validated_data['duration_minutes'],
-            calories_burned=calories_burned,
-            notes=serializer.validated_data.get('notes', ''),
-            difficulty_rating=serializer.validated_data.get('difficulty_rating')
-        )
-        
-        # Create Activity record
-        activity = Activity.objects.create(
-            user=user,
-            name=custom_routine_exercise.exercise.name,
-            duration=serializer.validated_data['duration_minutes'],
-            calories=float(calories_burned)
-        )
-        
-        return Response({
-            'message': 'Exercise completed successfully',
-            'completion': CustomRoutineExerciseCompletionSerializer(completion).data,
-            'activity': ActivitySerializer(activity).data
-        }, status=status.HTTP_200_OK)
+        try:
+            user = request.user
+            custom_routine_exercise_id = serializer.validated_data['custom_routine_exercise_id']
+            
+            # Get the custom routine exercise and verify it belongs to the user
+            custom_routine_exercise = get_object_or_404(
+                CustomRoutineExercise,
+                id=custom_routine_exercise_id,
+                custom_routine__user=user
+            )
+            
+            # Calculate calories burned
+            actual_sets = serializer.validated_data['actual_sets']
+            actual_reps = serializer.validated_data.get('actual_reps')
+            
+            if actual_reps:
+                calories_burned = actual_sets * actual_reps * custom_routine_exercise.exercise.calories_per_rep
+            else:
+                # Use default reps if not provided
+                calories_burned = actual_sets * (custom_routine_exercise.reps or 10) * custom_routine_exercise.exercise.calories_per_rep
+            
+            # Create completion record
+            completion = CustomRoutineExerciseCompletion.objects.create(
+                user=user,
+                custom_routine_exercise=custom_routine_exercise,
+                actual_sets=actual_sets,
+                actual_reps=actual_reps,
+                actual_duration_seconds=serializer.validated_data.get('actual_duration_seconds'),
+                duration_minutes=serializer.validated_data['duration_minutes'],
+                calories_burned=calories_burned,
+                notes=serializer.validated_data.get('notes', ''),
+                difficulty_rating=serializer.validated_data.get('difficulty_rating')
+            )
+            
+            # Create Activity record
+            activity = Activity.objects.create(
+                user=user,
+                name=custom_routine_exercise.exercise.name,
+                duration=serializer.validated_data['duration_minutes'],
+                calories=float(calories_burned)
+            )
+            
+            return Response({
+                'message': 'Exercise completed successfully',
+                'completion': CustomRoutineExerciseCompletionSerializer(completion).data,
+                'activity': ActivitySerializer(activity).data
+            }, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({
+                'error': 'Failed to complete custom routine exercise.',
+                'detail': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class CustomRoutineExerciseCompletionHistoryView(generics.ListAPIView):

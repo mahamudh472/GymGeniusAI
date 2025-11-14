@@ -11,11 +11,12 @@ urlpatterns = [
     path('logout/', views.LogoutView.as_view(), name='logout'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('register/', views.RegisterView.as_view(), name='register'),
-    path('verify-email/', views.VerifyEmailView.as_view(), name='verify_email'),
+    # path('verify-email/', views.VerifyEmailView.as_view(), name='verify_email'),
     path('password-reset/', views.SendOTPView.as_view(), name='password_reset'),
     path('password-reset-confirm/', views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     path('change-password/', views.ChangePasswordView.as_view(), name='change_password'),
     path('profile/', views.ProfileView.as_view(), name='profile'),
     path('profile/update/', views.UpdateProfileView.as_view(), name='profile_update'),
     path('coaches/', views.CoachListView.as_view(), name='coach_list'),
+    path('home/', views.HomeAPIView.as_view(), name='home_api'),
 ]

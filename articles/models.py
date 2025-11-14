@@ -27,3 +27,18 @@ class Article(models.Model):
     
     def __str__(self):
         return self.title
+
+class WorkoutVideo(models.Model):
+    video_url = models.URLField(max_length=255)
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True, null=True)
+    duration_minutes = models.IntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        db_table = 'workout_videos'
+        verbose_name = 'Workout Video'
+        verbose_name_plural = 'Workout Videos'
+    
+    def __str__(self):
+        return f"{self.title} ({self.duration_minutes} mins)"

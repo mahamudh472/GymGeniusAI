@@ -8,13 +8,19 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'GymGeniusAI.settings')
 from django.conf import settings
 
 
-o = OpenAI(api_key=settings.OPENAI_API_KEY)
+# Initialize OpenAI client only if API key is available
+o = None
+if settings.OPENAI_API_KEY:
+    o = OpenAI(api_key=settings.OPENAI_API_KEY)
 
 def analyze_user_image(base64_image):
     """
     Analyzes a user's full-body image and returns a short,
     fitness-relevant description (posture, symmetry, muscle tone, etc.).
     """
+    if not settings.OPENAI_API_KEY:
+        return "Image analysis unavailable: OpenAI API key not configured."
+    
     try:
         response = o.chat.completions.create(
             model="gpt-4o-mini",
@@ -50,12 +56,22 @@ def analyze_user_image(base64_image):
 
     except Exception as e:
         print("Error in analyze_user_image:", e)
-        return "Image analysis unavailable."
+        return "Image analysis unavailable due to service error."
     
 def analyze_single_meal(base64_image, meal_name="Meal"):
     """
     Analyze a single meal image for its nutritional profile and improvement tips.
     """
+    
+    if not settings.OPENAI_API_KEY:
+        return {
+            "meal_name": meal_name,
+            "estimated_calories": 0,
+            "macronutrients": {"protein_g": 0, "carbs_g": 0, "fat_g": 0},
+            "micronutrients": {"vitamin_c_mg": 0, "iron_mg": 0, "calcium_mg": 0},
+            "overall_health_insight": "Meal analysis unavailable: OpenAI API key not configured.",
+            "improvement_suggestion": "Please configure OpenAI API key to enable meal analysis."
+        }
 
     try:
         system_prompt = (
@@ -94,7 +110,15 @@ def analyze_single_meal(base64_image, meal_name="Meal"):
         return json.loads(response.choices[0].message.content)
 
     except Exception as e:
-        return {"error": str(e)}
+        return {
+            "meal_name": meal_name,
+            "estimated_calories": 0,
+            "macronutrients": {"protein_g": 0, "carbs_g": 0, "fat_g": 0},
+            "micronutrients": {"vitamin_c_mg": 0, "iron_mg": 0, "calcium_mg": 0},
+            "overall_health_insight": "Meal analysis unavailable due to service error.",
+            "improvement_suggestion": "Please try again later or contact support.",
+            "error": str(e)
+        }
 
 
 def fitness_coach_ai(
@@ -116,6 +140,12 @@ def fitness_coach_ai(
       - reply
       - image_summary
     """
+    if not settings.OPENAI_API_KEY:
+        return {
+            "reply": "AI Coach service is temporarily unavailable. OpenAI API key not configured.",
+            "image_summary": image_summary or "N/A"
+        }
+    
     try:
         chatbot_name = "FitCoach"
 
@@ -209,8 +239,9 @@ Conversation history for context:
     except Exception as e:
         print("Error in fitness_coach_ai:", e)
         return {
-            "reply": f"Error: {str(e)}",
-            "image_summary": image_summary or "N/A"
+            "reply": "Sorry, I'm having trouble processing your request right now. Please try again later.",
+            "image_summary": image_summary or "N/A",
+            "error": str(e) if settings.DEBUG else "Service temporarily unavailable"
         }
 
 

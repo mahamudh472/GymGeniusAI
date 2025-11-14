@@ -126,30 +126,36 @@ class SearchResultsView(generics.GenericAPIView):
         }
     )
     def get(self, request, *args, **kwargs):
-        query = request.query_params.get('q', '')
-        user = request.user
-        from django.db.models import Q
-        from workouts.models import UserWorkout
-        
-        # Search user's workouts
-        user_workouts = UserWorkout.objects.filter(
-            Q(user=user)
-            & (
-                Q(name__icontains=query)
-                | Q(description__icontains=query)
-                | Q(difficulty__icontains=query)
-                | Q(user_exercises__exercise__name__icontains=query)
-                | Q(user_exercises__exercise__muscle_group__icontains=query)
-            )
-        ).distinct()
-        
-        meals = Meal.objects.filter(user=request.user, title__icontains=query)
-        workout_serializer = UserWorkoutListSerializer(user_workouts, many=True)
-        # meal_serializer = MealSerializer(meals, many=True)
-        return Response({
-            "workouts": workout_serializer.data,
-            # "meals": meal_serializer.data
-        }, status=status.HTTP_200_OK)
+        try:
+            query = request.query_params.get('q', '')
+            user = request.user
+            from django.db.models import Q
+            from workouts.models import UserWorkout
+            
+            # Search user's workouts
+            user_workouts = UserWorkout.objects.filter(
+                Q(user=user)
+                & (
+                    Q(name__icontains=query)
+                    | Q(description__icontains=query)
+                    | Q(difficulty__icontains=query)
+                    | Q(user_exercises__exercise__name__icontains=query)
+                    | Q(user_exercises__exercise__muscle_group__icontains=query)
+                )
+            ).distinct()
+            
+            meals = Meal.objects.filter(user=request.user, title__icontains=query)
+            workout_serializer = UserWorkoutListSerializer(user_workouts, many=True)
+            # meal_serializer = MealSerializer(meals, many=True)
+            return Response({
+                "workouts": workout_serializer.data,
+                # "meals": meal_serializer.data
+            }, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({
+                "error": "Failed to search.",
+                "detail": str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class FavoriteListView(generics.ListAPIView):
     serializer_class = FavoriteSerializer

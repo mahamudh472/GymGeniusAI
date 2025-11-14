@@ -25,17 +25,42 @@ class ConversationMessageView(GenericAPIView):
         input_serializer = UserInputSerializer(data=request.data)
         input_serializer.is_valid(raise_exception=True)
         user_input = input_serializer.validated_data['user_input']
-        ai_response = self.generate_ai_response(user_input, user=request.user)
-        ConversationMessage.objects.create(
-            conversation=AIConversation.objects.get(user=request.user),
-            sender='user',
-            message=user_input
-        )
-        ConversationMessage.objects.create(
-            conversation=AIConversation.objects.get(user=request.user),
-            sender='ai',
-            message=ai_response
-        )
+        
+        # Validate required user attributes
+        user = request.user
+        if not all([user.gender, user.age, user.weight_kg, user.height_cm, user.goal, user.activity_level]):
+            return Response({
+                "error": "Please complete your profile with gender, age, weight, height, goal, and activity level before using AI assistant."
+            }, status=400)
+        
+        if not user.coach_type:
+            return Response({
+                "error": "Please select a coach type in your profile before using AI assistant."
+            }, status=400)
+        
+        try:
+            ai_response = self.generate_ai_response(user_input, user=user)
+        except Exception as e:
+            return Response({
+                "error": "AI assistant is temporarily unavailable. Please try again later.",
+                "detail": str(e) if request.user.is_staff else None
+            }, status=500)
+        
+        try:
+            ConversationMessage.objects.create(
+                conversation=AIConversation.objects.get(user=request.user),
+                sender='user',
+                message=user_input
+            )
+            ConversationMessage.objects.create(
+                conversation=AIConversation.objects.get(user=request.user),
+                sender='ai',
+                message=ai_response
+            )
+        except Exception as e:
+            # Log the error but don't fail the response
+            print(f"Failed to save conversation: {str(e)}")
+        
         context = {
             'user_input': user_input,
             'ai_response': ai_response
@@ -43,18 +68,22 @@ class ConversationMessageView(GenericAPIView):
         return Response(context)
     
     def generate_ai_response(self, user_input, user):
-        result = fitness_coach_ai(
-            gender=user.gender,
-            age=user.age,
-            weight_kg=user.weight_kg,
-            height_cm=user.height_cm,
-            goal=user.goal,
-            activity_level=user.activity_level,
-            username=user.username,
-            coach_name=user.coach_type.name,
-            current_query=user_input
-        )
-        return result['reply']
+        try:
+            result = fitness_coach_ai(
+                gender=user.gender,
+                age=user.age,
+                weight_kg=user.weight_kg,
+                height_cm=user.height_cm,
+                goal=user.goal,
+                activity_level=user.activity_level,
+                username=user.username,
+                coach_name=user.coach_type.name if user.coach_type else "Chris",
+                current_query=user_input
+            )
+            return result.get('reply', 'Sorry, I could not process your request.')
+        except Exception as e:
+            print(f"Error in generate_ai_response: {str(e)}")
+            raise
 
 
 class ConversationView(GenericAPIView):
