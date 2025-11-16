@@ -4,11 +4,14 @@ from rest_framework.response import Response
 from rest_framework import status
 from drf_spectacular.utils import extend_schema, inline_serializer, OpenApiParameter
 from drf_spectacular.types import OpenApiTypes
+
+from articles.serializers import ArticleSerializer
 from .models import Favorite, FAQ, ContactOption, Notification
 from nutrition.models import Meal
 from .serializers import FavoriteSerializer, FAQSerializer, ContactOptionSerializer, NotificationSerializer
 from workouts.serializers import UserWorkoutListSerializer
 from django_filters.rest_framework import DjangoFilterBackend
+from articles.models import Article
 # from nutrition.serializers import MealSerializer
 
 def add_notification(user, title, message, notification_type):
@@ -146,9 +149,14 @@ class SearchResultsView(generics.GenericAPIView):
             
             meals = Meal.objects.filter(user=request.user, title__icontains=query)
             workout_serializer = UserWorkoutListSerializer(user_workouts, many=True)
+            articles = Article.objects.filter(
+                Q(title__icontains=query) | Q(content__icontains=query)
+            ).distinct()
+            article_serializer = ArticleSerializer(articles, many=True)
             # meal_serializer = MealSerializer(meals, many=True)
             return Response({
                 "workouts": workout_serializer.data,
+                "articles": article_serializer.data,
                 # "meals": meal_serializer.data
             }, status=status.HTTP_200_OK)
         except Exception as e:

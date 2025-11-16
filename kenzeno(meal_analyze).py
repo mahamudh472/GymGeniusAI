@@ -29,6 +29,7 @@ def analyze_single_meal(base64_image, meal_name="Meal"):
             "- Key micronutrients (vitamin C, calcium, iron, etc.).\n"
             "- A short health insight (2-3 sentences) summarizing overall meal quality.\n"
             "- A 2-line improvement suggestion (how to make it healthier or better balanced).\n"
+            "**NOTE** DO NOT GIVE DIFFERENT DIFFERENT INFORMATION FOR SAME MEAL"
             "Return only valid JSON with this structure:\n\n"
             "{\n"
             "  'meal_name': 'string',\n"

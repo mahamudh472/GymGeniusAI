@@ -69,6 +69,7 @@ class ConversationMessageView(GenericAPIView):
     
     def generate_ai_response(self, user_input, user):
         try:
+            conversation = AIConversation.objects.get(user=user)
             result = fitness_coach_ai(
                 gender=user.gender,
                 age=user.age,
@@ -78,7 +79,8 @@ class ConversationMessageView(GenericAPIView):
                 activity_level=user.activity_level,
                 username=user.username,
                 coach_name=user.coach_type.name if user.coach_type else "Chris",
-                current_query=user_input
+                current_query=user_input,
+                conversation_history=conversation.get_conversation_history()
             )
             return result.get('reply', 'Sorry, I could not process your request.')
         except Exception as e:

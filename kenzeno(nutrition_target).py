@@ -36,16 +36,17 @@ def get_target_calories(
     try:
         system_prompt = (
             "You are a certified fitness nutritionist. "
-            "Your job is to calculate the user's estimated daily calorie target "
+            "Your job is to calculate the user's estimated Monthly calorie target "
             "based on gender, age, height, weight, activity level, and fitness goal. "
             "If a body image summary is provided, consider it when adjusting the estimate. "
             "Base your reasoning roughly on TDEE (Total Daily Energy Expenditure) principles, "
             "with ±15% adjustment for goals like gaining or losing weight. "
+            "Give **MONTHLY** Basis Calorie Target"
             "Output valid JSON only, in this format:\n\n"
             "{\n"
             "  'username': 'string',\n"
             "  'goal': 'string',\n"
-            "  'target_calories_per_day': int,\n"
+            "  'target_calories_per_Month': int,\n"
             "}"
         )
 

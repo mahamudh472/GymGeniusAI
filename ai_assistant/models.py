@@ -15,6 +15,17 @@ class AIConversation(models.Model):
     
     def __str__(self):
         return f"{self.user.email} - {self.created_at.strftime('%Y-%m-%d %H:%M')}"
+    
+    def get_conversation_history(self):
+        """Retrieve the conversation history as a list of messages."""
+        messages = self.messages.order_by('timestamp')
+        history = []
+        for msg in messages:
+            history.append({
+                "role": "user" if msg.sender == 'user' else 'assistant',
+                "content": msg.message
+            })
+        return history
 
 class ConversationMessage(models.Model):
     """Messages within an AI conversation"""
