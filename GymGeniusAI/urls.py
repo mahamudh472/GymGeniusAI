@@ -29,6 +29,7 @@ urlpatterns = [
     path('api/gallery/', include('gallery.urls')),
     path('api/nutrition/', include('nutrition.urls')),
     path('api/articles/', include('articles.urls')),
+    path('api/gamification/', include('gamification.urls')),
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/schema/swagger/', SpectacularSwaggerView.as_view(), name='swagger-ui'),
     path('api/schema/redoc/', SpectacularRedocView.as_view(), name='redoc'),

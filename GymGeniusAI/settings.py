@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'ai_assistant',
     'analytics',
     'utils',
+    'gamification',
     
     'rest_framework',
     'rest_framework_simplejwt',
