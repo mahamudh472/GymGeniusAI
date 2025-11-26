@@ -6,7 +6,7 @@ class ArticleSerializer(serializers.ModelSerializer):
     created_by = serializers.StringRelatedField()
     class Meta:
         model = Article
-        fields = ['id', 'title', 'content', 'media_url', 'category', 'created_by', 'created_at']
+        fields = ['id', 'title', 'content', 'image', 'media_url', 'category', 'created_by', 'created_at']
 
 
 class WorkoutVideoSerializer(serializers.ModelSerializer):

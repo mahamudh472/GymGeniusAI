@@ -91,6 +91,9 @@ class UserWorkout(models.Model):
     estimated_calories = models.IntegerField(blank=True, null=True, 
                                             help_text="Estimated calories to burn")
     
+    image = models.ImageField(upload_to='workout_images/', blank=True, null=True)
+
+
     # Status and timestamps
     is_active = models.BooleanField(default=True, help_text="Whether this workout is currently active")
     created_at = models.DateTimeField(auto_now_add=True)

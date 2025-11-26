@@ -53,6 +53,24 @@ class GalleryDashboardView(GenericAPIView):
     serializer_class = GalleryImageSerializer  # Add serializer_class for schema generation
 
     @extend_schema(
+        parameters=[
+            inline_serializer(
+                name='GalleryDashboardQueryParams',
+                fields={
+                    'month': serializers.IntegerField(
+                        required=False,
+                        min_value=1,
+                        max_value=12,
+                        help_text="Month number (1-12). Defaults to current month if omitted."
+                    ),
+                    'year': serializers.IntegerField(
+                        required=False,
+                        min_value=1900,
+                        help_text="Year (e.g., 2025). Defaults to current year if omitted."
+                    ),
+                }
+            )
+        ],
         responses={
             200: inline_serializer(
                 name='GalleryDashboardResponse',
@@ -60,6 +78,11 @@ class GalleryDashboardView(GenericAPIView):
                     'total_images': serializers.IntegerField(),
                     'images_last_week': serializers.IntegerField(),
                     'consecutive_days_streak': serializers.IntegerField(),
+                    'date_image_types': serializers.DictField(
+                        child=serializers.ListField(
+                            child=serializers.CharField()
+                        )
+                    ),
                 }
             )
         }
@@ -68,22 +91,60 @@ class GalleryDashboardView(GenericAPIView):
         try:
             user = request.user
             total_images = UserGallery.objects.filter(user=user).count()
-            
+
+            month, year = request.query_params.get('month'), request.query_params.get('year')
+            if month is not None:
+                month = int(month)
+            else:
+                month = timezone.now().month
+            if year is not None:
+                year = int(year)
+            else:
+                year = timezone.now().year
+
+            month_data = UserGallery.objects.filter(
+                user=user,
+                uploaded_at__year=year,
+                uploaded_at__month=month
+            )
+            month_data = UserGallery.objects.filter(
+                user=user,
+                uploaded_at__year=year,
+                uploaded_at__month=month
+            ).values('uploaded_at__date', 'image_type')
+            date_image_types = {}
+
+            choices = dict(UserGallery._meta.get_field('image_type').choices)
+
+            for item in month_data:
+                date_str = item['uploaded_at__date'].isoformat()
+                image_type = choices[item['image_type']]   # readable label
+
+                if date_str not in date_image_types:
+                    date_image_types[date_str] = set()
+
+                date_image_types[date_str].add(image_type)
+
             one_week_ago = timezone.now() - timedelta(days=7)
             images_last_week = UserGallery.objects.filter(user=user, uploaded_at__gte=one_week_ago).count()
             
+            latest_images = UserGallery.objects.filter(user=user).order_by('-uploaded_at')[:2]
+
             streak = calculate_upload_streak(user)
 
             return Response({
                 "total_images": total_images,
                 "images_last_week": images_last_week,
                 "consecutive_days_streak": streak,
+                "date_image_types": date_image_types,
+                "latest_images": GalleryImageSerializer(latest_images, many=True, context={"request": request}).data
             })
         except Exception as e:
             return Response({
                 "error": "Failed to retrieve gallery statistics.",
                 "detail": str(e)
             }, status=500)
+
 
 
 class GalleryImageList(ListCreateAPIView):

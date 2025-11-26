@@ -85,7 +85,7 @@ class NutritionHomeView(generics.GenericAPIView):
             total_meals = UserUploadedMeal.objects.filter(user=user).count()
             streak = calculate_meal_streak(user)
             
-            upload_dates = UserUploadedMeal.objects.filter(user=user).order_by('-created_at').values_list('created_at__date', flat=True).distinct()
+            # upload_dates = UserUploadedMeal.objects.filter(user=user).order_by('-created_at').values_list('created_at__date', flat=True).distinct()
             calories_target = user.daily_calorie_target if user.daily_calorie_target else 0
             calories_gain = UserUploadedMeal.objects.filter(
                 user=user,
@@ -103,7 +103,7 @@ class NutritionHomeView(generics.GenericAPIView):
                 "calories_target": calories_target,
                 "calories_gain": calories_gain,
                 "todays_meals": UserUploadedMealSerializer(todays_meals, many=True).data,
-                "upload_dates": list(upload_dates)
+                # "upload_dates": list(upload_dates)
             }, status=200)
         except Exception as e:
             return Response({

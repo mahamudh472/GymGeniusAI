@@ -52,7 +52,7 @@ class UserWorkoutAdmin(ModelAdmin):
     readonly_fields = ['created_at', 'updated_at']
     fieldsets = (
         ('Basic Information', {
-            'fields': ('user', 'name', 'description')
+            'fields': ('user', 'name', 'description', 'image')
         }),
         ('Workout Details', {
             'fields': ('difficulty', 'created_by_ai', 'is_active')
