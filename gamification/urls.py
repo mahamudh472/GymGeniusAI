@@ -4,7 +4,9 @@ from .views import (
     RankViewSet, ActivityTypeViewSet, UserRankViewSet,
     PointTransactionViewSet, LeaderboardView, UserStatsView,
     DailyCheckInView, AwardPointsView, WeeklyLeaderboardHistoryView,
-    RankHistoryView, UserStreakView
+    RankHistoryView, UserStreakView, ChallengeViewSet,
+    StartChallengeView, CompleteChallengeExerciseView,
+    UserChallengeProgressView, ClaimChallengeRewardView
 )
 
 app_name = 'gamification'
@@ -14,11 +16,9 @@ router.register(r'ranks', RankViewSet, basename='rank')
 router.register(r'activities', ActivityTypeViewSet, basename='activity')
 router.register(r'user-ranks', UserRankViewSet, basename='user-rank')
 router.register(r'transactions', PointTransactionViewSet, basename='transaction')
+router.register(r'challenges', ChallengeViewSet, basename='challenge')
 
 urlpatterns = [
-    # Router URLs
-    path('', include(router.urls)),
-    
     # Leaderboard
     path('leaderboard/', LeaderboardView.as_view(), name='leaderboard'),
     path('leaderboard/history/', WeeklyLeaderboardHistoryView.as_view(), name='leaderboard-history'),
@@ -31,4 +31,13 @@ urlpatterns = [
     # Actions
     path('checkin/', DailyCheckInView.as_view(), name='daily-checkin'),
     path('award-points/', AwardPointsView.as_view(), name='award-points'),
+    
+    # Challenges - Must come BEFORE router URLs to avoid conflicts
+    path('challenges/start/', StartChallengeView.as_view(), name='start-challenge'),
+    path('challenges/complete-exercise/', CompleteChallengeExerciseView.as_view(), name='complete-challenge-exercise'),
+    path('challenges/my-progress/', UserChallengeProgressView.as_view(), name='user-challenge-progress'),
+    path('challenges/claim-reward/', ClaimChallengeRewardView.as_view(), name='claim-challenge-reward'),
+    
+    # Router URLs - Must come LAST
+    path('', include(router.urls)),
 ]

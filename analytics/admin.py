@@ -1,9 +1,10 @@
 from django.contrib import admin
 from .models import FeedbackReport, AnalyticsLog
+from unfold.admin import ModelAdmin
 
 
 @admin.register(FeedbackReport)
-class FeedbackReportAdmin(admin.ModelAdmin):
+class FeedbackReportAdmin(ModelAdmin):
     list_display = ['user', 'type', 'created_at']
     list_filter = ['type', 'created_at']
     search_fields = ['user__email', 'message']
@@ -11,7 +12,7 @@ class FeedbackReportAdmin(admin.ModelAdmin):
 
 
 @admin.register(AnalyticsLog)
-class AnalyticsLogAdmin(admin.ModelAdmin):
+class AnalyticsLogAdmin(ModelAdmin):
     list_display = ['event_type', 'user', 'created_at']
     list_filter = ['event_type', 'created_at']
     search_fields = ['event_type', 'user__email']

@@ -236,3 +236,192 @@ class UserStreak(models.Model):
         
         self.save()
         return True, f"Checked in! Current streak: {self.current_streak} days"
+
+
+class Challenge(models.Model):
+    """
+    Defines challenges that users can participate in.
+    A challenge is like a workout session but with time limits and rewards.
+    """
+    CHALLENGE_TYPE_CHOICES = [
+        ('DAILY', 'Daily Challenge'),
+        ('WEEKLY', 'Weekly Challenge'),
+    ]
+    
+    DIFFICULTY_CHOICES = [
+        ('beginner', 'Beginner'),
+        ('intermediate', 'Intermediate'),
+        ('advanced', 'Advanced'),
+    ]
+    
+    name = models.CharField(max_length=255)
+    description = models.TextField()
+    challenge_type = models.CharField(max_length=10, choices=CHALLENGE_TYPE_CHOICES)
+    difficulty = models.CharField(max_length=20, choices=DIFFICULTY_CHOICES, default='beginner')
+    
+    # Reward points
+    completion_points = models.IntegerField(help_text="Points awarded for completing the challenge")
+    
+    # Challenge duration
+    start_date = models.DateTimeField()
+    end_date = models.DateTimeField()
+    
+    # Challenge content (workout reference)
+    # This will be a JSON field containing exercises similar to UserWorkout
+    exercises = models.JSONField(
+        default=list,
+        help_text="List of exercises with sets, reps, etc. Similar to UserExercise structure"
+    )
+    
+    # Estimated metrics
+    estimated_duration = models.IntegerField(
+        blank=True, null=True,
+        help_text="Estimated duration in minutes"
+    )
+    estimated_calories = models.IntegerField(
+        blank=True, null=True,
+        help_text="Estimated calories to burn"
+    )
+    
+    # Status
+    is_active = models.BooleanField(default=True)
+    created_by = models.ForeignKey(
+        User, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True,
+        related_name='gamification_challenges_created',
+        help_text="Admin or system that created this challenge"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Challenge'
+        verbose_name_plural = 'Challenges'
+        indexes = [
+            models.Index(fields=['challenge_type', 'is_active', 'start_date']),
+            models.Index(fields=['start_date', 'end_date']),
+        ]
+    
+    def __str__(self):
+        return f"{self.name} ({self.get_challenge_type_display()})"
+    
+    def is_available(self):
+        """Check if challenge is currently available"""
+        now = timezone.now()
+        return self.is_active and self.start_date <= now <= self.end_date
+    
+    def time_remaining(self):
+        """Get time remaining for the challenge"""
+        if not self.is_available():
+            return None
+        now = timezone.now()
+        remaining = self.end_date - now
+        return remaining
+
+
+class UserChallengeProgress(models.Model):
+    """
+    Tracks user's progress on a specific challenge.
+    Similar to WorkoutProgress but for challenges.
+    """
+    STATUS_CHOICES = [
+        ('IN_PROGRESS', 'In Progress'),
+        ('COMPLETED', 'Completed'),
+        ('FAILED', 'Failed'),
+    ]
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='challenge_progress')
+    challenge = models.ForeignKey(Challenge, on_delete=models.CASCADE, related_name='user_progress')
+    
+    # Progress tracking
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='IN_PROGRESS')
+    completed_exercises = models.JSONField(
+        default=list,
+        help_text="List of completed exercise indices from the challenge"
+    )
+    completion_percentage = models.FloatField(default=0.0)
+    
+    # Actual metrics
+    actual_duration = models.IntegerField(
+        blank=True, null=True,
+        help_text="Actual duration in minutes"
+    )
+    actual_calories = models.FloatField(
+        blank=True, null=True,
+        help_text="Actual calories burned"
+    )
+    
+    # Reward tracking
+    points_awarded = models.IntegerField(default=0)
+    points_claimed = models.BooleanField(default=False)
+    
+    # User feedback
+    notes = models.TextField(blank=True, null=True)
+    rating = models.IntegerField(
+        blank=True, null=True,
+        help_text="User rating (1-5)"
+    )
+    difficulty_rating = models.CharField(
+        max_length=20, blank=True, null=True,
+        choices=[
+            ('too_easy', 'Too Easy'),
+            ('just_right', 'Just Right'),
+            ('too_hard', 'Too Hard'),
+        ]
+    )
+    
+    # Timestamps
+    started_at = models.DateTimeField(auto_now_add=True)
+    completed_at = models.DateTimeField(blank=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-started_at']
+        verbose_name = 'User Challenge Progress'
+        verbose_name_plural = 'User Challenge Progress Records'
+        unique_together = ['user', 'challenge']
+        indexes = [
+            models.Index(fields=['user', 'status']),
+            models.Index(fields=['challenge', 'status']),
+            models.Index(fields=['-completed_at']),
+        ]
+    
+    def __str__(self):
+        return f"{self.user.username} - {self.challenge.name} ({self.get_status_display()})"
+    
+    def calculate_completion_percentage(self):
+        """Calculate completion percentage based on completed exercises"""
+        total_exercises = len(self.challenge.exercises)
+        if total_exercises == 0:
+            return 0.0
+        completed_count = len(self.completed_exercises)
+        return (completed_count / total_exercises) * 100
+    
+    def check_and_award_points(self):
+        """Check if challenge is completed and award points if not already done"""
+        if self.status == 'COMPLETED' and not self.points_claimed:
+            from .utils import award_points
+            
+            success, message, points = award_points(
+                self.user,
+                'CHALLENGE_COMPLETION',
+                metadata={
+                    'challenge_id': self.challenge.id,
+                    'challenge_name': self.challenge.name,
+                    'challenge_type': self.challenge.challenge_type
+                },
+                custom_points=self.challenge.completion_points
+            )
+            
+            if success:
+                self.points_awarded = points
+                self.points_claimed = True
+                self.save(update_fields=['points_awarded', 'points_claimed'])
+                return True, message, points
+            
+            return False, message, 0
+        
+        return False, "Challenge not completed or points already claimed", 0

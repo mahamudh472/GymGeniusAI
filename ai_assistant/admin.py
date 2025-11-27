@@ -1,9 +1,10 @@
 from django.contrib import admin
 from .models import AIConversation
+from unfold.admin import ModelAdmin
 
 
 @admin.register(AIConversation)
-class AIConversationAdmin(admin.ModelAdmin):
+class AIConversationAdmin(ModelAdmin):
     list_display = ['user', 'created_at', 'prompt_preview']
     search_fields = ['user__email', 'prompt', 'response']
     ordering = ['-created_at']

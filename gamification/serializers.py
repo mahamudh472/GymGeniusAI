@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import (
     Rank, UserRank, PointTransaction, ActivityType,
-    WeeklyLeaderboard, RankHistory, UserStreak
+    WeeklyLeaderboard, RankHistory, UserStreak, Challenge, UserChallengeProgress
 )
 from django.contrib.auth import get_user_model
 
@@ -155,3 +155,71 @@ class CheckInResponseSerializer(serializers.Serializer):
     points_awarded = serializers.IntegerField()
     current_streak = serializers.IntegerField()
     total_check_ins = serializers.IntegerField()
+
+
+class ChallengeSerializer(serializers.ModelSerializer):
+    """Serializer for Challenge model"""
+    challenge_type_display = serializers.CharField(source='get_challenge_type_display', read_only=True)
+    difficulty_display = serializers.CharField(source='get_difficulty_display', read_only=True)
+    is_available = serializers.SerializerMethodField()
+    time_remaining_seconds = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Challenge
+        fields = [
+            'id', 'name', 'description', 'challenge_type', 'challenge_type_display',
+            'difficulty', 'difficulty_display', 'completion_points', 'start_date',
+            'end_date', 'exercises', 'estimated_duration', 'estimated_calories',
+            'is_active', 'is_available', 'time_remaining_seconds', 'created_at'
+        ]
+        read_only_fields = ['id', 'created_at']
+    
+    def get_is_available(self, obj):
+        return obj.is_available()
+    
+    def get_time_remaining_seconds(self, obj):
+        remaining = obj.time_remaining()
+        if remaining:
+            return remaining.total_seconds()
+        return None
+
+
+class UserChallengeProgressSerializer(serializers.ModelSerializer):
+    """Serializer for UserChallengeProgress model"""
+    challenge = ChallengeSerializer(read_only=True)
+    challenge_id = serializers.IntegerField(write_only=True, required=False)
+    status_display = serializers.CharField(source='get_status_display', read_only=True)
+    username = serializers.CharField(source='user.username', read_only=True)
+    
+    class Meta:
+        model = UserChallengeProgress
+        fields = [
+            'id', 'username', 'challenge', 'challenge_id', 'status', 'status_display',
+            'completed_exercises', 'completion_percentage', 'actual_duration',
+            'actual_calories', 'points_awarded', 'points_claimed', 'notes',
+            'rating', 'difficulty_rating', 'started_at', 'completed_at', 'updated_at'
+        ]
+        read_only_fields = [
+            'id', 'username', 'points_awarded', 'points_claimed',
+            'started_at', 'completed_at', 'updated_at'
+        ]
+
+
+class StartChallengeSerializer(serializers.Serializer):
+    """Serializer for starting a challenge"""
+    challenge_id = serializers.IntegerField()
+
+
+class CompleteChallengeExerciseSerializer(serializers.Serializer):
+    """Serializer for completing an exercise in a challenge"""
+    challenge_id = serializers.IntegerField()
+    exercise_index = serializers.IntegerField(min_value=0)
+    actual_sets = serializers.IntegerField(required=False, allow_null=True)
+    actual_reps = serializers.IntegerField(required=False, allow_null=True)
+    actual_duration = serializers.IntegerField(required=False, allow_null=True, help_text="Duration in seconds")
+    notes = serializers.CharField(required=False, allow_blank=True)
+
+
+class ClaimChallengeRewardSerializer(serializers.Serializer):
+    """Serializer for claiming challenge reward"""
+    challenge_progress_id = serializers.IntegerField()
