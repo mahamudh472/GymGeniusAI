@@ -20,7 +20,7 @@ class ExerciseAdmin(ModelAdmin):
     ordering = ['name']
     fieldsets = (
         ('Basic Information', {
-            'fields': ('name', 'description', 'video_url', 'category')
+            'fields': ('name', 'description', 'video', 'category')
         }),
         ('Classification', {
             'fields': ('muscle_group', 'difficulty', 'equipment_needed')

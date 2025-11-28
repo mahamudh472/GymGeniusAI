@@ -37,7 +37,7 @@ class Exercise(models.Model):
     
     name = models.CharField(max_length=150, unique=True, default=generate_exercise_name)
     description = models.TextField(blank=True, null=True)
-    video_url = models.URLField(max_length=500, blank=True, null=True)
+    video = models.FileField(upload_to='exercise_videos/', blank=True, null=True)
     
     # Exercise classification
     muscle_group = models.CharField(max_length=100, blank=True, null=True, 
