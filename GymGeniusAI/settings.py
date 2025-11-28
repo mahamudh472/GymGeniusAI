@@ -245,3 +245,4 @@ SPECTACULAR_SETTINGS = {
 
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 PINECONE_API_KEY = os.getenv('PINECONE_API_KEY')
+CSRF_TRUSTED_ORIGINS = ['http://localhost:8000', 'http://127.0.0.1:8000', 'https://sisterlike-tastelessly-mike.ngrok-free.dev/']
