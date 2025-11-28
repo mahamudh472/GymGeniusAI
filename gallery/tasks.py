@@ -24,12 +24,13 @@ def analyze_gallery_image(gallery_id):
         
         logger.info(f"Image converted to base64, calling AI analysis...")
         # Call the AI analysis function
-        ai_summary = analyze_user_image(base64_image)
-        logger.info(f"AI analysis completed: {ai_summary}")
+        analysis_result = analyze_user_image(base64_image)
+        logger.info(f"AI analysis completed: {analysis_result}")
         
         # Update the gallery image with AI results
         gallery_image.ai_detected = True
-        gallery_image.ai_summary = ai_summary
+        gallery_image.ai_summary = analysis_result.get('summary', '')
+        gallery_image.image_type = analysis_result.get('image_type', '')
         gallery_image.save()
         
         logger.info(f"Successfully updated gallery image {gallery_id} with AI results")

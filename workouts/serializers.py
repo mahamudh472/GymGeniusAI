@@ -18,8 +18,16 @@ class ExerciseSerializer(serializers.ModelSerializer):
 class UserExerciseSerializer(serializers.ModelSerializer):
     exercise_name = serializers.CharField(source='exercise.name', read_only=True)
     exercise_description = serializers.CharField(source='exercise.description', read_only=True)
-    video_url = serializers.CharField(source='exercise.video_url', read_only=True)
+    # video_url = serializers.CharField(source='exercise.video_url', read_only=True)
     difficulty_level = serializers.CharField(source='exercise.difficulty_level', read_only=True)
+    video=serializers.SerializerMethodField()
+
+    def get_video(self, obj):
+        request = self.context.get('request')
+        if obj.exercise.video and hasattr(obj.exercise.video, 'url'):
+            return request.build_absolute_uri(obj.exercise.video.url)
+        return None
+
     class Meta:
         model = UserExercise
         fields = '__all__'

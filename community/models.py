@@ -68,3 +68,20 @@ class Leaderboard(models.Model):
     
     def __str__(self):
         return f"{self.user.email} - Rank: {self.rank}"
+
+class ForumPost(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='forum_posts')
+    content = models.TextField()
+    likes = models.IntegerField(default=0)
+    views = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'forum_posts'
+        verbose_name = 'Forum Post'
+        verbose_name_plural = 'Forum Posts'
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"Post by {self.user.email} on {self.created_at.strftime('%Y-%m-%d %H:%M:%S')}"

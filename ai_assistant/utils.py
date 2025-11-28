@@ -34,6 +34,8 @@ def analyze_user_image(base64_image):
                         "Mention posture, symmetry, muscle tone, and any visible balance issues. "
                         "Avoid comments on attractiveness, race, or emotion. "
                         "Keep your output concise (1-3 lines)."
+                        "Output a json object with two key 'summary', 'image_type'."
+                        "'image_type' should be one of ['back', 'side', 'front'] based on the image provided."
                     )
                 },
                 {
@@ -51,8 +53,9 @@ def analyze_user_image(base64_image):
                 }
             ]
         )
-
-        return response.choices[0].message.content.strip()
+        import json
+        analysis_result = json.loads(response.choices[0].message.content)
+        return analysis_result
 
     except Exception as e:
         print("Error in analyze_user_image:", e)
@@ -141,28 +144,22 @@ def fitness_coach_ai(
       - reply
       - image_summary
     """
-    if not settings.OPENAI_API_KEY:
-        return {
-            "reply": "AI Coach service is temporarily unavailable. OpenAI API key not configured.",
-            "image_summary": image_summary or "N/A"
-        }
-    
     try:
         chatbot_name = "FitCoach"
-
+ 
         system_message = {
             "role": "system",
             "content": f"""
 You are "{chatbot_name}", an AI fitness coach that adopts one of four personas.
-
+ 
 ## Personas
 - John — tough love, no excuses, best-results mindset.
 - Selma — warm, supportive, emotionally smart.
 - Jara — sassy, humorous, and hyper-motivating.
 - Chris — professional, focused, efficient.
-
+ 
 Active persona: {coach_name}
-
+ 
 ## User Profile
 gender: {gender}
 age: {age}
@@ -171,40 +168,42 @@ height_cm: {height_cm}
 goal: {goal}
 activity_level: {activity_level}
 username: {username}
-
+ 
 ## Image Analysis Summary
 {image_summary or "No image provided."}
-
+ 
 ## Behavior Guidelines
 - Always speak as {coach_name}.
 - Be conversational, motivational, and clear.
 - Provide structured workout or nutrition guidance.
+- DO NOT SUGGEST ANY WORKOUT ROUTINE
+- You task is to guide the user to do exercise perfectly
 - Use image_summary for posture/mobility cues.
 - Use metric units (kg, cm, km).
 - NEVER comment on attractiveness, race, or emotion.
 - Respond ONLY in JSON format.
-
+ 
 ## JSON Response Format
 {{
   "reply": "Main assistant message to the user",
   "image_summary": "Shortly analyze each portion of muscle from the image"
 }}
-
+ 
 Conversation history for context:
 {conversation_history}
 """
         }
-
+ 
         user_message = {"role": "user", "content": current_query}
-
+ 
         response = o.chat.completions.create(
             model="gpt-4o",
             temperature=0.6,
             messages=[system_message, user_message],
         )
-
+ 
         raw_output = response.choices[0].message.content.strip()
-
+ 
         # Try to parse JSON safely
         try:
             parsed = json.loads(raw_output)
@@ -213,15 +212,15 @@ Conversation history for context:
                 "reply": raw_output,
                 "image_summary": image_summary or "N/A"
             }
-
+ 
         parsed.setdefault("reply", "I'm ready to help you get fitter!")
         parsed.setdefault("image_summary", image_summary or "N/A")
-
-
+ 
+ 
         def clean_text(text):
             if not isinstance(text, str):
                 return text
-
+ 
             text = re.sub(r"\*\*|##|###|\*", "", text)  # remove markdown
             text = re.sub(r"\\u[0-9a-fA-F]{4}", "", text)  # remove unicode escapes
             text = re.sub(r"[\U0001F600-\U0001F64F]", "", text)  # remove emojis
@@ -231,20 +230,19 @@ Conversation history for context:
             text = re.sub(r"\s*\n\s*", " ", text)  # collapse newlines
             text = re.sub(r"\s{2,}", " ", text)  # remove multiple spaces
             return text.strip()
-
+ 
         parsed["reply"] = clean_text(parsed["reply"])
         parsed["image_summary"] = clean_text(parsed["image_summary"])
-
+ 
         return parsed
-
+ 
     except Exception as e:
         print("Error in fitness_coach_ai:", e)
         return {
-            "reply": "Sorry, I'm having trouble processing your request right now. Please try again later.",
-            "image_summary": image_summary or "N/A",
-            "error": str(e) if settings.DEBUG else "Service temporarily unavailable"
+            "reply": f"Error: {str(e)}",
+            "image_summary": image_summary or "N/A"
         }
-
+ 
 
 def update_daily_calorie_target(user, calorie_target):
     

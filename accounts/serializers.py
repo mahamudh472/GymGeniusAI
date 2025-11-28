@@ -54,14 +54,26 @@ class UserSerializer(serializers.ModelSerializer):
         many=True,
         source='preferred_workout_days'
     )
+    rank = serializers.SerializerMethodField()
     class Meta:
         model = User
         fields = ['id', 'email', 'phone_number', 'avatar',
                   'first_name', 'last_name', 'gender',
                   'age', 'date_of_birth', 'height_cm',
                   'weight_kg', 'goal', 'activity_level',
-                  'coach_type', 'preferred_workout_time',
+                  'coach_type', 'preferred_workout_time', 'rank',
                   'preferred_workout_days', 'preferred_workout_day_ids', 'joined_at']
+    
+    def get_rank(self, obj):
+        if hasattr(obj, 'user_rank') and obj.user_rank.current_rank:
+            return {
+                'id': obj.user_rank.current_rank.id,
+                'name': obj.user_rank.current_rank.name,
+                'level': obj.user_rank.current_rank.level,
+                'color_code': obj.user_rank.current_rank.color_code
+            }
+        return None
+
     
 
 
