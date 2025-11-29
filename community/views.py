@@ -8,3 +8,7 @@ class ForumPostViewSet(ModelViewSet):
     queryset = ForumPost.objects.all().order_by('-created_at')
     serializer_class = ForumPostSerializer  
     http_method_names = ['get', 'post', 'put', 'patch', 'delete']
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+        
