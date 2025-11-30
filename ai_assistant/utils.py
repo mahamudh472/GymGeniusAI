@@ -256,3 +256,423 @@ def update_daily_calorie_target(user, calorie_target):
     except Exception as e:
         print("Error updating daily calorie target:", e)
         return False
+
+
+# ==================== WORKOUT DATASET & PINECONE INTEGRATION ====================
+
+try:
+    import pandas as pd
+    from tqdm import tqdm
+    from pinecone import Pinecone, ServerlessSpec
+    from langchain_openai import OpenAIEmbeddings
+    from langchain_pinecone import PineconeVectorStore
+    from langchain_text_splitters import RecursiveCharacterTextSplitter
+    PINECONE_AVAILABLE = True
+except ImportError:
+    PINECONE_AVAILABLE = False
+    print("Warning: Pinecone/LangChain dependencies not installed. Workout dataset features will be unavailable.")
+
+# ==================== CONFIG ====================
+INDEX_NAME = "workout-index"
+EMBEDDING_MODEL = "text-embedding-3-small"
+EMBEDDING_DIM = 1536
+
+
+def get_pinecone_client():
+    """Initialize and return Pinecone client."""
+    if not PINECONE_AVAILABLE:
+        raise ImportError("Pinecone dependencies not installed")
+    
+    pinecone_api_key = os.getenv("PINECONE_API_KEY")
+    if not pinecone_api_key:
+        raise ValueError("PINECONE_API_KEY not found in environment variables")
+    
+    return Pinecone(api_key=pinecone_api_key)
+
+
+def initialize_pinecone_index():
+    """
+    Initialize Pinecone index if it doesn't exist.
+    Should be called manually when setting up the system.
+    """
+    if not PINECONE_AVAILABLE:
+        return {"error": "Pinecone dependencies not installed"}
+    
+    try:
+        pc = get_pinecone_client()
+        
+        if INDEX_NAME not in [i.name for i in pc.list_indexes()]:
+            print(f"Creating index: {INDEX_NAME}")
+            pc.create_index(
+                name=INDEX_NAME,
+                dimension=EMBEDDING_DIM,
+                metric="cosine",
+                spec=ServerlessSpec(cloud="aws", region="us-east-1")
+            )
+            return {"status": "created", "index": INDEX_NAME}
+        else:
+            print(f"Index already exists: {INDEX_NAME}")
+            return {"status": "exists", "index": INDEX_NAME}
+    except Exception as e:
+        return {"error": str(e)}
+
+
+def combine_row(row):
+    """Combine all columns of a DataFrame row into a single text string."""
+    return " | ".join([f"{col}: {row[col]}" for col in row.index if row[col]])
+
+
+def upload_workout_dataset_to_pinecone(csv_path=None):
+    """
+    Load workout dataset from CSV and upload to Pinecone.
+    
+    Args:
+        csv_path: Path to the CSV file. If None, uses default project path.
+    
+    Returns:
+        dict with status and count of uploaded chunks
+    """
+    if not PINECONE_AVAILABLE:
+        return {"error": "Pinecone dependencies not installed"}
+    
+    try:
+        # Use project root path if not specified
+        if csv_path is None:
+            csv_path = os.path.join(settings.BASE_DIR, "gym_workouts_full.csv")
+        
+        if not os.path.exists(csv_path):
+            return {"error": f"CSV file not found at: {csv_path}"}
+        
+        # Load dataset
+        df = pd.read_csv(csv_path)
+        df = df.fillna("").astype(str)
+        print(f"Dataset loaded with {len(df)} rows")
+        
+        # Combine columns into text
+        df["combined_text"] = df.apply(combine_row, axis=1)
+        
+        # Split into chunks
+        splitter = RecursiveCharacterTextSplitter(
+            chunk_size=2000,
+            chunk_overlap=100,
+            separators=["\n", ".", "!", "?", ";", ",", " "]
+        )
+        
+        texts = []
+        metadata = []
+        
+        for idx, row in df.iterrows():
+            chunks = splitter.split_text(row["combined_text"])
+            for chunk in chunks:
+                texts.append(chunk)
+                metadata.append({"row_index": int(idx)})
+        
+        # Initialize embeddings and vectorstore
+        embeddings = OpenAIEmbeddings(model=EMBEDDING_MODEL)
+        vectorstore = PineconeVectorStore.from_existing_index(
+            index_name=INDEX_NAME,
+            embedding=embeddings
+        )
+        
+        # Upload to Pinecone
+        print(f"Uploading {len(texts)} chunks to Pinecone...")
+        ids = [f"workout-{i}" for i in range(len(texts))]
+        vectorstore.add_texts(texts=texts, metadatas=metadata, ids=ids)
+        print(f"Upload complete!")
+        
+        return {
+            "status": "success",
+            "rows_processed": len(df),
+            "chunks_uploaded": len(texts)
+        }
+        
+    except Exception as e:
+        return {"error": str(e)}
+
+def retrieve_workout_info(query, top_k=20):
+    """
+    Retrieve relevant workout information from Pinecone based on a query.
+    
+    Args:
+        query: Search query string
+        top_k: Number of results to return
+    
+    Returns:
+        List of document results with content and metadata
+    """
+    if not PINECONE_AVAILABLE:
+        return []
+    
+    try:
+        embeddings = OpenAIEmbeddings(model=EMBEDDING_MODEL)
+        vectorstore = PineconeVectorStore.from_existing_index(
+            index_name=INDEX_NAME,
+            embedding=embeddings
+        )
+
+        results = vectorstore.similarity_search(query, k=top_k)
+        
+        # Optional: Print results for debugging
+        if settings.DEBUG:
+            print("Top Results:")
+            for i, res in enumerate(results, 1):
+                print(f"\nResult {i}:")
+                print(res.page_content[:500])
+                print("Metadata:", res.metadata)
+        
+        return results
+    except Exception as e:
+        print(f"Error retrieving workout info: {e}")
+        return []
+
+def generate_dataset_based_workout(
+    gender,
+    age,
+    weight_kg,
+    height_cm,
+    goal,
+    activity_level,
+    username,
+    image_summary=None,
+    workout_logs=None,
+    top_k=7
+):
+    """
+    Generate a personalized workout plan based on:
+    - User profile
+    - Retrieved dataset workouts from Pinecone
+    - User's last 7 days workout logs (if provided)
+
+    Exercises MUST come ONLY from dataset.
+    Each exercise must include 'muscle_group'.
+    
+    Args:
+        gender: User's gender
+        age: User's age
+        weight_kg: User's weight in kg
+        height_cm: User's height in cm
+        goal: Fitness goal (e.g., 'gain_weight', 'lose_weight', 'maintain')
+        activity_level: Activity level (e.g., 'beginner', 'intermediate', 'advanced')
+        username: User's name
+        image_summary: Optional body image analysis summary
+        workout_logs: Optional list of past workout logs (last 7 days)
+        top_k: Number of similar workouts to retrieve from dataset
+    
+    Returns:
+        dict: Workout plan with exercises or error message
+    """
+    if not settings.OPENAI_API_KEY:
+        return {"error": "OpenAI API key not configured"}
+    
+    if not PINECONE_AVAILABLE:
+        return {"error": "Pinecone dependencies not installed"}
+
+    try:
+        # ========== 1️⃣ Retrieve Relevant Workouts ==========
+        embeddings = OpenAIEmbeddings(model=EMBEDDING_MODEL)
+        vectorstore = PineconeVectorStore.from_existing_index(
+            index_name=INDEX_NAME,
+            embedding=embeddings
+        )
+
+        query = f"Workout plan for {goal}, activity level: {activity_level}, gender: {gender}"
+        retrieved_docs = vectorstore.similarity_search(query, k=top_k)
+        context = "\n\n".join([doc.page_content for doc in retrieved_docs])
+
+        # ========== 2️⃣ Include past workout logs ==========
+        workout_history_text = (
+            json.dumps(workout_logs, indent=2)
+            if workout_logs
+            else "No previous logs available."
+        )
+
+        # ========== 3️⃣ System Prompt WITH MUSCLE GROUP REQUIREMENT ==========
+        system_prompt = (
+            "You are a certified strength and conditioning coach.\n"
+            "Use ONLY exercises from the 'Dataset Context'.\n"
+            "Do NOT invent new exercises.\n"
+            "Extract 'muscle_group' from the dataset context for each exercise.\n"
+            "Never guess muscle groups — only use text from dataset.\n"
+            "If multiple muscle groups appear in dataset row, choose primary.\n\n"
+
+            "Workout Rules:\n"
+            "- Must include at least 5 exercises\n"
+            "- No duplicate exercises\n"
+            "- Apply progressive overload using past 7-day logs\n"
+            "- Match goal and activity level\n\n"
+
+            "OUTPUT MUST BE STRICTLY VALID JSON:\n"
+            "[\n"
+            "  {\n"
+            "    'workout_name': 'string',\n"
+            "    'description': 'string',\n"
+            "    'difficulty': 'Beginner' | 'Intermediate' | 'Advanced',\n"
+            "    'estimated_duration': int,\n"
+            "    'estimated_calories': int,\n"
+            "    'exercises': [\n"
+            "      {\n"
+            "        'name': 'string',\n"
+            "        'muscle_group': 'string',\n"
+            "        'sets': int,\n"
+            "        'reps': int,\n"
+            "        'duration_seconds': int,\n"
+            "        'rest_time': int,\n"
+            "        'notes': 'string'\n"
+            "      }\n"
+            "    ]\n"
+            "  }\n"
+            "]"
+        )
+
+        # ========== 4️⃣ User + Dataset Context ==========
+        user_profile = f"""
+Username: {username}
+Gender: {gender}
+Age: {age}
+Weight: {weight_kg} kg
+Height: {height_cm} cm
+Goal: {goal}
+Activity Level: {activity_level}
+Body Image Summary: {image_summary or "N/A"}
+
+Previous 7 Days Workout Logs:
+{workout_history_text}
+
+Dataset Context (workouts retrieved from your indexed dataset):
+{context}
+"""
+
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_profile}
+        ]
+
+        # ========== 5️⃣ GPT Generates the Dataset-Based Plan ==========
+        response = o.chat.completions.create(
+            model="gpt-4o",
+            temperature=0.1,
+            response_format={"type": "json_object"},
+            messages=messages
+        )
+
+        return json.loads(response.choices[0].message.content)
+
+    except Exception as e:
+        return {"error": str(e)}
+
+
+
+def generate_multi_level_workouts(
+    gender,
+    age,
+    weight_kg,
+    height_cm,
+    goal,
+    activity_level,
+    username,
+    image_summary=None,
+    top_k=15
+):
+    """
+    GUARANTEED: Beginner + Intermediate + Advanced workouts.
+    Method:
+      - 3 separate RAG retrievals
+      - 3 separate LLM calls (one per level)
+      - Final combined JSON list
+    """
+ 
+    def fetch_context(level_query):
+        embeddings = OpenAIEmbeddings(model=EMBEDDING_MODEL)
+        vectorstore = PineconeVectorStore.from_existing_index(
+            index_name=INDEX_NAME,
+            embedding=embeddings
+        )
+ 
+        docs = vectorstore.similarity_search(level_query, k=top_k)
+        return "\n\n".join([doc.page_content for doc in docs])
+ 
+ 
+    def build_level_prompt(level, context):
+        return f"""
+You are a certified strength and conditioning coach.
+ 
+You must create a workout ONLY using exercises found in the dataset context below.
+ 
+DATASET CONTEXT:
+{context}
+ 
+RULES:
+- Output ONLY valid JSON.
+- You MUST provide EXACTLY 4 exercises.
+- Each exercise MUST include: name, muscle_group, sets, reps, duration_seconds, rest_time, notes.
+- Use ONLY muscle_group names that appear in the dataset text.
+- No invented exercises.
+- No hallucinated muscle groups.
+- Keep difficulty strictly: {level}.
+- Match user goal: {goal}.
+- Respond in EXACT JSON format.
+ 
+JSON FORMAT:
+{{
+  "workout_name": "string",
+  "description": "string",
+  "difficulty": "{level}",
+  "estimated_duration": 45,
+  "estimated_calories": 300,
+  "exercises": [
+    {{
+      "name": "string",
+      "muscle_group": "string",
+      "sets": 0,
+      "reps": 0,
+      "duration_seconds": 0,
+      "rest_time": 0,
+      "notes": "string"
+    }}
+  ]
+}}
+        """
+ 
+ 
+    user_profile = f"""
+User:
+Username: {username}
+Gender: {gender}
+Age: {age}
+Weight: {weight_kg} kg
+Height: {height_cm} cm
+Goal: {goal}
+Activity Level: {activity_level}
+Image Summary: {image_summary or "N/A"}
+"""
+ 
+    def generate_level(level_name):
+        query = f"{level_name} level workout for {goal}, gender: {gender}"
+        context = fetch_context(query)
+ 
+        messages = [
+            {"role": "system", "content": build_level_prompt(level_name, context)},
+            {"role": "user", "content": user_profile}
+        ]
+ 
+        response = o.chat.completions.create(
+            model="gpt-4o",
+            temperature=0.0,
+            response_format={"type": "json_object"},
+            messages=messages
+        )
+ 
+        return json.loads(response.choices[0].message.content)
+ 
+ 
+    beginner = generate_level("Beginner")
+    intermediate = generate_level("Intermediate")
+    advanced = generate_level("Advanced")
+ 
+    return {
+        "workout_levels": [
+            beginner,
+            intermediate,
+            advanced
+        ]
+    }

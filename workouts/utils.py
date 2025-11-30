@@ -2,21 +2,19 @@ from .models import Exercise, ExerciseCategory, UserExercise, UserWorkout
 from django.conf import settings
 import json
 
-file_path = settings.BASE_DIR / "user_workouts.json"
 
 def generate_workouts_for_user(workout_list=None, user=None):
     """
     Given a list of workout names and a user, return a list of Exercise objects
     that match the names in the workout_list.
     """
-    with open(file_path, 'r') as file:
-        workout_list = json.load(file)
+
     for workout in workout_list:
         user_workout = UserWorkout.objects.create(
             user=user,
             name=workout['workout_name'],
             description=workout.get('description', ''),
-            difficulty=workout.get('difficulty', 'beginner'),
+            difficulty=workout.get('difficulty', 'beginner').lower(),
             estimated_duration=workout.get('estimated_duration', 0),
             estimated_calories=workout.get('estimated_calories', 0),
         )

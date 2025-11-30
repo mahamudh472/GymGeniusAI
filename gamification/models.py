@@ -270,7 +270,18 @@ class Challenge(models.Model):
     # This will be a JSON field containing exercises similar to UserWorkout
     exercises = models.JSONField(
         default=list,
-        help_text="List of exercises with sets, reps, etc. Similar to UserExercise structure"
+        help_text=(
+            "List of exercises with detailed information. Each exercise should include:\n"
+            "- exercise_id (int, optional): ID from Exercise model to auto-populate details\n"
+            "- name (str): Exercise name\n"
+            "- sets (int): Number of sets\n"
+            "- reps (int, optional): Reps per set\n"
+            "- duration_seconds (int, optional): Duration for timed exercises\n"
+            "- rest_time (int): Rest time between sets in seconds\n"
+            "- notes (str, optional): Additional instructions\n"
+            "If exercise_id is provided, description, video, muscle_group, difficulty, "
+            "equipment_needed, calories_per_rep, and tips will be auto-populated from Exercise model."
+        )
     )
     
     # Estimated metrics

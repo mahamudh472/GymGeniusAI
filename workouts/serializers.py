@@ -144,3 +144,13 @@ class CustomRoutineExerciseCompletionSerializer(serializers.ModelSerializer):
         model = CustomRoutineExerciseCompletion
         fields = '__all__'
         read_only_fields = ['user', 'completed_at', 'calories_burned']
+
+
+class DailyProgressSerializer(serializers.Serializer):
+    """Serializer for daily progress summary"""
+    date = serializers.DateField(help_text="The date for which progress is calculated")
+    progress_percentage = serializers.FloatField(help_text="Workout completion percentage for the day")
+    calories_burned = serializers.FloatField(help_text="Total calories burned from completed workouts")
+    total_training_time = serializers.IntegerField(help_text="Total training time in minutes")
+    activities = ActivitySerializer(many=True, help_text="List of activities completed on this day")
+    workout_details = serializers.DictField(required=False, help_text="Details about the workout for the day")

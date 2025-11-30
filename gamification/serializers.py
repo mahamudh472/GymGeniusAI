@@ -48,7 +48,7 @@ class UserRankSerializer(serializers.ModelSerializer):
     """Serializer for UserRank model"""
     current_rank = RankSerializer(read_only=True)
     highest_rank_achieved = RankSerializer(read_only=True)
-    username = serializers.CharField(source='user.username', read_only=True)
+    username = serializers.SerializerMethodField()
     
     class Meta:
         model = UserRank
@@ -59,12 +59,14 @@ class UserRankSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'username', 'current_rank', 'total_points', 
                            'weekly_points', 'highest_rank_achieved', 
                            'rank_updated_at', 'created_at']
+    def get_username(self, obj):
+        return obj.user.profile_name
 
 
 class PointTransactionSerializer(serializers.ModelSerializer):
     """Serializer for PointTransaction model"""
     activity_name = serializers.CharField(source='activity_type.name', read_only=True)
-    username = serializers.CharField(source='user.username', read_only=True)
+    username = serializers.CharField(source='user.profile_name', read_only=True)
     
     class Meta:
         model = PointTransaction
@@ -77,7 +79,7 @@ class PointTransactionSerializer(serializers.ModelSerializer):
 
 class WeeklyLeaderboardSerializer(serializers.ModelSerializer):
     """Serializer for WeeklyLeaderboard model"""
-    username = serializers.CharField(source='user.username', read_only=True)
+    username = serializers.CharField(source='user.profile_name', read_only=True)
     rank_name = serializers.CharField(source='rank.get_name_display', read_only=True)
     rank_color = serializers.CharField(source='rank.color_code', read_only=True)
     old_rank_name = serializers.CharField(source='old_rank.get_name_display', read_only=True)
@@ -95,7 +97,7 @@ class WeeklyLeaderboardSerializer(serializers.ModelSerializer):
 
 class RankHistorySerializer(serializers.ModelSerializer):
     """Serializer for RankHistory model"""
-    username = serializers.CharField(source='user.username', read_only=True)
+    username = serializers.CharField(source='user.profile_name', read_only=True)
     old_rank_name = serializers.CharField(source='old_rank.get_name_display', read_only=True)
     new_rank_name = serializers.CharField(source='new_rank.get_name_display', read_only=True)
     
@@ -112,7 +114,7 @@ class LeaderboardEntrySerializer(serializers.Serializer):
     """Serializer for leaderboard entries"""
     position = serializers.IntegerField()
     user_id = serializers.IntegerField()
-    username = serializers.CharField()
+    username = serializers.CharField(source='user.profile_name')
     weekly_points = serializers.IntegerField()
     total_points = serializers.IntegerField()
     is_current_user = serializers.BooleanField()
@@ -157,12 +159,31 @@ class CheckInResponseSerializer(serializers.Serializer):
     total_check_ins = serializers.IntegerField()
 
 
+class ChallengeExerciseSerializer(serializers.Serializer):
+    """Serializer for enriched challenge exercises with full exercise details"""
+    exercise_id = serializers.IntegerField(required=False, allow_null=True)
+    name = serializers.CharField()
+    description = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    video = serializers.URLField(required=False, allow_blank=True, allow_null=True)
+    muscle_group = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    difficulty = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    equipment_needed = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    calories_per_rep = serializers.FloatField(required=False, allow_null=True)
+    sets = serializers.IntegerField()
+    reps = serializers.IntegerField(required=False, allow_null=True)
+    duration_seconds = serializers.IntegerField(required=False, allow_null=True)
+    rest_time = serializers.IntegerField()
+    notes = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    tips = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+
+
 class ChallengeSerializer(serializers.ModelSerializer):
     """Serializer for Challenge model"""
     challenge_type_display = serializers.CharField(source='get_challenge_type_display', read_only=True)
     difficulty_display = serializers.CharField(source='get_difficulty_display', read_only=True)
     is_available = serializers.SerializerMethodField()
     time_remaining_seconds = serializers.SerializerMethodField()
+    exercises = serializers.SerializerMethodField()
     
     class Meta:
         model = Challenge
@@ -182,6 +203,44 @@ class ChallengeSerializer(serializers.ModelSerializer):
         if remaining:
             return remaining.total_seconds()
         return None
+    
+    def get_exercises(self, obj):
+        """Enrich exercise data with full Exercise model details"""
+        from workouts.models import Exercise
+        
+        enriched_exercises = []
+        for exercise_data in obj.exercises:
+            enriched = exercise_data.copy()
+            
+            # If exercise_id is present, fetch full exercise details
+            exercise_id = exercise_data.get('exercise_id')
+            if exercise_id:
+                try:
+                    exercise = Exercise.objects.get(id=exercise_id)
+                    enriched['name'] = exercise.name
+                    enriched['description'] = exercise.description
+                    enriched['muscle_group'] = exercise.muscle_group
+                    enriched['difficulty'] = exercise.difficulty
+                    enriched['equipment_needed'] = exercise.equipment_needed
+                    enriched['calories_per_rep'] = exercise.calories_per_rep
+                    enriched['tips'] = exercise.tips
+                    
+                    # Build absolute video URL if video exists
+                    if exercise.video:
+                        request = self.context.get('request')
+                        if request and hasattr(exercise.video, 'url'):
+                            enriched['video'] = request.build_absolute_uri(exercise.video.url)
+                        else:
+                            enriched['video'] = None
+                    else:
+                        enriched['video'] = None
+                except Exercise.DoesNotExist:
+                    # If exercise not found, keep original data
+                    pass
+            
+            enriched_exercises.append(enriched)
+        
+        return enriched_exercises
 
 
 class UserChallengeProgressSerializer(serializers.ModelSerializer):

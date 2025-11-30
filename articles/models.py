@@ -8,7 +8,6 @@ class Article(models.Model):
     description = models.TextField()
     content = models.TextField()
     image = models.ImageField(upload_to='article_images/', blank=True, null=True)
-    media_url = models.URLField(max_length=255, blank=True, null=True)
     category = models.CharField(max_length=100,
                                choices=[
                                    ('fitness', 'Fitness'),

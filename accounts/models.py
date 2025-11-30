@@ -68,6 +68,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     preferred_workout_days = models.ManyToManyField(WeekDay, blank=True)
     
     daily_calorie_target = models.FloatField(default=0)
+    initial_workouts_generated = models.BooleanField(default=False, help_text="Whether initial AI workouts have been generated")
 
     joined_at = models.DateTimeField(auto_now_add=True)
     last_login = models.DateTimeField(blank=True, null=True)
@@ -84,6 +85,13 @@ class User(AbstractBaseUser, PermissionsMixin):
         db_table = 'users'
 
     def __str__(self):
+        return self.email
+    
+    @property
+    def profile_name(self):
+        """Return full name if available, else email"""
+        if self.first_name and self.last_name:
+            return f"{self.first_name} {self.last_name}"
         return self.email
 
 

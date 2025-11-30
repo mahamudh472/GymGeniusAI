@@ -181,7 +181,7 @@ def get_leaderboard_for_user(user, week_start=None, limit=50):
         entry = {
             'position': idx,
             'user_id': ur.user.id,
-            'username': ur.user.username,
+            'username': ur.user.profile_name,
             'weekly_points': ur.weekly_points,
             'total_points': ur.total_points,
             'is_current_user': ur.user.id == user.id

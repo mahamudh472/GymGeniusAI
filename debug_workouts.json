@@ -1,0 +1,137 @@
+[
+    {
+        "workout_name": "Beginner Full Body Endurance Workout",
+        "description": "A beginner-friendly workout designed to improve endurance using machine and dumbbell exercises.",
+        "difficulty": "Beginner",
+        "estimated_duration": 45,
+        "estimated_calories": 300,
+        "exercises": [
+            {
+                "name": "Machine Chest Press + Row Combo",
+                "muscle_group": "Full Body",
+                "sets": 3,
+                "reps": 12,
+                "duration_seconds": 0,
+                "rest_time": 60,
+                "notes": "Focus on smooth transitions between the press and row movements."
+            },
+            {
+                "name": "Dumbbell Squat to Press",
+                "muscle_group": "Full Body",
+                "sets": 3,
+                "reps": 15,
+                "duration_seconds": 0,
+                "rest_time": 60,
+                "notes": "Maintain a steady pace to build endurance."
+            },
+            {
+                "name": "Dumbbell Step-Up",
+                "muscle_group": "Legs",
+                "sets": 3,
+                "reps": 12,
+                "duration_seconds": 0,
+                "rest_time": 60,
+                "notes": "Alternate legs and keep a consistent rhythm."
+            },
+            {
+                "name": "Dumbbell Bicep Curl",
+                "muscle_group": "Arms",
+                "sets": 3,
+                "reps": 15,
+                "duration_seconds": 0,
+                "rest_time": 60,
+                "notes": "Control the movement to maximize muscle engagement."
+            }
+        ]
+    },
+    {
+        "workout_name": "Intermediate Chest Endurance Workout",
+        "description": "A workout focused on building chest endurance using intermediate-level exercises.",
+        "difficulty": "Intermediate",
+        "estimated_duration": 45,
+        "estimated_calories": 300,
+        "exercises": [
+            {
+                "name": "Incline Dumbbell Fly",
+                "muscle_group": "Chest",
+                "sets": 3,
+                "reps": 12,
+                "duration_seconds": 60,
+                "rest_time": 30,
+                "notes": "Focus on controlled movements and squeezing the chest at the top of the motion."
+            },
+            {
+                "name": "Incline Chest Press Machine",
+                "muscle_group": "Chest",
+                "sets": 3,
+                "reps": 12,
+                "duration_seconds": 60,
+                "rest_time": 30,
+                "notes": "Maintain a steady pace and ensure full range of motion."
+            },
+            {
+                "name": "Dumbbell Pullover",
+                "muscle_group": "Chest",
+                "sets": 3,
+                "reps": 12,
+                "duration_seconds": 60,
+                "rest_time": 30,
+                "notes": "Keep your core engaged and avoid arching your back."
+            },
+            {
+                "name": "Cable Crossover",
+                "muscle_group": "Chest",
+                "sets": 3,
+                "reps": 12,
+                "duration_seconds": 60,
+                "rest_time": 30,
+                "notes": "Focus on bringing the cables together in a smooth, controlled manner."
+            }
+        ]
+    },
+    {
+        "workout_name": "Advanced Endurance Chest and Full Body Workout",
+        "description": "A challenging workout designed to build endurance in the chest and full body using advanced exercises.",
+        "difficulty": "Advanced",
+        "estimated_duration": 45,
+        "estimated_calories": 300,
+        "exercises": [
+            {
+                "name": "Iso-Lateral Chest Press",
+                "muscle_group": "Chest",
+                "sets": 4,
+                "reps": 12,
+                "duration_seconds": 0,
+                "rest_time": 60,
+                "notes": "Press each arm independently to ensure balanced strength development."
+            },
+            {
+                "name": "Single-Arm Cable Fly",
+                "muscle_group": "Chest",
+                "sets": 4,
+                "reps": 12,
+                "duration_seconds": 0,
+                "rest_time": 60,
+                "notes": "Focus on controlled movements to maximize muscle engagement."
+            },
+            {
+                "name": "Dumbbell Thruster",
+                "muscle_group": "Full Body",
+                "sets": 4,
+                "reps": 15,
+                "duration_seconds": 0,
+                "rest_time": 60,
+                "notes": "Perform a front squat followed by an overhead press for full body activation."
+            },
+            {
+                "name": "Dumbbell Snatch",
+                "muscle_group": "Full Body",
+                "sets": 4,
+                "reps": 10,
+                "duration_seconds": 0,
+                "rest_time": 60,
+                "notes": "Explosively lift the dumbbell overhead to build power and endurance."
+            }
+        ]
+    }
+]

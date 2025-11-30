@@ -37,6 +37,7 @@ Represents a workout challenge with exercises and rewards.
 ```json
 [
   {
+    "exercise_id": 5,
     "name": "Push-ups",
     "sets": 3,
     "reps": 15,
@@ -44,11 +45,35 @@ Represents a workout challenge with exercises and rewards.
     "notes": "Keep your back straight"
   },
   {
+    "exercise_id": 12,
     "name": "Squats",
     "sets": 4,
     "reps": 20,
     "rest_time": 90,
     "notes": "Go down to 90 degrees"
+  }
+]
+```
+
+**Enhanced Exercise Fields:**
+
+When creating challenges, you can include an `exercise_id` field that references an Exercise from the workout system. When `exercise_id` is provided, the API will automatically enrich the response with:
+- `description`: Full exercise description
+- `video`: Video URL demonstrating the exercise
+- `muscle_group`: Target muscle group (e.g., "Chest", "Legs", "Core")
+- `difficulty`: Exercise difficulty level
+- `equipment_needed`: Required equipment
+- `calories_per_rep`: Estimated calories burned per repetition
+- `tips`: Exercise tips and best practices
+
+**Minimal Exercise Structure (without exercise_id):**
+```json
+[
+  {
+    "name": "Push-ups",
+    "sets": 3,
+    "reps": 15,
+    "rest_time": 60
   }
 ]
 ```
@@ -104,10 +129,19 @@ Tracks a user's progress on a specific challenge.
       "end_date": "2025-11-27T23:59:59Z",
       "exercises": [
         {
+          "exercise_id": 5,
           "name": "Push-ups",
+          "description": "A basic upper body exercise targeting chest, shoulders, and triceps",
+          "video": "http://localhost:8000/media/exercise_videos/pushups.mp4",
+          "muscle_group": "Chest",
+          "difficulty": "beginner",
+          "equipment_needed": "None",
+          "calories_per_rep": 0.35,
+          "tips": "Keep your core tight and back straight throughout the movement",
           "sets": 3,
           "reps": 15,
-          "rest_time": 60
+          "rest_time": 60,
+          "notes": "Keep your back straight"
         }
       ],
       "estimated_duration": 30,
@@ -152,16 +186,34 @@ curl -X GET "http://localhost:8000/api/gamification/challenges/?challenge_type=D
     "end_date": "2025-11-27T23:59:59Z",
     "exercises": [
       {
+        "exercise_id": 5,
         "name": "Push-ups",
+        "description": "A basic upper body exercise targeting chest, shoulders, and triceps",
+        "video": "http://localhost:8000/media/exercise_videos/pushups.mp4",
+        "muscle_group": "Chest",
+        "difficulty": "beginner",
+        "equipment_needed": "None",
+        "calories_per_rep": 0.35,
+        "tips": "Keep your core tight and back straight throughout the movement",
         "sets": 3,
         "reps": 15,
-        "rest_time": 60
+        "rest_time": 60,
+        "notes": "Keep your back straight"
       },
       {
+        "exercise_id": 12,
         "name": "Squats",
+        "description": "Lower body compound exercise targeting quads, glutes, and hamstrings",
+        "video": "http://localhost:8000/media/exercise_videos/squats.mp4",
+        "muscle_group": "Legs",
+        "difficulty": "beginner",
+        "equipment_needed": "None",
+        "calories_per_rep": 0.45,
+        "tips": "Keep your weight on your heels and chest up",
         "sets": 4,
         "reps": 20,
-        "rest_time": 90
+        "rest_time": 90,
+        "notes": "Go down to 90 degrees"
       }
     ],
     "estimated_duration": 30,

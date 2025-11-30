@@ -10,6 +10,7 @@ urlpatterns = [
     path('<int:pk>/', views.UserWorkoutDetailAPIView.as_view(), name='user-workout-detail'),
     path('track-progress/', views.TrackWorkoutProgressView.as_view(), name='track-workout-progress'),
     path('activities/', views.ActivityListView.as_view(), name='activity-list'),
+    path('daily-progress/', views.DailyProgressView.as_view(), name='daily-progress'),
     
     # Exercise listing
     path('exercises/', views.ExerciseListView.as_view(), name='exercise-list'),

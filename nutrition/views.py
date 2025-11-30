@@ -102,7 +102,7 @@ class NutritionHomeView(generics.GenericAPIView):
                 "streak": streak,
                 "calories_target": calories_target,
                 "calories_gain": calories_gain,
-                "todays_meals": UserUploadedMealSerializer(todays_meals, many=True).data,
+                "todays_meals": UserUploadedMealSerializer(todays_meals, many=True, context={'request': request}).data,
                 # "upload_dates": list(upload_dates)
             }, status=200)
         except Exception as e:

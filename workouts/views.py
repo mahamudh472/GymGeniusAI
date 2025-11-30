@@ -16,7 +16,8 @@ from .serializers import (
     UserWorkoutSerializer, UserExerciseSerializer, WorkoutProgressSerializer,
     CompleteExerciseSerializer, ActivitySerializer, CustomRoutineSerializer,
     CustomRoutineExerciseSerializer, ToggleExerciseSerializer,
-    CompleteCustomRoutineExerciseSerializer, CustomRoutineExerciseCompletionSerializer
+    CompleteCustomRoutineExerciseSerializer, CustomRoutineExerciseCompletionSerializer,
+    DailyProgressSerializer
 )
 from accounts.permissions import IsActiveUser
 
@@ -110,7 +111,7 @@ class TrackWorkoutProgressView(APIView):
         ]
     )
     def post(self, request):
-        serializer = CompleteExerciseSerializer(data=request.data)
+        serializer = CompleteExerciseSerializer(data=request.data, context={'request': request})
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
@@ -181,11 +182,11 @@ class TrackWorkoutProgressView(APIView):
                     calories=float(actual_calories)
                 )
                 activity_created = True
-                activity_data = ActivitySerializer(activity).data
+                activity_data = ActivitySerializer(activity, context={'request': request}).data
             
             return Response({
                 'message': 'Exercise marked as completed',
-                'workout_progress': WorkoutProgressSerializer(workout_progress).data,
+                'workout_progress': WorkoutProgressSerializer(workout_progress, context={'request': request}).data,
                 'all_completed': all_completed,
                 'activity_created': activity_created,
                 'activity': activity_data,
@@ -267,7 +268,7 @@ class TrackWorkoutProgressView(APIView):
                 }, status=status.HTTP_200_OK)
             
             return Response({
-                'workout_progress': WorkoutProgressSerializer(workout_progress).data,
+                'workout_progress': WorkoutProgressSerializer(workout_progress, context={'request': request}).data,
                 'workout_name': user_workout.name,
                 'total_exercises': user_workout.user_exercises.count(),
                 'completed_exercises': len(workout_progress.completed_exercises),
@@ -343,7 +344,7 @@ class CustomRoutineView(APIView):
             defaults={'name': 'My Custom Routine'}
         )
         
-        serializer = CustomRoutineSerializer(custom_routine)
+        serializer = CustomRoutineSerializer(custom_routine, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     @extend_schema(
@@ -373,7 +374,7 @@ class CustomRoutineView(APIView):
             custom_routine.description = request.data['description']
         
         custom_routine.save()
-        serializer = CustomRoutineSerializer(custom_routine)
+        serializer = CustomRoutineSerializer(custom_routine, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -479,7 +480,7 @@ class ToggleCustomRoutineExerciseView(APIView):
                 )
                 action = 'added'
                 message = f'Exercise "{exercise.name}" added to custom routine'
-                exercise_data = CustomRoutineExerciseSerializer(new_exercise).data
+                exercise_data = CustomRoutineExerciseSerializer(new_exercise, context={'request': request}).data
             
             # Return updated custom routine
             custom_routine.refresh_from_db()
@@ -487,7 +488,7 @@ class ToggleCustomRoutineExerciseView(APIView):
                 'message': message,
                 'action': action,
                 'exercise': exercise_data,
-                'custom_routine': CustomRoutineSerializer(custom_routine).data
+                'custom_routine': CustomRoutineSerializer(custom_routine, context={'request': request}).data
             }, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({
@@ -620,8 +621,8 @@ class CompleteCustomRoutineExerciseView(APIView):
             
             return Response({
                 'message': 'Exercise completed successfully',
-                'completion': CustomRoutineExerciseCompletionSerializer(completion).data,
-                'activity': ActivitySerializer(activity).data
+                'completion': CustomRoutineExerciseCompletionSerializer(completion, context={'request': request}).data,
+                'activity': ActivitySerializer(activity, context={'request': request}).data
             }, status=status.HTTP_200_OK)
         except Exception as e:
             return Response({
@@ -679,3 +680,133 @@ class CustomRoutineExerciseCompletionHistoryView(generics.ListAPIView):
             queryset = queryset.filter(completed_at__gte=cutoff_date)
         
         return queryset.order_by('-completed_at')
+
+
+class DailyProgressView(APIView):
+    """
+    Get daily progress including workout completion percentage, calories burned,
+    total training time, and activities for a specific date.
+    """
+    permission_classes = [IsActiveUser]
+    
+    @extend_schema(
+        summary="Get daily progress",
+        description="Get daily progress summary including workout completion percentage, calories burned, total training time, and activities. If no date is provided, returns progress for today.",
+        parameters=[
+            OpenApiParameter(
+                name='date',
+                type=OpenApiTypes.DATE,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description='Date for which to get progress (YYYY-MM-DD format). Defaults to today if not provided.',
+                examples=[
+                    OpenApiExample(
+                        'Today',
+                        value=timezone.now().date().isoformat()
+                    ),
+                    OpenApiExample(
+                        'Specific Date',
+                        value='2025-11-30'
+                    )
+                ]
+            )
+        ],
+        responses={
+            200: DailyProgressSerializer,
+            400: {
+                'type': 'object',
+                'properties': {
+                    'error': {'type': 'string', 'example': 'Invalid date format'}
+                }
+            }
+        }
+    )
+    def get(self, request):
+        """Get daily progress for a specific date"""
+        from datetime import datetime, timedelta
+        
+        # Parse date parameter or use today
+        date_param = request.query_params.get('date')
+        if date_param:
+            try:
+                target_date = datetime.strptime(date_param, '%Y-%m-%d').date()
+            except ValueError:
+                return Response({
+                    'error': 'Invalid date format. Please use YYYY-MM-DD format.'
+                }, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            target_date = timezone.now().date()
+        
+        try:
+            user = request.user
+            
+            # Get the latest workout created on or before the target date
+            # This represents the workout that was supposed to be done on that day
+            latest_workout = UserWorkout.objects.filter(
+                user=user,
+                created_at__date__lte=target_date,
+                is_active=True
+            ).order_by('-created_at').first()
+            
+            # Initialize progress data
+            progress_percentage = 0.0
+            workout_details = None
+            
+            if latest_workout:
+                # Get workout progress for the target date
+                workout_progress = WorkoutProgress.objects.filter(
+                    user_workout=latest_workout,
+                    completed_at__date=target_date
+                ).first()
+                
+                if workout_progress:
+                    progress_percentage = workout_progress.completion_percentage
+                    workout_details = {
+                        'workout_id': latest_workout.id,
+                        'workout_name': latest_workout.name,
+                        'total_exercises': latest_workout.user_exercises.count(),
+                        'completed_exercises': len(workout_progress.completed_exercises),
+                        'estimated_duration': latest_workout.estimated_duration,
+                        'estimated_calories': latest_workout.estimated_calories,
+                    }
+                else:
+                    # No progress recorded for this workout on this date
+                    workout_details = {
+                        'workout_id': latest_workout.id,
+                        'workout_name': latest_workout.name,
+                        'total_exercises': latest_workout.user_exercises.count(),
+                        'completed_exercises': 0,
+                        'estimated_duration': latest_workout.estimated_duration,
+                        'estimated_calories': latest_workout.estimated_calories,
+                    }
+            
+            # Get all activities for the target date
+            activities = Activity.objects.filter(
+                user=user,
+                created_at__date=target_date
+            ).order_by('-created_at')
+            
+            # Calculate total calories burned and training time from activities
+            total_calories = sum(activity.calories for activity in activities)
+            total_training_time = sum(activity.duration for activity in activities)
+            
+            # Prepare response data
+            response_data = {
+                'date': target_date,
+                'progress_percentage': progress_percentage,
+                'calories_burned': total_calories,
+                'total_training_time': total_training_time,
+                'activities': ActivitySerializer(activities, many=True, context={'request': request}).data,
+            }
+            
+            if workout_details:
+                response_data['workout_details'] = workout_details
+            
+            # Return response data directly without wrapping in DailyProgressSerializer
+            # since the data is already properly formatted
+            return Response(response_data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({
+                'error': 'Failed to retrieve daily progress.',
+                'detail': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

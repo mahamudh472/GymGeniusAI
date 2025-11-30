@@ -390,3 +390,163 @@ async function dailyCheckIn() {
     }
 }
 """
+
+
+# ============================================================================
+# CHALLENGE CREATION EXAMPLES
+# ============================================================================
+
+# Example: Creating a challenge with enriched exercise data
+from gamification.models import Challenge
+from workouts.models import Exercise
+from django.utils import timezone
+from datetime import timedelta
+
+def create_daily_challenge_with_exercises():
+    """
+    Create a daily challenge using Exercise IDs for automatic enrichment.
+    When exercise_id is included, the API automatically adds:
+    - description, video, muscle_group, difficulty, equipment_needed,
+    - calories_per_rep, and tips from the Exercise model
+    """
+    
+    # Get some exercises from the database
+    pushup_exercise = Exercise.objects.get(name__icontains="Push-up")
+    squat_exercise = Exercise.objects.get(name__icontains="Squat")
+    plank_exercise = Exercise.objects.get(name__icontains="Plank")
+    
+    # Create challenge with exercise IDs
+    challenge = Challenge.objects.create(
+        name="Morning Power Challenge",
+        description="Start your day with this energizing full-body workout",
+        challenge_type="DAILY",
+        difficulty="intermediate",
+        completion_points=100,
+        start_date=timezone.now(),
+        end_date=timezone.now() + timedelta(hours=24),
+        exercises=[
+            {
+                "exercise_id": pushup_exercise.id,  # Will auto-populate details
+                "sets": 3,
+                "reps": 15,
+                "rest_time": 60,
+                "notes": "Keep your back straight and core engaged"
+            },
+            {
+                "exercise_id": squat_exercise.id,  # Will auto-populate details
+                "sets": 4,
+                "reps": 20,
+                "rest_time": 90,
+                "notes": "Go down to 90 degrees, keep weight on heels"
+            },
+            {
+                "exercise_id": plank_exercise.id,  # Will auto-populate details
+                "sets": 3,
+                "duration_seconds": 60,  # For timed exercises
+                "rest_time": 45,
+                "notes": "Hold steady, don't let your hips sag"
+            }
+        ],
+        estimated_duration=30,
+        estimated_calories=250,
+        is_active=True
+    )
+    
+    return challenge
+
+
+def create_challenge_without_exercise_ids():
+    """
+    Create a challenge with minimal exercise data (no exercise_id).
+    This is useful for custom exercises not in the Exercise database.
+    """
+    
+    challenge = Challenge.objects.create(
+        name="Quick Cardio Blast",
+        description="High-intensity cardio workout to boost your metabolism",
+        challenge_type="DAILY",
+        difficulty="beginner",
+        completion_points=50,
+        start_date=timezone.now(),
+        end_date=timezone.now() + timedelta(hours=24),
+        exercises=[
+            {
+                "name": "Jumping Jacks",
+                "sets": 3,
+                "reps": 30,
+                "rest_time": 30
+            },
+            {
+                "name": "High Knees",
+                "sets": 3,
+                "duration_seconds": 45,
+                "rest_time": 30
+            },
+            {
+                "name": "Burpees",
+                "sets": 3,
+                "reps": 10,
+                "rest_time": 60
+            }
+        ],
+        estimated_duration=15,
+        estimated_calories=150,
+        is_active=True
+    )
+    
+    return challenge
+
+
+# Example: Django management command to create weekly challenges
+# Save as: gamification/management/commands/create_weekly_challenge.py
+"""
+from django.core.management.base import BaseCommand
+from django.utils import timezone
+from datetime import timedelta
+from gamification.models import Challenge
+from workouts.models import Exercise
+import random
+
+class Command(BaseCommand):
+    help = 'Create a weekly challenge with random exercises'
+    
+    def handle(self, *args, **options):
+        # Get random exercises from different muscle groups
+        chest_exercises = list(Exercise.objects.filter(muscle_group__icontains='Chest')[:2])
+        leg_exercises = list(Exercise.objects.filter(muscle_group__icontains='Legs')[:2])
+        core_exercises = list(Exercise.objects.filter(muscle_group__icontains='Core')[:2])
+        
+        exercises_data = []
+        
+        # Add varied exercises
+        for exercise in chest_exercises + leg_exercises + core_exercises:
+            exercises_data.append({
+                "exercise_id": exercise.id,
+                "sets": random.randint(3, 5),
+                "reps": random.randint(10, 20),
+                "rest_time": random.randint(60, 90),
+                "notes": f"Focus on form and control"
+            })
+        
+        # Create the weekly challenge
+        challenge = Challenge.objects.create(
+            name=f"Weekly Challenge - {timezone.now().strftime('%B %d')}",
+            description="Complete this week's challenge for bonus points!",
+            challenge_type="WEEKLY",
+            difficulty="intermediate",
+            completion_points=500,
+            start_date=timezone.now(),
+            end_date=timezone.now() + timedelta(days=7),
+            exercises=exercises_data,
+            estimated_duration=45,
+            estimated_calories=400,
+            is_active=True
+        )
+        
+        self.stdout.write(
+            self.style.SUCCESS(
+                f'Successfully created weekly challenge: {challenge.name}'
+            )
+        )
+"""
+
