@@ -78,3 +78,10 @@ class ContactOption(models.Model):
 
     def __str__(self):
         return self.name
+
+class PrivacyPolicy(models.Model):
+    content = models.TextField()
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return "Privacy Policy"

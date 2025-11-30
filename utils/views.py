@@ -6,7 +6,7 @@ from drf_spectacular.utils import extend_schema, inline_serializer, OpenApiParam
 from drf_spectacular.types import OpenApiTypes
 
 from articles.serializers import ArticleSerializer
-from .models import Favorite, FAQ, ContactOption, Notification
+from .models import Favorite, FAQ, ContactOption, Notification, PrivacyPolicy
 from nutrition.models import Meal
 from .serializers import FavoriteSerializer, FAQSerializer, ContactOptionSerializer, NotificationSerializer
 from workouts.serializers import UserWorkoutListSerializer
@@ -213,3 +213,33 @@ class ContactOptionListView(generics.ListAPIView):
     queryset = ContactOption.objects.all()
     serializer_class = ContactOptionSerializer
     permission_classes = [permissions.AllowAny]
+
+class PrivacyPolicyView(views.APIView):
+    permission_classes = [permissions.AllowAny]
+
+    @extend_schema(
+        responses={
+            200: inline_serializer(
+                name='PrivacyPolicyResponse',
+                fields={
+                    'content': serializers.CharField(),
+                    'updated_at': serializers.DateTimeField()
+                }
+            )
+        }
+    )
+    def get(self, request, *args, **kwargs):
+        try:
+            policy = PrivacyPolicy.objects.latest('updated_at')
+            return Response(
+                {
+                    "content": policy.content,
+                    "updated_at": policy.updated_at
+                },
+                status=status.HTTP_200_OK
+            )
+        except PrivacyPolicy.DoesNotExist:
+            return Response(
+                {"detail": "Privacy policy not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )

@@ -1,5 +1,5 @@
 from unfold.admin import ModelAdmin
-from .models import FAQ, ContactOption, Favorite, Notification
+from .models import FAQ, ContactOption, Favorite, Notification, PrivacyPolicy
 from django.contrib import admin
 
 
@@ -25,3 +25,8 @@ class ContactOptionAdmin(ModelAdmin):
 class FavoriteAdmin(ModelAdmin):
     list_display = ['user', 'content_type', 'object_id', 'created_at']
     search_fields = ['user__username', 'content_type__model']
+
+@admin.register(PrivacyPolicy)
+class PrivacyPolicyAdmin(ModelAdmin):
+    list_display = ['updated_at']
+    readonly_fields = ['updated_at']

@@ -4,7 +4,8 @@ from utils.views import (
     FAQListView, 
     FavoriteListView, 
     FavoriteToggleView,
-    MarkAllNotificationsReadView, 
+    MarkAllNotificationsReadView,
+    PrivacyPolicyView, 
     SearchResultsView, 
     ContactOptionListView,
     NotificationListView,
@@ -21,4 +22,5 @@ urlpatterns = [
     path('notifications/', NotificationListView.as_view(), name='notification-list'),
     path('notifications/<int:pk>/', NotificationDetailView.as_view(), name='notification-detail'),
     path('notifications/mark-all-read/', MarkAllNotificationsReadView.as_view(), name='mark-all-read'),
+    path('privacy-policy/', PrivacyPolicyView.as_view(), name='privacy-policy'),
 ]
