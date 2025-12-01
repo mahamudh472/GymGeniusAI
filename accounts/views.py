@@ -37,34 +37,33 @@ class RegisterView(GenericAPIView):
     def post(self, request):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
-            user = serializer.save(is_verified=True)
+            user = serializer.save(is_verified=False)
 
-            return Response({"message": "Account created successfully"}, status=status.HTTP_201_CREATED)
-            # otp = str(random.randint(1000, 9999))
-            # OTP.objects.create(
-            #     user=user,
-            #     code=otp,
-            #     purpose='signup',
-            #     expires_at=timezone.now() + timezone.timedelta(minutes=10)
-            # )
-            # print(f"Sending OTP {otp} to email {user.email}")
+            otp = str(random.randint(1000, 9999))
+            OTP.objects.create(
+                user=user,
+                code=otp,
+                purpose='signup',
+                expires_at=timezone.now() + timezone.timedelta(minutes=10)
+            )
+            print(f"Sending OTP {otp} to email {user.email}")
             
-            # try:
-            #     send_mail(
-            #         'Verify your email',
-            #         f'Your OTP for email verification is: {otp}',
-            #         settings.DEFAULT_FROM_EMAIL,
-            #         [user.email],
-            #     )
-            #     return Response({"message": "Otp sent successfully"}, status=status.HTTP_201_CREATED)
-            # except Exception as e:
-            #     # Log the error for debugging
-            #     print(f"Email sending failed: {str(e)}")
-            #     # Still return success but with different message
-            #     return Response({
-            #         "message": "Account created successfully. Email service temporarily unavailable.",
-            #         "otp": otp if settings.DEBUG else None  # Only show OTP in debug mode
-            #     }, status=status.HTTP_201_CREATED)
+            try:
+                send_mail(
+                    'Verify your email',
+                    f'Your OTP for email verification is: {otp}',
+                    settings.DEFAULT_FROM_EMAIL,
+                    [user.email],
+                )
+                return Response({"message": "Otp sent successfully"}, status=status.HTTP_201_CREATED)
+            except Exception as e:
+                # Log the error for debugging
+                print(f"Email sending failed: {str(e)}")
+                # Still return success but with different message
+                return Response({
+                    "message": "Account created successfully. Email service temporarily unavailable.",
+                    "otp": otp if settings.DEBUG else None  # Only show OTP in debug mode
+                }, status=status.HTTP_201_CREATED)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
