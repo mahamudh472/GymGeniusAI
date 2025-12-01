@@ -121,29 +121,29 @@ class ConversationView(GenericAPIView):
     
 
 
-class TestView(GenericAPIView):
-    # permission_classes = [IsAuthenticated, IsActiveUser]
-    permission_classes = []
+    # class TestView(GenericAPIView):
+    #     # permission_classes = [IsAuthenticated, IsActiveUser]
+    #     permission_classes = []
 
-    def get(self, request, *args, **kwargs):
-        from .utils import generate_dataset_based_workout, generate_multi_level_workouts
-        from workouts.utils import generate_workouts_for_user
-        user = request.user
+    #     def get(self, request, *args, **kwargs):
+    #         from .utils import generate_dataset_based_workout, generate_multi_level_workouts
+    #         from workouts.utils import generate_workouts_for_user
+    #         user = request.user
 
-        response = generate_multi_level_workouts(
-            gender=user.gender,
-            age=user.age,
-            weight_kg=user.weight_kg,
-            height_cm=user.height_cm,
-            goal=user.goal,
-            activity_level=user.activity_level,
-            username=user.profile_name
-        )
-        workouts = response['workout_levels']
-        with open("debug_workouts.json", "w") as f:
-            import json
-            json.dump(workouts, f, indent=4)
+    #         response = generate_multi_level_workouts(
+    #             gender=user.gender,
+    #             age=user.age,
+    #             weight_kg=user.weight_kg,
+    #             height_cm=user.height_cm,
+    #             goal=user.goal,
+    #             activity_level=user.activity_level,
+    #             username=user.profile_name
+    #         )
+    #         workouts = response['workout_levels']
+    #         with open("debug_workouts.json", "w") as f:
+    #             import json
+    #             json.dump(workouts, f, indent=4)
 
-        generate_workouts_for_user(workout_list=workouts, user=user)
-        
-        return Response({"message": "Test view is working!", "workout": workouts})
+    #         generate_workouts_for_user(workout_list=workouts, user=user)
+            
+    #         return Response({"message": "Test view is working!", "workout": workouts})
