@@ -118,13 +118,15 @@ class GalleryDashboardView(GenericAPIView):
 
             for item in month_data:
                 date_str = item['uploaded_at__date'].isoformat()
-                image_type = choices[item['image_type']]   # readable label
+                raw_type = item['image_type']
+                image_type = choices.get(raw_type)
+                if not raw_type:
+                    continue
 
                 if date_str not in date_image_types:
                     date_image_types[date_str] = set()
 
-                date_image_types[date_str].add(image_type)
-
+                date_image_types[date_str].add(image_type)                
             one_week_ago = timezone.now() - timedelta(days=7)
             images_last_week = UserGallery.objects.filter(user=user, uploaded_at__gte=one_week_ago).count()
             
