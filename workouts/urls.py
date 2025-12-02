@@ -11,6 +11,7 @@ urlpatterns = [
     path('track-progress/', views.TrackWorkoutProgressView.as_view(), name='track-workout-progress'),
     path('activities/', views.ActivityListView.as_view(), name='activity-list'),
     path('daily-progress/', views.DailyProgressView.as_view(), name='daily-progress'),
+    path('recommendation/', views.WorkoutRecommendationView.as_view(), name='workout-recommendation'),
     
     # Exercise listing
     path('exercises/', views.ExerciseListView.as_view(), name='exercise-list'),

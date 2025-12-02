@@ -810,3 +810,29 @@ class DailyProgressView(APIView):
                 'error': 'Failed to retrieve daily progress.',
                 'detail': str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+class WorkoutRecommendationView(generics.ListAPIView):
+    """
+    Retrieve a workout recommendation for the authenticated user based on their profile.
+    """
+    serializer_class = UserWorkoutListSerializer
+    permission_classes = [IsActiveUser]
+
+    def get_queryset(self):
+        user = self.request.user
+        # Simple recommendation logic based on user's goal and activity level
+        queryset = UserWorkout.objects.filter(is_active=True)
+
+        if user.goal == 'weight_loss':
+            queryset = queryset.filter(difficulty__in=['beginner', 'intermediate'])
+        elif user.goal == 'muscle_gain':
+            queryset = queryset.filter(difficulty__in=['intermediate', 'advanced'])
+        elif user.goal == 'endurance':
+            queryset = queryset.filter(difficulty__in=['beginner', 'advanced'])
+
+        if user.activity_level == 'sedentary':
+            queryset = queryset.filter(estimated_duration__lte=30)
+        elif user.activity_level == 'active':
+            queryset = queryset.filter(estimated_duration__gte=30)
+
+        return queryset.order_by('?').prefetch_related('user_exercises__exercise')
