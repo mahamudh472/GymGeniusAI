@@ -14,7 +14,8 @@ from drf_spectacular.utils import extend_schema, inline_serializer
 from accounts.serializers import (
     CustomTokenObtainPairSerializer, 
     ResetPasswordConfirmSerializer,
-    RegisterSerializer, 
+    RegisterSerializer,
+    SubscriptionPlanSerializer, 
     UserSerializer, 
     VerifyEmailSerializer,
     CoachSerializer,
@@ -24,7 +25,7 @@ from articles.models import Article
 from workouts.models import UserWorkout
 from workouts.serializers import UserWorkoutListSerializer
 from articles.serializers import ArticleSerializer
-from .models import User, OTP, Coach
+from .models import User, OTP, Coach, SubscriptionPlan
 from .permissions import IsActiveUser
 
 class LoginView(APIView):
@@ -347,3 +348,12 @@ class HomeAPIView(GenericAPIView):
             },
             status=status.HTTP_200_OK
         )
+
+class SubscriptionPlanListView(GenericAPIView):
+    permission_classes = []
+    serializer_class = SubscriptionPlanSerializer
+    
+    def get(self, request):
+        plans = SubscriptionPlan.objects.all()
+        serializer = self.serializer_class(plans, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)

@@ -19,4 +19,5 @@ urlpatterns = [
     path('profile/update/', views.UpdateProfileView.as_view(), name='profile_update'),
     path('coaches/', views.CoachListView.as_view(), name='coach_list'),
     path('home/', views.HomeAPIView.as_view(), name='home_api'),
+    path('subscription-plans/', views.SubscriptionPlanListView.as_view(), name='subscription_plans'),
 ]

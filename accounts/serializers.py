@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Coach, User, WeekDay
+from .models import Coach, User, WeekDay, SubscriptionPlan
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 class WeekDaySerializer(serializers.ModelSerializer):
@@ -89,3 +89,8 @@ class CoachSerializer(serializers.ModelSerializer):
     class Meta:
         model = Coach
         fields = ['id', 'name', 'behavior']
+
+class SubscriptionPlanSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SubscriptionPlan
+        fields = "__all__"
