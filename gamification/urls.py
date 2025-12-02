@@ -12,10 +12,10 @@ from .views import (
 app_name = 'gamification'
 
 router = DefaultRouter()
-router.register(r'ranks', RankViewSet, basename='rank')
-router.register(r'activities', ActivityTypeViewSet, basename='activity')
-router.register(r'user-ranks', UserRankViewSet, basename='user-rank')
-router.register(r'transactions', PointTransactionViewSet, basename='transaction')
+# router.register(r'ranks', RankViewSet, basename='rank')
+# router.register(r'activities', ActivityTypeViewSet, basename='activity')
+# router.register(r'user-ranks', UserRankViewSet, basename='user-rank')
+# router.register(r'transactions', PointTransactionViewSet, basename='transaction')
 router.register(r'challenges', ChallengeViewSet, basename='challenge')
 
 urlpatterns = [
@@ -24,9 +24,9 @@ urlpatterns = [
     path('leaderboard/history/', WeeklyLeaderboardHistoryView.as_view(), name='leaderboard-history'),
     
     # User stats and info
-    path('stats/', UserStatsView.as_view(), name='user-stats'),
-    path('streak/', UserStreakView.as_view(), name='user-streak'),
-    path('rank-history/', RankHistoryView.as_view(), name='rank-history'),
+    # path('stats/', UserStatsView.as_view(), name='user-stats'),
+    # path('streak/', UserStreakView.as_view(), name='user-streak'),
+    # path('rank-history/', RankHistoryView.as_view(), name='rank-history'),
     
     # Actions
     path('checkin/', DailyCheckInView.as_view(), name='daily-checkin'),
