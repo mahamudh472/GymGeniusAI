@@ -221,6 +221,7 @@ class ChallengeSerializer(serializers.ModelSerializer):
                     enriched['description'] = exercise.description
                     enriched['muscle_group'] = exercise.muscle_group
                     enriched['difficulty'] = exercise.difficulty
+                    enriched['duration_seconds'] = exercise.default_duration_seconds
                     enriched['equipment_needed'] = exercise.equipment_needed
                     enriched['calories_per_rep'] = exercise.calories_per_rep
                     enriched['tips'] = exercise.tips
