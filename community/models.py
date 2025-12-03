@@ -85,3 +85,34 @@ class ForumPost(models.Model):
     
     def __str__(self):
         return f"Post by {self.user.email} on {self.created_at.strftime('%Y-%m-%d %H:%M:%S')}"
+
+class ForumComment(models.Model):
+    post = models.ForeignKey(ForumPost, on_delete=models.CASCADE, related_name='comments')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='forum_comments')
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'forum_comments'
+        verbose_name = 'Forum Comment'
+        verbose_name_plural = 'Forum Comments'
+        ordering = ['created_at']
+    
+    def __str__(self):
+        return f"Comment by {self.user.email} on {self.created_at.strftime('%Y-%m-%d %H:%M:%S')}"
+
+class ForumPostLike(models.Model):
+    post = models.ForeignKey(ForumPost, on_delete=models.CASCADE, related_name='likes_set')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='liked_posts')
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        db_table = 'forum_post_likes'
+        verbose_name = 'Forum Post Like'
+        verbose_name_plural = 'Forum Post Likes'
+        unique_together = ['post', 'user']
+    
+    def __str__(self):
+        return f"{self.user.email} liked post {self.post.id}"
+
