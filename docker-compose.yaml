@@ -27,6 +27,8 @@ services:
       - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND}
     env_file:
       - .env
+    volumes:
+      - media_data:/app/media
     ports:
       - "8000:8000"
     depends_on:
@@ -36,6 +38,8 @@ services:
     command: celery -A GymGeniusAI worker --loglevel=info
     env_file:
       - .env
+    volumes:
+      - media_data:/app/media
     depends_on:
       - redis
   
@@ -43,5 +47,6 @@ volumes:
   redis_data:
     driver: local
   pgdata:
+  media_data:
 
     
