@@ -2,10 +2,20 @@ services:
   redis:
     image: "redis:latest"
     container_name: "gymgeniusai_redis"
-    ports:
-      - "6379:6379"
     volumes:
       - redis_data:/data
+  
+  postgres:
+    image: "postgres:latest"
+    container_name: "gymgeniusai_postgres"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql
 
   web:
     build: .
@@ -32,5 +42,6 @@ services:
 volumes:
   redis_data:
     driver: local
+  pgdata:
 
     

@@ -130,3 +130,4 @@ langchain-pinecone
 langchain-core
 langchain-community  
 langchain 
+psycopg2-binary
