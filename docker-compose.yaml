@@ -20,7 +20,8 @@ services:
   web:
     build: .
     command: >
-      sh -c "python manage.py migrate &&
+      sh -c "python manage.py makemigrations && python manage.py migrate &&
+             python manage.py collectstatic --noinput &&
              gunicorn GymGeniusAI.wsgi:application --bind 0.0.0.0:8000"
     environment:
       - CELERY_BROKER_URL=${CELERY_BROKER_URL}
@@ -28,11 +29,24 @@ services:
     env_file:
       - .env
     volumes:
+      - static_data:/app/staticfiles
       - media_data:/app/media
-    ports:
-      - "8000:8000"
+    expose:
+      - "8000"
     depends_on:
       - redis
+
+  nginx:
+    image: nginx:alpine
+    container_name: "gymgeniusai_nginx"
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - static_data:/app/staticfiles
+      - media_data:/app/media
+    depends_on:
+      - web
   celery:
     build: .
     command: celery -A GymGeniusAI worker --loglevel=info
@@ -48,5 +62,6 @@ volumes:
     driver: local
   pgdata:
   media_data:
+  static_data:
 
     

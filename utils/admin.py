@@ -5,10 +5,11 @@ from django.contrib import admin
 
 @admin.register(Notification)
 class NotificationAdmin(ModelAdmin):
-    list_display = ['user', 'title', 'is_read', 'created_at']
-    list_filter = ['is_read', 'created_at']
-    search_fields = ['user__email', 'title', 'message']
-    ordering = ['-created_at']
+    pass
+    # list_display = ['user', 'title', 'is_read', 'created_at']
+    # list_filter = ['is_read', 'created_at']
+    # search_fields = ['user__email', 'title', 'message']
+    # ordering = ['-created_at']
 
 
 @admin.register(FAQ)
