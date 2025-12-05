@@ -64,8 +64,7 @@ class WorkoutGenerationTestCase(TestCase):
         self.user.height_cm = 180.0
         self.user.goal = 'weight_loss'
         self.user.activity_level = 'intermediate'
-        self.user.first_name = 'Test'
-        self.user.last_name = 'User'
+        self.user.full_name = 'Test User'
         self.user.save()
 
         # Mock the workout generation

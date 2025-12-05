@@ -8,21 +8,11 @@ class WeekDaySerializer(serializers.ModelSerializer):
         fields = ['id', 'name']
 
 class RegisterSerializer(serializers.ModelSerializer):
-    full_name = serializers.CharField(write_only=True)
     class Meta:
         model = User
         fields = ['id', 'full_name', 'email', 'password']
 
     
-    def create(self, validated_data):
-        full_name = validated_data.pop('full_name', None)
-        if full_name:
-            names = full_name.split()
-            validated_data['first_name'] = names[0]
-            if len(names) > 1:
-                validated_data['last_name'] = ' '.join(names[1:])
-        user = User.objects.create_user(**validated_data)
-        return user
 
 class VerifyEmailSerializer(serializers.Serializer):
     email = serializers.EmailField()
@@ -58,7 +48,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'email', 'phone_number', 'avatar',
-                  'first_name', 'last_name', 'gender',
+                  'full_name', 'gender',
                   'age', 'date_of_birth', 'height_cm',
                   'weight_kg', 'goal', 'activity_level',
                   'coach_type', 'preferred_workout_time', 'rank',

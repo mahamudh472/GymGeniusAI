@@ -17,7 +17,7 @@ class UserAdmin(BaseUserAdmin, ModelAdmin):
         ('Permissions', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
         ('Important dates', {'fields': ('last_login',)}),  # removed date_joined
         ('Profile Information', {
-            'fields': ('phone_number', 'is_verified', 'gender', 'age', 'height_cm', 'weight_kg', 'avatar')
+            'fields': ('full_name', 'phone_number', 'is_verified', 'gender', 'age', 'height_cm', 'weight_kg', 'avatar')
         }),
         ('Fitness Goals', {
             'fields': ('goal', 'activity_level', 'coach_type', 'subscription_id')

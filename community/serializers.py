@@ -3,12 +3,10 @@ from .models import ForumPost, ForumComment, ForumPostLike
 
 class ForumPostSerializer(serializers.ModelSerializer):
     """Serializer for ForumPost model"""
-    user_name = serializers.SerializerMethodField()
+    user_name = serializers.CharField(source='user.full_name', read_only=True)
     comments = serializers.IntegerField(source='comments.count', read_only=True)
     avatar = serializers.ImageField(source='user.avatar', read_only=True)
     
-    def get_user_name(self, obj):
-        return f"{obj.user.first_name} {obj.user.last_name}" if obj.user.first_name and obj.user.last_name else obj.user.username
 
     class Meta:
         model = ForumPost
@@ -20,11 +18,9 @@ class ForumPostSerializer(serializers.ModelSerializer):
 
 class ForumCommentSerializer(serializers.ModelSerializer):
     """Serializer for ForumComment model"""
-    user_name = serializers.SerializerMethodField()
+    user_name = serializers.CharField(source='user.full_name', read_only=True)
     avatar = serializers.ImageField(source='user.avatar', read_only=True)
-    def get_user_name(self, obj):
-        return f"{obj.user.first_name} {obj.user.last_name}" if obj.user.first_name and obj.user.last_name else obj.user.username
-
+    
     class Meta:
         model = ForumComment
         fields = [

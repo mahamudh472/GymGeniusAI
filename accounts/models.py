@@ -37,8 +37,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email = models.EmailField(unique=True, max_length=255)
     username = models.CharField(max_length=150, blank=True, null=True)
-    first_name = models.CharField(max_length=150, blank=True, null=True)
-    last_name = models.CharField(max_length=150, blank=True, null=True)
+    full_name = models.CharField(max_length=150, blank=True, null=True)
     phone_number = models.CharField(max_length=20, blank=True, null=True)
     is_verified = models.BooleanField(default=False)
     
@@ -90,10 +89,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     @property
     def profile_name(self):
         """Return full name if available, else email"""
-        if self.first_name and self.last_name:
-            return f"{self.first_name} {self.last_name}"
-        return self.email
-
+        self.full_name
 
 
 class OTP(models.Model):

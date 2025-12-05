@@ -20,8 +20,7 @@ def get_details_for_ai(user_id):
         
         context = {
             "email": user.email,
-            "first_name": user.first_name,
-            "last_name": user.last_name,
+            "full_name": user.full_name,
             "gender": gender,
             "age": age,
             "height_cm": height_cm,
