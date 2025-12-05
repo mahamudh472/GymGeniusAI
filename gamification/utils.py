@@ -150,7 +150,7 @@ def process_daily_checkin(user) -> Tuple[bool, str, int]:
     return True, final_message, total_points
 
 
-def get_leaderboard_for_user(user, week_start=None, limit=50):
+def get_leaderboard_for_user(user, week_start=None, limit=50, request=None) -> Dict:
     """
     Get the leaderboard showing only users in the same rank as the given user.
     
@@ -181,7 +181,8 @@ def get_leaderboard_for_user(user, week_start=None, limit=50):
         entry = {
             'position': idx,
             'user_id': ur.user.id,
-            'username': ur.user.profile_name,
+            'full_name': ur.user.full_name,
+            'avatar': request.build_absolute_uri(ur.user.avatar.url) if ur.user.avatar else None,
             'weekly_points': ur.weekly_points,
             'total_points': ur.total_points,
             'is_current_user': ur.user.id == user.id

@@ -138,7 +138,7 @@ class LeaderboardView(APIView):
     )
     def get(self, request):
         limit = int(request.query_params.get('limit', 50))
-        leaderboard_data = get_leaderboard_for_user(request.user, limit=limit)
+        leaderboard_data = get_leaderboard_for_user(request.user, limit=limit, request=request)
         
         return Response({
             'success': True,
