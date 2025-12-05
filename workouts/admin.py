@@ -10,6 +10,7 @@ from unfold.admin import ModelAdmin
 class ExerciseCategoryAdmin(ModelAdmin):
     list_display = ['name', 'description']
     search_fields = ['name']
+    list_per_page = 50
 
 
 @admin.register(Exercise)
@@ -18,6 +19,8 @@ class ExerciseAdmin(ModelAdmin):
     list_filter = ['difficulty', 'category', 'muscle_group']
     search_fields = ['name', 'description', 'muscle_group', 'equipment_needed']
     ordering = ['name']
+    raw_id_fields = ['category']
+    list_per_page = 50
     fieldsets = (
         ('Basic Information', {
             'fields': ('name', 'description', 'video', 'category')
@@ -32,14 +35,18 @@ class ExerciseAdmin(ModelAdmin):
             'fields': ('calories_per_rep', 'tips')
         }),
     )
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('category')
 
 
 class UserExerciseInline(admin.TabularInline):
     model = UserExercise
-    extra = 1
+    extra = 0
+    max_num = 20
     fields = ['exercise', 'sets', 'reps', 'duration_seconds', 'rest_time', 'order', 'notes']
     ordering = ['order']
-    autocomplete_fields = ['exercise']
+    raw_id_fields = ['exercise']
 
 
 @admin.register(UserWorkout)
@@ -50,6 +57,9 @@ class UserWorkoutAdmin(ModelAdmin):
     inlines = [UserExerciseInline]
     ordering = ['-created_at']
     readonly_fields = ['created_at', 'updated_at']
+    raw_id_fields = ['user']
+    list_per_page = 50
+    list_select_related = ['user']
     fieldsets = (
         ('Basic Information', {
             'fields': ('user', 'name', 'description', 'image')
@@ -65,6 +75,9 @@ class UserWorkoutAdmin(ModelAdmin):
             'fields': ('created_at', 'updated_at')
         }),
     )
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('user')
 
 
 @admin.register(UserExercise)
@@ -73,7 +86,11 @@ class UserExerciseAdmin(ModelAdmin):
     list_filter = ['user_workout__user', 'exercise__difficulty']
     search_fields = ['user_workout__name', 'exercise__name', 'user_workout__user__email']
     ordering = ['user_workout', 'order']
-    autocomplete_fields = ['exercise', 'user_workout']
+    raw_id_fields = ['exercise', 'user_workout']
+    list_per_page = 50
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('exercise', 'user_workout', 'user_workout__user')
 
 
 @admin.register(WorkoutProgress)
@@ -83,6 +100,8 @@ class WorkoutProgressAdmin(ModelAdmin):
     search_fields = ['user_workout__user__email', 'user_workout__name']
     ordering = ['-completed_at']
     readonly_fields = ['completed_at', 'completion_percentage']
+    raw_id_fields = ['user_workout']
+    list_per_page = 50
     fieldsets = (
         ('Workout Information', {
             'fields': ('user_workout', 'completed_at')
@@ -97,6 +116,9 @@ class WorkoutProgressAdmin(ModelAdmin):
             'fields': ('rating', 'difficulty_rating', 'notes')
         }),
     )
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('user_workout', 'user_workout__user')
 
 
 @admin.register(Activity)
@@ -106,6 +128,8 @@ class ActivityAdmin(ModelAdmin):
     search_fields = ['user__email', 'name']
     ordering = ['-created_at']
     readonly_fields = ['created_at']
+    raw_id_fields = ['user']
+    list_per_page = 50
     fieldsets = (
         ('Activity Information', {
             'fields': ('user', 'name')
@@ -117,14 +141,18 @@ class ActivityAdmin(ModelAdmin):
             'fields': ('created_at',)
         }),
     )
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('user')
 
 
 class CustomRoutineExerciseInline(admin.TabularInline):
     model = CustomRoutineExercise
-    extra = 1
+    extra = 0
+    max_num = 20
     fields = ['exercise', 'sets', 'reps', 'duration_seconds', 'rest_time', 'order', 'notes']
     ordering = ['order', 'added_at']
-    autocomplete_fields = ['exercise']
+    raw_id_fields = ['exercise']
 
 
 @admin.register(CustomRoutine)
@@ -134,6 +162,8 @@ class CustomRoutineAdmin(ModelAdmin):
     ordering = ['-created_at']
     readonly_fields = ['created_at', 'updated_at']
     inlines = [CustomRoutineExerciseInline]
+    raw_id_fields = ['user']
+    list_per_page = 50
     fieldsets = (
         ('Basic Information', {
             'fields': ('user', 'name', 'description')
@@ -142,6 +172,9 @@ class CustomRoutineAdmin(ModelAdmin):
             'fields': ('created_at', 'updated_at')
         }),
     )
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('user')
 
 
 @admin.register(CustomRoutineExercise)
@@ -150,8 +183,12 @@ class CustomRoutineExerciseAdmin(ModelAdmin):
     list_filter = ['custom_routine__user', 'exercise__difficulty']
     search_fields = ['custom_routine__name', 'exercise__name', 'custom_routine__user__email']
     ordering = ['custom_routine', 'order', 'added_at']
-    autocomplete_fields = ['exercise', 'custom_routine']
+    raw_id_fields = ['exercise', 'custom_routine']
     readonly_fields = ['added_at']
+    list_per_page = 50
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('exercise', 'custom_routine', 'custom_routine__user')
 
 
 @admin.register(CustomRoutineExerciseCompletion)
@@ -161,11 +198,15 @@ class CustomRoutineExerciseCompletionAdmin(ModelAdmin):
     search_fields = ['user__email', 'custom_routine_exercise__exercise__name']
     ordering = ['-completed_at']
     readonly_fields = ['completed_at', 'calories_burned']
-    autocomplete_fields = ['user', 'custom_routine_exercise']
+    raw_id_fields = ['user', 'custom_routine_exercise']
+    list_per_page = 50
     
     def exercise_name(self, obj):
         return obj.custom_routine_exercise.exercise.name
     exercise_name.short_description = 'Exercise'
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('user', 'custom_routine_exercise', 'custom_routine_exercise__exercise')
     
     fieldsets = (
         ('Exercise Information', {

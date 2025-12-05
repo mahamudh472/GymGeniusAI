@@ -9,6 +9,11 @@ class ArticleAdmin(ModelAdmin):
     list_filter = ['category', 'created_at']
     search_fields = ['title', 'content']
     ordering = ['-created_at']
+    raw_id_fields = ['created_by']
+    list_per_page = 50
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('created_by')
 
 @admin.register(WorkoutVideo)
 class WorkoutVideoAdmin(ModelAdmin):
@@ -16,4 +21,5 @@ class WorkoutVideoAdmin(ModelAdmin):
     list_filter = ['created_at']
     search_fields = ['title', 'description']
     ordering = ['-created_at']
+    list_per_page = 50
     

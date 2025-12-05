@@ -20,6 +20,7 @@ class RankAdmin(ModelAdmin):
     list_filter = ['level']
     search_fields = ['name']
     ordering = ['level']
+    list_per_page = 50
 
 
 @admin.register(ActivityType)
@@ -28,6 +29,7 @@ class ActivityTypeAdmin(ModelAdmin):
     list_filter = ['is_active', 'created_at']
     search_fields = ['name', 'code']
     readonly_fields = ['created_at', 'updated_at']
+    list_per_page = 50
 
 
 @admin.register(UserRank)
@@ -37,6 +39,8 @@ class UserRankAdmin(ModelAdmin):
     search_fields = ['user__username', 'user__email']
     readonly_fields = ['created_at', 'rank_updated_at']
     ordering = ['-weekly_points', '-total_points']
+    raw_id_fields = ['user', 'current_rank', 'highest_rank_achieved']
+    list_per_page = 50
     
     def get_queryset(self, request):
         return super().get_queryset(request).select_related('user', 'current_rank', 'highest_rank_achieved')
@@ -49,6 +53,8 @@ class PointTransactionAdmin(ModelAdmin):
     search_fields = ['user__username', 'user__email', 'description']
     readonly_fields = ['created_at']
     date_hierarchy = 'created_at'
+    raw_id_fields = ['user', 'activity_type']
+    list_per_page = 50
     
     def get_queryset(self, request):
         return super().get_queryset(request).select_related('user', 'activity_type')
@@ -61,6 +67,8 @@ class WeeklyLeaderboardAdmin(ModelAdmin):
     search_fields = ['user__username', 'user__email']
     readonly_fields = ['created_at']
     date_hierarchy = 'week_start'
+    raw_id_fields = ['user', 'rank', 'old_rank']
+    list_per_page = 50
     
     def get_queryset(self, request):
         return super().get_queryset(request).select_related('user', 'rank', 'old_rank')
@@ -73,6 +81,8 @@ class RankHistoryAdmin(ModelAdmin):
     search_fields = ['user__username', 'user__email', 'reason']
     readonly_fields = ['changed_at']
     date_hierarchy = 'changed_at'
+    raw_id_fields = ['user', 'old_rank', 'new_rank']
+    list_per_page = 50
     
     def get_queryset(self, request):
         return super().get_queryset(request).select_related('user', 'old_rank', 'new_rank')
@@ -84,6 +94,11 @@ class UserStreakAdmin(ModelAdmin):
     search_fields = ['user__username', 'user__email']
     readonly_fields = ['last_check_in']
     ordering = ['-current_streak']
+    raw_id_fields = ['user']
+    list_per_page = 50
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('user')
 
 
 @admin.register(Challenge)
@@ -95,6 +110,8 @@ class ChallengeAdmin(ModelAdmin):
     search_fields = ['name', 'description']
     readonly_fields = ['created_at', 'updated_at', 'estimated_duration', 'estimated_calories']
     date_hierarchy = 'start_date'
+    raw_id_fields = ['created_by']
+    list_per_page = 50
     
     @display(description="Exercises", ordering="id")
     def exercise_count(self, obj):
@@ -352,6 +369,8 @@ class UserChallengeProgressAdmin(ModelAdmin):
     search_fields = ['user__username', 'user__email', 'challenge__name']
     readonly_fields = ['started_at', 'updated_at', 'points_awarded']
     date_hierarchy = 'started_at'
+    raw_id_fields = ['user', 'challenge']
+    list_per_page = 50
     
     def get_queryset(self, request):
         return super().get_queryset(request).select_related('user', 'challenge')

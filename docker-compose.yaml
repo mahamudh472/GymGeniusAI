@@ -22,7 +22,7 @@ services:
     command: >
       sh -c "python manage.py makemigrations && python manage.py migrate &&
              python manage.py collectstatic --noinput &&
-             gunicorn GymGeniusAI.wsgi:application --bind 0.0.0.0:8000"
+             gunicorn GymGeniusAI.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 120 --max-requests 1000 --max-requests-jitter 50 --worker-class sync"
     environment:
       - CELERY_BROKER_URL=${CELERY_BROKER_URL}
       - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND}

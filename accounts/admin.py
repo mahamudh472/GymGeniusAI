@@ -9,6 +9,7 @@ class UserAdmin(BaseUserAdmin, ModelAdmin):
     list_filter = ['is_verified', 'gender', 'goal', 'activity_level', 'is_staff']
     search_fields = ['email', 'phone_number']
     ordering = ['-joined_at']
+    list_per_page = 50
     
     # Override fieldsets to remove date_joined
     fieldsets = (
@@ -39,6 +40,11 @@ class OTPAdmin(ModelAdmin):
     list_filter = ['purpose', 'is_used']
     search_fields = ['user__email', 'code']
     ordering = ['-created_at']
+    raw_id_fields = ['user']
+    list_per_page = 50
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('user')
 
 
 @admin.register(SubscriptionPlan)
@@ -46,6 +52,7 @@ class SubscriptionPlanAdmin(ModelAdmin):
     list_display = ['name', 'price', 'duration_days', 'is_active']
     list_filter = ['is_active']
     search_fields = ['name']
+    list_per_page = 50
 
 
 @admin.register(UserSubscription)
@@ -54,3 +61,8 @@ class UserSubscriptionAdmin(ModelAdmin):
     list_filter = ['is_active', 'payment_status']
     search_fields = ['user__email', 'transaction_id']
     ordering = ['-start_date']
+    raw_id_fields = ['user', 'plan']
+    list_per_page = 50
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('user', 'plan')

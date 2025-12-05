@@ -16,16 +16,23 @@ class NotificationAdmin(ModelAdmin):
 class FAQAdmin(ModelAdmin):
     list_display = ['question', 'created_at', 'updated_at']
     search_fields = ['question', 'answer']
+    list_per_page = 50
 
 @admin.register(ContactOption)
 class ContactOptionAdmin(ModelAdmin):
     list_display = ['name', 'link', 'created_at', 'updated_at']
     search_fields = ['name', 'link']
+    list_per_page = 50
 
 @admin.register(Favorite)
 class FavoriteAdmin(ModelAdmin):
     list_display = ['user', 'content_type', 'object_id', 'created_at']
     search_fields = ['user__username', 'content_type__model']
+    raw_id_fields = ['user']
+    list_per_page = 50
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('user', 'content_type')
 
 @admin.register(PrivacyPolicy)
 class PrivacyPolicyAdmin(ModelAdmin):
