@@ -6,28 +6,48 @@ class ForumPostSerializer(serializers.ModelSerializer):
     user_name = serializers.CharField(source='user.full_name', read_only=True)
     comments = serializers.IntegerField(source='comments.count', read_only=True)
     avatar = serializers.ImageField(source='user.avatar', read_only=True)
+    is_owner = serializers.SerializerMethodField()
+    is_liked = serializers.SerializerMethodField()
     
 
     class Meta:
         model = ForumPost
         fields = [
-            'id', 'user_name', 'avatar', 'content', 'likes', 'comments',
+            'id', 'user_name', 'avatar', 'content', 'likes', 'comments', 'is_owner', 'is_liked',
             'created_at', 'updated_at'
         ]
-        read_only_fields = ['id', 'user_name', 'avatar', 'likes', 'comments', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'user_name', 'is_owner', 'is_liked', 'avatar', 'likes', 'comments', 'created_at', 'updated_at']
+    
+    def get_is_owner(self, obj):
+        request = self.context.get('request', None)
+        if request:
+            return obj.user == request.user
+        return False
+
+    def get_is_liked(self, obj):
+        request = self.context.get('request', None)
+        if request and request.user.is_authenticated:
+            return ForumPostLike.objects.filter(post=obj, user=request.user).exists()
+        return False
 
 class ForumCommentSerializer(serializers.ModelSerializer):
     """Serializer for ForumComment model"""
     user_name = serializers.CharField(source='user.full_name', read_only=True)
     avatar = serializers.ImageField(source='user.avatar', read_only=True)
+    is_owner = serializers.SerializerMethodField()
     
     class Meta:
         model = ForumComment
         fields = [
-            'id', 'post', 'user_name', 'avatar', 'content', 
+            'id', 'post', 'user_name', 'avatar', 'content', 'is_owner',
             'created_at', 'updated_at'
         ]
-        read_only_fields = ['id', 'user_name', 'avatar', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'user_name', 'avatar', 'is_owner', 'created_at', 'updated_at']
+    def get_is_owner(self, obj):
+        request = self.context.get('request', None)
+        if request:
+            return obj.user == request.user
+        return False
     
     def validate(self, attrs):
         request = self.context.get('request', None)
