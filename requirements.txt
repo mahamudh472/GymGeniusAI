@@ -132,3 +132,4 @@ langchain-community
 langchain 
 psycopg2-binary
 whitenoise
+fcm-django

@@ -20,3 +20,4 @@ build/
 htmlcov/
 .tox/
 .cache/
+gymgeniusai-firebase-adminsdk.json
