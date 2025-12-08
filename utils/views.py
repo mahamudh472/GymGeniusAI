@@ -12,6 +12,8 @@ from .serializers import FavoriteSerializer, FAQSerializer, ContactOptionSeriali
 from workouts.serializers import UserWorkoutListSerializer
 from django_filters.rest_framework import DjangoFilterBackend
 from articles.models import Article
+from fcm_django.models import FCMDevice
+from firebase_admin .messaging import Message, Notification as FCMNotification, UnregisteredError
 # from nutrition.serializers import MealSerializer
 
 def add_notification(user, title, message, notification_type):
@@ -22,6 +24,28 @@ def add_notification(user, title, message, notification_type):
         message=message,
         notification_type=notification_type
     )
+    devices = FCMDevice.objects.filter(user=user)
+    for device in devices:
+        try:
+            response = device.send_message(
+                Message(
+                    notification=FCMNotification(
+                        title=title,
+                        body=message
+                    )
+                )
+            )
+            print(f"Success: device={device.id}, msg_id={response}")
+
+        except UnregisteredError:
+            print(f"❌ Device {device.id} is no longer registered. Removing...")
+            device.delete()  # recommended
+
+        except Exception as e:
+            print(f"❌ Failed sending to device {device.id}: {e}")
+        except Exception as e:
+            print(f"Failed to send notification to device {device.id}: {e}")
+ 
 
 class NotificationListView(generics.ListAPIView):
     serializer_class = NotificationSerializer
@@ -243,3 +267,67 @@ class PrivacyPolicyView(views.APIView):
                 {"detail": "Privacy policy not found."},
                 status=status.HTTP_404_NOT_FOUND
             )
+
+
+from rest_framework.decorators import (
+    api_view, permission_classes
+) 
+from rest_framework import serializers
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import ValidationError
+from drf_spectacular.utils import extend_schema
+from fcm_django.models import FCMDevice
+ 
+class DeviceTokenRegisterRequest(serializers.Serializer):
+    device_token = serializers.CharField()
+ 
+ 
+@extend_schema(request=DeviceTokenRegisterRequest)
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def register_device_token(request):
+    device_token = request.data.get('device_token')
+    if not device_token:
+        print("invalid token",device_token, device_token=="")
+        raise ValidationError({
+            "error": "'device_token' is required"
+        })
+
+    print("LOGGING ", device_token)
+
+    FCMDevice.objects.update_or_create(
+        user=request.user,
+        defaults={
+            'registration_id': device_token,
+        }
+    )
+    return Response({
+        "success": True
+    })
+ 
+ 
+# @extend_schema(request=DeviceTokenRegisterRequest)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def unregister_device_token(request):
+    FCMDevice.objects.filter(user=request.user).delete()
+    return Response({
+        "success": True
+    })
+
+ 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_demo_notification(request):
+    from utils.views import add_notification
+    add_notification(
+        user=request.user,
+        title="Demo Notification",
+        message="This is a demo notification.",
+        notification_type="info"
+    )
+    return Response({
+        "success": True
+    })

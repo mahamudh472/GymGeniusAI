@@ -19,10 +19,6 @@ from django.urls import path, include
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 from django.conf import settings
 from django.conf.urls.static import static
-from fcm_django.api.rest_framework import FCMDeviceAuthorizedViewSet
-from rest_framework.routers import DefaultRouter
-router = DefaultRouter()
-router.register(r'devices', FCMDeviceAuthorizedViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -38,7 +34,6 @@ urlpatterns = [
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/schema/swagger/', SpectacularSwaggerView.as_view(), name='swagger-ui'),
     path('api/schema/redoc/', SpectacularRedocView.as_view(), name='redoc'),
-    path('api/', include(router.urls)),
 ]
 
 if settings.DEBUG:
