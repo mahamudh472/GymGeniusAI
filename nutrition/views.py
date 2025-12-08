@@ -95,6 +95,15 @@ class NutritionHomeView(generics.GenericAPIView):
                 user=user,
                 created_at__date=timezone.now().date()
             )
+            from collections import Counter
+            nutrition_totals = Counter()
+
+            for meal in todays_meals:
+                if meal.macronutrients:
+                    nutrition_totals.update(meal.macronutrients)
+                if meal.micronutrients:
+                    nutrition_totals.update(meal.micronutrients)
+            nutrition_brackdown = dict(nutrition_totals)
 
             return Response({
                 "message": "Welcome to the Nutrition Home!", 
@@ -103,6 +112,7 @@ class NutritionHomeView(generics.GenericAPIView):
                 "calories_target": calories_target,
                 "calories_gain": calories_gain,
                 "todays_meals": UserUploadedMealSerializer(todays_meals, many=True, context={'request': request}).data,
+                "nutrition_brackdown": nutrition_brackdown,
                 # "upload_dates": list(upload_dates)
             }, status=200)
         except Exception as e:
@@ -171,6 +181,8 @@ class UserUploadedMealCreateView(generics.CreateAPIView):
 
             # Perform AI analysis with base64 image
             analysis_data = analyze_single_meal(image_base64)
+            temp_upload.analysis_data = analysis_data
+            temp_upload.save()
 
             return Response({
                 "temp_upload_id": temp_upload.id,
@@ -197,16 +209,13 @@ class SaveUserMealUpload(generics.CreateAPIView):
     def post(self, request, *args, **kwargs):
         user = request.user
         temp_upload_id = request.data.get('temp_upload_id')
-        analysis_data = request.data.get('analysis_data')
 
         if not temp_upload_id:
             return Response({"error": "No temporary upload ID provided."}, status=400)
         
-        if not analysis_data:
-            return Response({"error": "No analysis data provided."}, status=400)
-
         try:
             temp_upload = TemporaryMealUpload.objects.get(id=temp_upload_id, user=user)
+            analysis_data = temp_upload.analysis_data 
 
             # Read the image file from temp location
             with open(temp_upload.image.path, 'rb') as img_file:
