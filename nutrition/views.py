@@ -103,7 +103,7 @@ class NutritionHomeView(generics.GenericAPIView):
                     nutrition_totals.update(meal.macronutrients)
                 if meal.micronutrients:
                     nutrition_totals.update(meal.micronutrients)
-            nutrition_brackdown = dict(nutrition_totals)
+            nutrition_brackdown = convert_nut_data(nutrition_totals)
 
             return Response({
                 "message": "Welcome to the Nutrition Home!", 
@@ -121,6 +121,16 @@ class NutritionHomeView(generics.GenericAPIView):
                 "detail": str(e)
             }, status=500)
 
+
+def convert_nut_data(obj):
+    result = []
+    for key, value in obj.items():
+        result.append({
+            'name': "".join(key.split('_')[:-1]).title(),
+            'amount': value,
+            'unit': key.split('_')[-1]
+        })
+    return result
 
 class UserUploadedMealCreateView(generics.CreateAPIView):
     """
@@ -164,7 +174,7 @@ class UserUploadedMealCreateView(generics.CreateAPIView):
             # Debug: Check if image was saved
             if not temp_upload.image:
                 return Response({
-                    "error": "Image was not saved properly.",
+                    "error": "Image was not saved resultproperly.",
                     "temp_upload_id": temp_upload.id
                 }, status=500)
             
@@ -183,6 +193,16 @@ class UserUploadedMealCreateView(generics.CreateAPIView):
             analysis_data = analyze_single_meal(image_base64)
             temp_upload.analysis_data = analysis_data
             temp_upload.save()
+
+            micronutrients = analysis_data.get('micronutrients', {})
+            macronutrients = analysis_data.get('macronutrients', {})
+
+            modified_micronutrients = convert_nut_data(micronutrients)
+            modified_macronutrients = convert_nut_data(macronutrients)
+
+            analysis_data['micronutrients'] = modified_micronutrients
+            analysis_data['macronutrients'] = modified_macronutrients
+
 
             return Response({
                 "temp_upload_id": temp_upload.id,
@@ -245,12 +265,6 @@ class SaveUserMealUpload(generics.CreateAPIView):
                 "id": user_meal.id,
                 "meal_name": user_meal.meal_name,
                 "estimated_calories": user_meal.estimated_calories,
-                "ai_analysis": user_meal.ai_analysis,
-                "macronutrients": user_meal.macronutrients,
-                "micronutrients": user_meal.micronutrients,
-                "improvements": user_meal.improvements,
-                "created_at": user_meal.created_at,
-                "image_url": user_meal.image.url if user_meal.image else None,
                 "message": "User uploaded meal saved successfully."
             }, status=201)
         except TemporaryMealUpload.DoesNotExist:
