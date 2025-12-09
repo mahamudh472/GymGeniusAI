@@ -85,3 +85,17 @@ class PrivacyPolicy(models.Model):
 
     def __str__(self):
         return "Privacy Policy"
+
+class NotificationSetting(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='notification_setting')
+    general_notifications = models.BooleanField(default=True)
+    sound = models.BooleanField(default=True)
+    do_not_disturb = models.BooleanField(default=False)
+    vibrate = models.BooleanField(default=True)
+    lock_screen = models.BooleanField(default=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Notification Settings for {self.user.username}"    

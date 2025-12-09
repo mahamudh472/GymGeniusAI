@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.contenttypes.models import ContentType
-from .models import Favorite, FAQ, ContactOption, Notification
+from .models import Favorite, FAQ, ContactOption, Notification, NotificationSetting
 from drf_spectacular.utils import extend_schema_field, OpenApiTypes
 
 # Import your actual content serializers
@@ -119,3 +119,10 @@ class ContactOptionSerializer(serializers.ModelSerializer):
         model = ContactOption
         fields = ['id', 'name', 'icon', 'link', 'created_at', 'updated_at']
         read_only_fields = ['id', 'created_at', 'updated_at']
+
+class NotificationSettingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NotificationSetting
+        fields = ['id', 'user', 'general_notifications', 'sound', 'do_not_disturb', 'vibrate', 'lock_screen', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'user', 'created_at', 'updated_at']
+

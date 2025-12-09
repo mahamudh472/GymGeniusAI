@@ -6,14 +6,15 @@ from drf_spectacular.utils import extend_schema, inline_serializer, OpenApiParam
 from drf_spectacular.types import OpenApiTypes
 
 from articles.serializers import ArticleSerializer
-from .models import Favorite, FAQ, ContactOption, Notification, PrivacyPolicy
+from .models import Favorite, FAQ, ContactOption, Notification, PrivacyPolicy, NotificationSetting
 from nutrition.models import Meal
-from .serializers import FavoriteSerializer, FAQSerializer, ContactOptionSerializer, NotificationSerializer
+from .serializers import FavoriteSerializer, FAQSerializer, ContactOptionSerializer, NotificationSerializer, NotificationSettingSerializer
 from workouts.serializers import UserWorkoutListSerializer
 from django_filters.rest_framework import DjangoFilterBackend
 from articles.models import Article
 from fcm_django.models import FCMDevice
 from firebase_admin .messaging import Message, Notification as FCMNotification, UnregisteredError
+from accounts.permissions import IsActiveUser
 # from nutrition.serializers import MealSerializer
 
 def add_notification(user, title, message, notification_type):
@@ -331,3 +332,12 @@ def create_demo_notification(request):
     return Response({
         "success": True
     })
+
+class NotificationSettingsView(generics.RetrieveUpdateAPIView):
+    serializer_class = NotificationSettingSerializer
+    permission_classes = [IsActiveUser]
+
+    def get_object(self):
+        # Get or create notification settings for the user
+        obj, created = NotificationSetting.objects.get_or_create(user=self.request.user)
+        return obj
