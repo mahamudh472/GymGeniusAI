@@ -50,7 +50,7 @@ class UserWorkoutListAPIView(generics.ListAPIView):
         queryset = self.queryset.filter(user=self.request.user).prefetch_related('user_exercises__exercise')
         difficulty = self.request.query_params.get('difficulty', None)
         if difficulty:
-            queryset = queryset.filter(difficulty=difficulty.capitalize())
+            queryset = queryset.filter(difficulty=difficulty.lower())
         return queryset
 
 class UserWorkoutDetailAPIView(generics.RetrieveAPIView):
