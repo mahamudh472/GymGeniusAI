@@ -134,12 +134,27 @@ class GalleryDashboardView(GenericAPIView):
 
             streak = calculate_upload_streak(user)
 
+            # get the first (earliest) uploaded image and the last (most recent) uploaded image
+            first_obj = UserGallery.objects.filter(user=user).order_by('uploaded_at').first()
+            last_obj = UserGallery.objects.filter(user=user).order_by('-uploaded_at').first()
+
+            before = GalleryImageSerializer(first_obj, context={"request": request}).data if first_obj else None
+            after = GalleryImageSerializer(last_obj, context={"request": request}).data if last_obj else None
+
+            if before == after:
+                after = None
+
+            progress_days_count = (last_obj.uploaded_at.date() - first_obj.uploaded_at.date()).days + 1 if first_obj and last_obj else 0
+
             return Response({
                 "total_images": total_images,
                 "images_last_week": images_last_week,
                 "consecutive_days_streak": streak,
                 "date_image_types": date_image_types,
-                "latest_images": GalleryImageSerializer(latest_images, many=True, context={"request": request}).data
+                "latest_images": GalleryImageSerializer(latest_images, many=True, context={"request": request}).data,
+                "before": before,
+                "after": after,
+                "progress_days_count": progress_days_count
             })
         except Exception as e:
             return Response({

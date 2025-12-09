@@ -357,3 +357,25 @@ class SubscriptionPlanListView(GenericAPIView):
         plans = SubscriptionPlan.objects.all()
         serializer = self.serializer_class(plans, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+class DeleteAccountView(GenericAPIView):
+    permission_classes = [IsAuthenticated, IsActiveUser]
+
+    @extend_schema(
+        responses={
+            200: inline_serializer(
+                name='DeleteAccountResponse',
+                fields={
+                    'message': serializers.CharField()
+                }
+            )
+        }
+    )
+    def delete(self, request):
+        user = request.user
+        user.delete()
+        return Response(
+            {"message": "Account deleted successfully."},
+            status=status.HTTP_200_OK
+        )
+

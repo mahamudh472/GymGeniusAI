@@ -20,4 +20,5 @@ urlpatterns = [
     path('coaches/', views.CoachListView.as_view(), name='coach_list'),
     path('home/', views.HomeAPIView.as_view(), name='home_api'),
     path('subscription-plans/', views.SubscriptionPlanListView.as_view(), name='subscription_plans'),
+    path('delete-account/', views.DeleteAccountView.as_view(), name='delete_account'),
 ]
