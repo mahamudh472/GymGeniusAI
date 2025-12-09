@@ -37,9 +37,14 @@ class ForumPostLikeAPIView(GenericAPIView):
     
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data, context={'request': request})
-        serializer.is_valid(raise_exception=True)
-        serializer.save(user=request.user)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        try:
+            serializer.is_valid(raise_exception=True)
+            serializer.save(user=request.user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            if 'Like removed' in str(e.detail):
+                return Response({'detail': 'Like removed.'}, status=status.HTTP_200_OK)
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
     
 class CommentListAPIView(GenericAPIView):
     permission_classes = [IsActiveUser]
