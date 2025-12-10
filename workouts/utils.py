@@ -17,6 +17,7 @@ def generate_workouts_for_user(workout_list=None, user=None):
             difficulty=workout.get('difficulty', 'beginner').lower(),
             estimated_duration=workout.get('estimated_duration', 0),
             estimated_calories=workout.get('estimated_calories', 0),
+            created_by_ai=True
         )
         exercise_order = 1
         for exercise in workout['exercises']:

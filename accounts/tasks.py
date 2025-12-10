@@ -71,3 +71,57 @@ def generate_initial_workouts_task(self, user_id):
         logger.error(f"Error generating workouts for user {user_id}: {str(e)}")
         # Retry the task with exponential backoff
         raise self.retry(exc=e, countdown=60 * (2 ** self.request.retries))
+
+
+@shared_task
+def generate_daily_workout_session_for_all_active_users(user_id=None):
+
+    # users that logged in within the last 3 days
+    from django.utils import timezone
+    from datetime import timedelta
+    
+    if user_id:
+        try:
+            user = User.objects.get(id=user_id)
+            active_users = [user]
+        except User.DoesNotExist:
+            logger.error(f"User with id {user_id} does not exist")
+            return
+    else:
+        active_users = User.objects.filter(
+            last_login__gte=timezone.now() - timedelta(days=3)
+        )
+
+    for user in active_users:
+        from ai_assistant.utils import generate_dataset_based_workout
+        from gallery.models import UserGallery
+        from workouts.models import Activity, UserWorkout
+        from workouts.utils import generate_workouts_for_user
+        
+        if not all([user.gender, user.age, user.weight_kg, user.height_cm, user.goal, user.activity_level]):
+            logger.info(f"Skipping user {user.email} due to incomplete profile data")
+            continue
+
+        if UserWorkout.objects.filter(user=user, created_by_ai=True, created_at__date=timezone.now().date()).exists():
+            logger.info(f"Daily workout already generated for user {user.email} today")
+            continue
+
+        try:
+            workout_logs = Activity.objects.filter(user=user).order_by('-created_at')[:5]
+
+            workouts = generate_dataset_based_workout(
+                gender=user.gender,
+                age=user.age,
+                weight_kg=user.weight_kg,
+                height_cm=user.height_cm,
+                goal=user.goal,
+                activity_level=user.activity_level,
+                username=user.profile_name,
+                image_summary=UserGallery.objects.filter(user=user).first().ai_summary if UserGallery.objects.filter(user=user).exists() else "",
+                workout_logs=workout_logs
+            )
+            print(workouts)
+            generate_workouts_for_user(workout_list=[workouts], user=user)
+            logger.info(f"Generated daily workout session for user {user.email}")
+        except Exception as e:
+            logger.error(f"Failed to generate daily workout for user {user.email}: {str(e)}")
