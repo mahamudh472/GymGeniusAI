@@ -198,6 +198,15 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'Asia/Dhaka'
 
+from celery.schedules import crontab
+
+CELERY_BEAT_SCHEDULE = {
+    'generate-daily-workout-session': {
+        'task': 'accounts.tasks.generate_daily_workout_session_for_all_active_users',
+        'schedule': crontab(hour=0, minute=0),
+    },
+}
+
 # CORS Configuration
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
