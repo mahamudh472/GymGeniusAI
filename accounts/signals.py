@@ -44,12 +44,18 @@ def check_and_generate_workouts(sender, instance, created, **kwargs):
         logger.debug(f"User {instance.email} profile incomplete, skipping workout generation")
 
 @receiver(post_save, sender=User)
-def generate_daily_workout(sender, instance, created, **kwargs):
+def generate_daily_workout(sender, instance, created, update_fields=None, **kwargs):
     """
-    Signal handler that generates a daily workout for the user
-    whenever the user profile is updated.
+    Signal handler that generates a daily workout AND updates calorie target
+    for the user whenever the user profile is updated or they log in.
     """
     from workouts.models import UserWorkout
+
+    # Avoid infinite recursion
+    if update_fields and 'daily_calorie_target' in update_fields:
+        return
+
+    # Check for required profile fields
     required_fields = [
         instance.gender,
         instance.age,
@@ -61,14 +67,31 @@ def generate_daily_workout(sender, instance, created, **kwargs):
     if not all(field is not None for field in required_fields):
         return
 
-    if UserWorkout.objects.filter(user=instance, created_by_ai=True, created_at__date=timezone.now().date()).exists():
-        return
+    # --- 1. Daily Workout Generation ---
+    if not UserWorkout.objects.filter(user=instance, created_by_ai=True, created_at__date=timezone.now().date()).exists():
+        try:
+            generate_daily_workout_session_for_all_active_users.apply_async(
+                args=[str(instance.id)],
+                countdown=10
+            )
+            logger.info(f"Triggered daily workout generation for user {instance.email}")
+        except Exception as e:
+            logger.error(f"Error triggering workout generation for user {instance.email}: {e}")
 
+    # --- 2. Daily Calorie Target Update ---
+    # We want to trigger this if profile data OR last_login changed.
+    # Since we can't easily track *what* changed without explicit update_fields in all calls,
+    # and we definitely know we are NOT currently updating 'daily_calorie_target' (checked above),
+    # we can safely trigger this. The task itself should be idempotent-ish (calculates based on current state).
+    
+    # We might want to avoid re-calculating on EVERY save if possible, but for now, 
+    # ensures returning users get fresh data.
+    from .tasks import update_daily_calorie_target_for_active_users
     try:
-        generate_daily_workout_session_for_all_active_users.apply_async(
+        update_daily_calorie_target_for_active_users.apply_async(
             args=[str(instance.id)],
-            countdown=10  # Wait 10 seconds before executing to allow transaction to complete
+            countdown=15
         )
-        logger.info(f"Daily workout generated for user {instance.email}")
+        logger.info(f"Triggered calorie target update for user {instance.email}")
     except Exception as e:
-        logger.error(f"Error generating daily workout for user {instance.email}: {e}")
+        logger.error(f"Error triggering calorie update for user {instance.email}: {e}")

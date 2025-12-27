@@ -125,3 +125,64 @@ def generate_daily_workout_session_for_all_active_users(user_id=None):
             logger.info(f"Generated daily workout session for user {user.email}")
         except Exception as e:
             logger.error(f"Failed to generate daily workout for user {user.email}: {str(e)}")
+
+
+@shared_task
+def update_daily_calorie_target_for_active_users(user_id=None):
+    from django.utils import timezone
+    from datetime import timedelta
+    from ai_assistant.utils import get_target_calories, update_daily_calorie_target
+    from gallery.models import UserGallery
+
+    if user_id:
+        try:
+            user = User.objects.get(id=user_id)
+            active_users = [user]
+        except User.DoesNotExist:
+            logger.error(f"User with id {user_id} does not exist")
+            return
+    else:
+        active_users = User.objects.filter(
+            last_login__gte=timezone.now() - timedelta(days=3)
+        )
+    
+    for user in active_users:
+        if not all([user.gender, user.age, user.weight_kg, user.height_cm, user.goal, user.activity_level]):
+            logger.info(f"Skipping calorie update for user {user.email} due to incomplete profile data")
+            continue
+            
+        try:
+            gallery = UserGallery.objects.filter(user=user).first()
+            image_summary = gallery.ai_summary if gallery else ""
+            
+            result = get_target_calories(
+                gender=user.gender,
+                age=user.age,
+                weight_kg=user.weight_kg,
+                height_cm=user.height_cm,
+                goal=user.goal,
+                activity_level=user.activity_level,
+                username=user.profile_name,
+                image_summary=image_summary
+            )
+            
+            if 'error' in result:
+                logger.error(f"Error getting calorie target for {user.email}: {result['error']}")
+                continue
+                
+            monthly_calories = result.get('target_calories_per_Month')
+            if not monthly_calories:
+                logger.error(f"No target_calories_per_Month returned for {user.email}")
+                continue
+            
+            # Convert monthly to daily (approx 30 days)
+            daily_calories = int(monthly_calories / 30)
+            
+            if update_daily_calorie_target(user, daily_calories):
+                logger.info(f"Updated daily calorie target for user {user.email}: {daily_calories}")
+            else:
+                 logger.error(f"Failed to update daily calorie target for user {user.email}")
+
+        except Exception as e:
+            logger.error(f"Failed to update calorie target for user {user.email}: {str(e)}")
+

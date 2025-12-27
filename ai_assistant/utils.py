@@ -242,7 +242,70 @@ Conversation history for context:
             "reply": f"Error: {str(e)}",
             "image_summary": image_summary or "N/A"
         }
- 
+
+def get_target_calories(
+    gender,
+    age,
+    weight_kg,
+    height_cm,
+    goal,
+    activity_level,
+    username,
+    current_query=None,
+    image_summary=None
+):
+    """
+    Estimate the user's target daily calorie intake based on
+    fitness goal, body composition, and activity level.
+    Returns a clean JSON with only calorie target and rationale.
+    """
+
+    try:
+        system_prompt = (
+            "You are a certified fitness nutritionist. "
+            "Your job is to calculate the user's estimated Monthly calorie target "
+            "based on gender, age, height, weight, activity level, and fitness goal. "
+            "If a body image summary is provided, consider it when adjusting the estimate. "
+            "Base your reasoning roughly on TDEE (Total Daily Energy Expenditure) principles, "
+            "with ±15% adjustment for goals like gaining or losing weight. "
+            "Give **MONTHLY** Basis Calorie Target"
+            "Output valid JSON only, in this format:\n\n"
+            "{\n"
+            "  'username': 'string',\n"
+            "  'goal': 'string',\n"
+            "  'target_calories_per_Month': int,\n"
+            "}"
+        )
+
+        user_data = f"""
+Username: {username}
+Gender: {gender}
+Age: {age}
+Weight: {weight_kg} kg
+Height: {height_cm} cm
+Activity Level: {activity_level}
+Goal: {goal}
+Body Image Summary: {image_summary or "N/A"}
+User Query: {current_query or "Calculate my daily calorie target."}
+"""
+
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_data}
+        ]
+
+        response = o.chat.completions.create(
+            model="gpt-4o",
+            temperature=0.3,
+            response_format={"type": "json_object"},
+            messages=messages
+        )
+
+        return json.loads(response.choices[0].message.content)
+
+    except Exception as e:
+        return {"error": str(e)}
+
 
 def update_daily_calorie_target(user, calorie_target):
     
@@ -251,7 +314,7 @@ def update_daily_calorie_target(user, calorie_target):
     """
     try:
         user.daily_calorie_target = calorie_target
-        user.save()
+        user.save(update_fields=['daily_calorie_target'])
         return True
     except Exception as e:
         print("Error updating daily calorie target:", e)

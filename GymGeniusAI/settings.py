@@ -205,6 +205,10 @@ CELERY_BEAT_SCHEDULE = {
         'task': 'accounts.tasks.generate_daily_workout_session_for_all_active_users',
         'schedule': crontab(hour=0, minute=0),
     },
+    'update-daily-calorie-target': {
+        'task': 'accounts.tasks.update_daily_calorie_target_for_active_users',
+        'schedule': crontab(hour=0, minute=0),
+    },
 }
 
 # CORS Configuration
