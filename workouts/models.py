@@ -1,7 +1,7 @@
 from django.db import models
 from accounts.models import User
 from random import randint
-
+from accounts.models import Coach
 
 def generate_exercise_name():
     """Generate a unique default name for exercises"""
@@ -70,6 +70,22 @@ class Exercise(models.Model):
     def __str__(self):
         return self.name
 
+class ExerciseVideo(models.Model):
+    """Videos associated with exercises"""
+    exercise = models.ForeignKey(Exercise, on_delete=models.CASCADE, related_name='videos')
+    coach = models.ForeignKey(Coach, on_delete=models.SET_NULL, related_name='exercise_videos', null=True, blank=True)
+    video_file = models.FileField(upload_to='exercise_videos/')
+    description = models.TextField(blank=True, null=True)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'exercise_videos'
+        verbose_name = 'Exercise Video'
+        verbose_name_plural = 'Exercise Videos'
+        ordering = ['-uploaded_at']
+        unique_together = ['exercise', 'coach']
+    
+    
 
 class UserWorkout(models.Model):
     """User-specific workout dynamically created by AI or manually"""

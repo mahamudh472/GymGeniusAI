@@ -1,10 +1,22 @@
 from django.contrib import admin
 from .models import (
     ExerciseCategory, Exercise, UserWorkout, UserExercise, WorkoutProgress, Activity,
-    CustomRoutine, CustomRoutineExercise, CustomRoutineExerciseCompletion
+    CustomRoutine, CustomRoutineExercise, CustomRoutineExerciseCompletion, ExerciseVideo
 )
-from unfold.admin import ModelAdmin
+from unfold.admin import ModelAdmin, TabularInline
+from import_export.resources import ModelResource
+from import_export.admin import ImportExportModelAdmin, ImportExportMixin 
 
+
+# class ExerciseResource(ModelResource):
+#     class Meta:
+#         model = Exercise
+
+class ExerciseVideoInline(TabularInline):
+    model = ExerciseVideo
+    extra = 1
+    max_num = 5
+    readonly_fields = ['uploaded_at']
 
 @admin.register(ExerciseCategory)
 class ExerciseCategoryAdmin(ModelAdmin):
@@ -14,13 +26,15 @@ class ExerciseCategoryAdmin(ModelAdmin):
 
 
 @admin.register(Exercise)
-class ExerciseAdmin(ModelAdmin):
+class ExerciseAdmin(ImportExportModelAdmin, ModelAdmin):
     list_display = ['name', 'muscle_group', 'category', 'difficulty', 'default_sets', 'default_reps', 'equipment_needed']
     list_filter = ['difficulty', 'category', 'muscle_group']
     search_fields = ['name', 'description', 'muscle_group', 'equipment_needed']
     ordering = ['name']
     raw_id_fields = ['category']
     list_per_page = 50
+    inlines = [ExerciseVideoInline]
+    # resource_class = ExerciseResource
     fieldsets = (
         ('Basic Information', {
             'fields': ('name', 'description', 'video', 'category')

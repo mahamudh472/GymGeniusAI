@@ -18,10 +18,12 @@ class Command(BaseCommand):
         ]
 
         for day in days:
-            WeekDay.objects.create(name=day)
-            self.stdout.write(self.style.SUCCESS(f'Added WeekDay: {day}'))
+            day, created = WeekDay.objects.get_or_create(name=day)
+            if created:
+                self.stdout.write(self.style.SUCCESS(f'Added WeekDay: {day}'))
         for name, behavior in coachs:
-            coach = Coach.objects.create(name=name, behavior=behavior)
-            self.stdout.write(self.style.SUCCESS(f'Added coach: {name} with behavior: {behavior}'))
+            coach, created = Coach.objects.get_or_create(name=name, behavior=behavior)
+            if created:
+                self.stdout.write(self.style.SUCCESS(f'Added coach: {name} with behavior: {behavior}'))
 
         self.stdout.write(self.style.SUCCESS('Successfully loaded coach WeekDay assignments'))

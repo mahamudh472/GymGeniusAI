@@ -24,8 +24,15 @@ class UserExerciseSerializer(serializers.ModelSerializer):
 
     def get_video(self, obj):
         request = self.context.get('request')
-        if obj.exercise.video and hasattr(obj.exercise.video, 'url'):
-            return request.build_absolute_uri(obj.exercise.video.url)
+        video = obj.exercise.videos.filter(exercise=obj.exercise, coach__name=request.user.coach_type.name).first()
+        print("EXERCISE:", obj.exercise.name)
+        print("user_exercise:", obj.id)
+        print("Coach Type:", request.user.coach_type)
+        print("VIDEO URL:", video)
+        if not video:
+            return None
+        if video.video_file and hasattr(video.video_file, 'url'):
+            return request.build_absolute_uri(video.video_file.url)
         return None
 
     class Meta:
