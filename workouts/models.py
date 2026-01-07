@@ -74,7 +74,7 @@ class ExerciseVideo(models.Model):
     """Videos associated with exercises"""
     exercise = models.ForeignKey(Exercise, on_delete=models.CASCADE, related_name='videos')
     coach = models.ForeignKey(Coach, on_delete=models.SET_NULL, related_name='exercise_videos', null=True, blank=True)
-    video_file = models.FileField(upload_to='exercise_videos/')
+    video_file = models.FileField(upload_to='exercise_videos/', blank=True, null=True)
     description = models.TextField(blank=True, null=True)
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
