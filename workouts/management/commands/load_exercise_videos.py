@@ -7,7 +7,9 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         
-        video_dir = '/home/mahmud/Downloads/Exercise videos'  # Directory where videos are stored
+        # video_dir = '/home/mahmud/Downloads/Exercise videos'  # Directory where videos are stored
+        video_dir = '/mnt/videos'  # Directory where videos are stored
+
         created_count = 0
         error_count = 0
         skipped_count = 0

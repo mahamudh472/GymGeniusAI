@@ -1,4 +1,5 @@
 from django.core.management.base import BaseCommand
+from accounts.models import Coach
 from workouts.models import ExerciseVideo, Exercise
 
 class Command(BaseCommand):
@@ -16,12 +17,18 @@ class Command(BaseCommand):
         missing_videos = 0
         no_missing_videos = 0
         partially_missing_videos = 0
+
+        john = Coach.objects.get(name='John')
+        selma = Coach.objects.get(name='Selma')
+        jara = Coach.objects.get(name='Jara')
+        chris = Coach.objects.get(name='Chris')
         for exercise in exercises:
             current_exercise_missing = 0
-            john_video = ExerciseVideo.objects.filter(exercise=exercise, coach__name='John')
-            selma_video = ExerciseVideo.objects.filter(exercise=exercise, coach__name='Selma')
-            jara_video = ExerciseVideo.objects.filter(exercise=exercise, coach__name='Jara')
-            chris_video = ExerciseVideo.objects.filter(exercise=exercise, coach__name='Chris')
+            john_video = ExerciseVideo.objects.filter(exercise=exercise, coach=john)
+            selma_video = ExerciseVideo.objects.filter(exercise=exercise, coach=selma)
+            jara_video = ExerciseVideo.objects.filter(exercise=exercise, coach=jara)
+            chris_video = ExerciseVideo.objects.filter(exercise=exercise, coach=chris)
+
             if john_video.count() == 0:
                 current_exercise_missing += 1
                 if options['detailed']:
@@ -43,7 +50,7 @@ class Command(BaseCommand):
                 no_missing_videos += 1
             elif current_exercise_missing < 4:
                 partially_missing_videos += 1
-                
+
         self.stdout.write(f'Total missing exercise videos: {missing_videos}')
         self.stdout.write(f'Exercises with no missing videos: {no_missing_videos}')
         self.stdout.write(f'Exercises with partially missing videos: {partially_missing_videos}')
