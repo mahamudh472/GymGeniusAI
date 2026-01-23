@@ -6,7 +6,7 @@ services:
       - redis_data:/data
   
   postgres:
-    image: "postgres:latest"
+    image: "postgres:15"
     container_name: "gymgeniusai_postgres"
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
