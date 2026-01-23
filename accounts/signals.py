@@ -52,7 +52,7 @@ def generate_daily_workout(sender, instance, created, update_fields=None, **kwar
     from workouts.models import UserWorkout
 
     # Avoid infinite recursion
-    if update_fields and 'daily_calorie_target' in update_fields:
+    if update_fields and ('daily_calorie_target' in update_fields or 'calorie_target_updated_at' in update_fields):
         return
 
     # Check for required profile fields
@@ -79,19 +79,17 @@ def generate_daily_workout(sender, instance, created, update_fields=None, **kwar
             logger.error(f"Error triggering workout generation for user {instance.email}: {e}")
 
     # --- 2. Daily Calorie Target Update ---
-    # We want to trigger this if profile data OR last_login changed.
-    # Since we can't easily track *what* changed without explicit update_fields in all calls,
-    # and we definitely know we are NOT currently updating 'daily_calorie_target' (checked above),
-    # we can safely trigger this. The task itself should be idempotent-ish (calculates based on current state).
-    
-    # We might want to avoid re-calculating on EVERY save if possible, but for now, 
-    # ensures returning users get fresh data.
-    from .tasks import update_daily_calorie_target_for_active_users
-    try:
-        update_daily_calorie_target_for_active_users.apply_async(
-            args=[str(instance.id)],
-            countdown=15
-        )
-        logger.info(f"Triggered calorie target update for user {instance.email}")
-    except Exception as e:
-        logger.error(f"Error triggering calorie update for user {instance.email}: {e}")
+    # Only update calorie target if it hasn't been updated today
+    today = timezone.now().date()
+    if instance.calorie_target_updated_at != today:
+        from .tasks import update_daily_calorie_target_for_active_users
+        try:
+            update_daily_calorie_target_for_active_users.apply_async(
+                args=[str(instance.id)],
+                countdown=15
+            )
+            logger.info(f"Triggered calorie target update for user {instance.email}")
+        except Exception as e:
+            logger.error(f"Error triggering calorie update for user {instance.email}: {e}")
+    else:
+        logger.debug(f"Calorie target already updated today for user {instance.email}")

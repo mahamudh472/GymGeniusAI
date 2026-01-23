@@ -313,8 +313,10 @@ def update_daily_calorie_target(user, calorie_target):
     Update the user's daily calorie target in their profile.
     """
     try:
+        from django.utils import timezone
         user.daily_calorie_target = calorie_target
-        user.save(update_fields=['daily_calorie_target'])
+        user.calorie_target_updated_at = timezone.now().date()
+        user.save(update_fields=['daily_calorie_target', 'calorie_target_updated_at'])
         return True
     except Exception as e:
         print("Error updating daily calorie target:", e)

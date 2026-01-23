@@ -67,6 +67,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     preferred_workout_days = models.ManyToManyField(WeekDay, blank=True)
     
     daily_calorie_target = models.FloatField(default=0)
+    calorie_target_updated_at = models.DateField(null=True, blank=True, help_text="Last date when calorie target was updated")
     initial_workouts_generated = models.BooleanField(default=False, help_text="Whether initial AI workouts have been generated")
 
     joined_at = models.DateTimeField(auto_now_add=True)
