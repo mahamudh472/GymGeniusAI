@@ -1,0 +1,209 @@
+{% extends 'admin/base.html' %}
+{% load i18n %}
+
+{% block title %}Dashboard | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block branding %}
+    {% include "unfold/helpers/site_branding.html" %}
+{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+/* Inherit Unfold's own variables wherever possible */
+.dash-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 2.5rem;
+}
+@media (max-width: 900px) { .dash-kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 520px) { .dash-kpi-grid { grid-template-columns: 1fr; } }
+
+.dash-kpi {
+    border: 1px solid var(--color-base-200, #e5e7eb);
+    border-radius: var(--border-radius, 8px);
+    padding: 1.25rem 1.5rem;
+    transition: border-color .15s;
+}
+.dash-kpi:hover { border-color: var(--color-primary-400, #a5b4fc); }
+.dash-kpi-label {
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--color-base-500, #6b7280);
+    margin-bottom: 0.35rem;
+}
+.dash-kpi-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--color-base-900, #111827);
+    line-height: 1;
+    letter-spacing: -0.025em;
+}
+.dark .dash-kpi {
+    border-color: var(--color-base-700, #374151);
+}
+.dark .dash-kpi:hover { border-color: var(--color-primary-500, #818cf8); }
+.dark .dash-kpi-label { color: var(--color-base-400, #9ca3af); }
+.dark .dash-kpi-value { color: var(--color-base-100, #f3f4f6); }
+
+/* Section */
+.dash-section-title {
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--color-base-400, #9ca3af);
+    margin: 0 0 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--color-base-200, #e5e7eb);
+}
+.dark .dash-section-title {
+    color: var(--color-base-500, #6b7280);
+    border-color: var(--color-base-700, #374151);
+}
+
+/* Metric rows */
+.dash-metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2.5rem;
+}
+.dash-metric {
+    border: 1px solid var(--color-base-200, #e5e7eb);
+    border-radius: var(--border-radius, 8px);
+    padding: 1rem 1.25rem;
+    transition: border-color .15s;
+}
+.dash-metric:hover { border-color: var(--color-primary-400, #a5b4fc); }
+.dash-metric-value {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--color-base-900, #111827);
+    line-height: 1;
+    margin-bottom: 0.3rem;
+    letter-spacing: -0.02em;
+}
+.dash-metric-label {
+    font-size: 0.76rem;
+    font-weight: 500;
+    color: var(--color-base-500, #6b7280);
+}
+.dark .dash-metric {
+    border-color: var(--color-base-700, #374151);
+}
+.dark .dash-metric:hover { border-color: var(--color-primary-500, #818cf8); }
+.dark .dash-metric-value { color: var(--color-base-100, #f3f4f6); }
+.dark .dash-metric-label { color: var(--color-base-400, #9ca3af); }
+
+/* Two-col */
+.dash-two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 2.5rem;
+}
+@media (max-width: 768px) { .dash-two-col { grid-template-columns: 1fr; } }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- KPI — Top level -->
+<div class="dash-kpi-grid">
+    <div class="dash-kpi">
+        <div class="dash-kpi-label">Total Users</div>
+        <div class="dash-kpi-value">{{ total_users }}</div>
+    </div>
+    <div class="dash-kpi">
+        <div class="dash-kpi-label">New Users (7d)</div>
+        <div class="dash-kpi-value">{{ new_users_7d }}</div>
+    </div>
+    <div class="dash-kpi">
+        <div class="dash-kpi-label">New Users (30d)</div>
+        <div class="dash-kpi-value">{{ new_users_30d }}</div>
+    </div>
+    <div class="dash-kpi">
+        <div class="dash-kpi-label">Active Subscriptions</div>
+        <div class="dash-kpi-value">{{ active_subscriptions }}</div>
+    </div>
+</div>
+
+<!-- Workouts & Nutrition -->
+<div class="dash-two-col">
+    <div>
+        <div class="dash-section-title">Workouts</div>
+        <div class="dash-metrics">
+            <div class="dash-metric">
+                <div class="dash-metric-value">{{ total_exercises }}</div>
+                <div class="dash-metric-label">Exercises</div>
+            </div>
+            <div class="dash-metric">
+                <div class="dash-metric-value">{{ total_user_workouts }}</div>
+                <div class="dash-metric-label">User Workouts</div>
+            </div>
+            <div class="dash-metric">
+                <div class="dash-metric-value">{{ total_completed_workouts }}</div>
+                <div class="dash-metric-label">Completed</div>
+            </div>
+        </div>
+    </div>
+    <div>
+        <div class="dash-section-title">Nutrition</div>
+        <div class="dash-metrics">
+            <div class="dash-metric">
+                <div class="dash-metric-value">{{ total_meals }}</div>
+                <div class="dash-metric-label">Meals</div>
+            </div>
+            <div class="dash-metric">
+                <div class="dash-metric-value">{{ total_uploaded_meals }}</div>
+                <div class="dash-metric-label">Uploaded Meals</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Community & Content / AI & Gamification -->
+<div class="dash-two-col">
+    <div>
+        <div class="dash-section-title">Community & Content</div>
+        <div class="dash-metrics">
+            <div class="dash-metric">
+                <div class="dash-metric-value">{{ total_forum_posts }}</div>
+                <div class="dash-metric-label">Forum Posts</div>
+            </div>
+            <div class="dash-metric">
+                <div class="dash-metric-value">{{ total_articles }}</div>
+                <div class="dash-metric-label">Articles</div>
+            </div>
+            <div class="dash-metric">
+                <div class="dash-metric-value">{{ total_workout_videos }}</div>
+                <div class="dash-metric-label">Workout Videos</div>
+            </div>
+        </div>
+    </div>
+    <div>
+        <div class="dash-section-title">AI & Gamification</div>
+        <div class="dash-metrics">
+            <div class="dash-metric">
+                <div class="dash-metric-value">{{ total_conversations }}</div>
+                <div class="dash-metric-label">AI Conversations</div>
+            </div>
+            <div class="dash-metric">
+                <div class="dash-metric-value">{{ total_messages }}</div>
+                <div class="dash-metric-label">AI Messages</div>
+            </div>
+            <div class="dash-metric">
+                <div class="dash-metric-value">{{ active_challenges }}</div>
+                <div class="dash-metric-label">Active Challenges</div>
+            </div>
+            <div class="dash-metric">
+                <div class="dash-metric-value">{{ completed_challenges }}</div>
+                <div class="dash-metric-label">Completed</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

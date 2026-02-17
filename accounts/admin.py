@@ -33,20 +33,6 @@ class UserAdmin(BaseUserAdmin, ModelAdmin):
     )
 
 
-
-@admin.register(OTP)
-class OTPAdmin(ModelAdmin):
-    list_display = ['user', 'code', 'purpose', 'is_used', 'created_at', 'expires_at']
-    list_filter = ['purpose', 'is_used']
-    search_fields = ['user__email', 'code']
-    ordering = ['-created_at']
-    raw_id_fields = ['user']
-    list_per_page = 50
-    
-    def get_queryset(self, request):
-        return super().get_queryset(request).select_related('user')
-
-
 @admin.register(SubscriptionPlan)
 class SubscriptionPlanAdmin(ModelAdmin):
     list_display = ['name', 'price', 'duration_days', 'is_active']
