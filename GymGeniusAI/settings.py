@@ -316,6 +316,13 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'GymGeniusAI.wsgi.application'
 
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=30),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'UPDATE_LAST_LOGIN': True,
+}
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
