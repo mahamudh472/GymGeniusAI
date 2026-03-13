@@ -178,15 +178,16 @@ class UserUploadedMealCreateView(generics.CreateAPIView):
                     "temp_upload_id": temp_upload.id
                 }, status=500)
             
-            # Check if the file exists on disk
-            if not temp_upload.image.path or not os.path.exists(temp_upload.image.path):
+            # Avoid absolute-path access; use storage API for compatibility
+            image_name = temp_upload.image.name
+            if not image_name or not temp_upload.image.storage.exists(image_name):
                 return Response({
-                    "error": "Image file does not exist on disk.",
-                    "expected_path": temp_upload.image.path if temp_upload.image else "No path"
+                    "error": "Image file does not exist in storage.",
+                    "image_name": image_name or "No image name"
                 }, status=500)
 
             # Convert image to base64 for AI analysis
-            with open(temp_upload.image.path, 'rb') as img_file:
+            with temp_upload.image.open('rb') as img_file:
                 image_base64 = base64.b64encode(img_file.read()).decode('utf-8')
 
             # Perform AI analysis with base64 image
@@ -237,8 +238,8 @@ class SaveUserMealUpload(generics.CreateAPIView):
             temp_upload = TemporaryMealUpload.objects.get(id=temp_upload_id, user=user)
             analysis_data = temp_upload.analysis_data 
 
-            # Read the image file from temp location
-            with open(temp_upload.image.path, 'rb') as img_file:
+            # Read from storage API instead of absolute filesystem path
+            with temp_upload.image.open('rb') as img_file:
                 image_content = img_file.read()
             
             # Get the original filename
