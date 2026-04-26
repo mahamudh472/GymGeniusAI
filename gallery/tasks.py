@@ -28,10 +28,20 @@ def analyze_gallery_image(gallery_id):
         logger.info(f"AI analysis completed: {analysis_result}")
         
         # Update the gallery image with AI results
-        gallery_image.ai_detected = True
-        gallery_image.ai_summary = analysis_result.get('summary', '')
-        gallery_image.image_type = analysis_result.get('image_type', '')
-        gallery_image.save()
+        if isinstance(analysis_result, dict):
+            gallery_image.ai_detected = True
+            gallery_image.ai_summary = analysis_result.get('summary', 'No summary available.')
+            
+            # Only update image_type if it's one of the valid choices
+            new_image_type = analysis_result.get('image_type', '').lower()
+            if new_image_type in ['front', 'side', 'back']:
+                gallery_image.image_type = new_image_type
+                
+            gallery_image.save()
+        else:
+            gallery_image.ai_detected = False
+            gallery_image.ai_summary = f"Analysis failed: {str(analysis_result)}"
+            gallery_image.save()
         
         logger.info(f"Successfully updated gallery image {gallery_id} with AI results")
         return f"Successfully analyzed image {gallery_id}"

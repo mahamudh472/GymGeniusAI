@@ -59,7 +59,11 @@ def analyze_user_image(base64_image):
 
     except Exception as e:
         print("Error in analyze_user_image:", e)
-        return "Image analysis unavailable due to service error."
+        return {
+            "summary": "Image analysis unavailable due to service error.",
+            "image_type": "unknown",
+            "error": str(e)
+        }
     
 def analyze_single_meal(base64_image, meal_name="Meal"):
     """

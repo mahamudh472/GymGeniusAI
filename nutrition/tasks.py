@@ -41,13 +41,20 @@ def analyze_uploaded_meal(meal_id):
             logger.warning(f"AI analysis returned error: {ai_results.get('error')}")
         
         # Update the uploaded meal with AI results
-        uploaded_meal.meal_name = ai_results.get('meal_name', 'Unknown Meal')
-        uploaded_meal.estimated_calories = ai_results.get('estimated_calories', 0)
-        uploaded_meal.ai_analysis = ai_results.get('overall_health_insight', 'Analysis unavailable')
-        uploaded_meal.macronutrients = ai_results.get('macronutrients', {})
-        uploaded_meal.micronutrients = ai_results.get('micronutrients', {})
-        uploaded_meal.improvements = ai_results.get('improvement_suggestion', 'No suggestions available')
-        uploaded_meal.save()
+        print(ai_results)
+        print(type(ai_results))
+        if isinstance(ai_results, dict):
+            uploaded_meal.meal_name = ai_results.get('meal_name', 'Unknown Meal')
+            uploaded_meal.estimated_calories = ai_results.get('estimated_calories', 0)
+            uploaded_meal.ai_analysis = ai_results.get('overall_health_insight', 'Analysis unavailable')
+            uploaded_meal.macronutrients = ai_results.get('macronutrients', {})
+            uploaded_meal.micronutrients = ai_results.get('micronutrients', {})
+            uploaded_meal.improvements = ai_results.get('improvement_suggestion', 'No suggestions available')
+            uploaded_meal.save()
+        else:
+            uploaded_meal.meal_name = "Analysis Error"
+            uploaded_meal.ai_analysis = f"Analysis failed: {str(ai_results)}"
+            uploaded_meal.save()
         
         logger.info(f"Successfully updated uploaded meal {meal_id} with AI results")
         return f"Successfully analyzed meal {meal_id}"
