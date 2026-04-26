@@ -13,6 +13,24 @@ o = None
 if settings.OPENAI_API_KEY:
     o = OpenAI(api_key=settings.OPENAI_API_KEY)
 
+def robust_json_loads(text):
+    """
+    Safely load JSON from a string, handling potential markdown code blocks.
+    """
+    text = text.strip()
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        import re
+        # Try to extract JSON from markdown code block
+        json_match = re.search(r'```(?:json)?\s*(.*?)\s*```', text, re.DOTALL)
+        if json_match:
+            try:
+                return json.loads(json_match.group(1))
+            except json.JSONDecodeError:
+                pass
+        raise
+
 def analyze_user_image(base64_image):
     """
     Analyzes a user's full-body image and returns a short,
@@ -25,6 +43,7 @@ def analyze_user_image(base64_image):
         response = o.chat.completions.create(
             model="gpt-4o-mini",
             temperature=0.2,
+            response_format={"type": "json_object"},
             messages=[
                 {
                     "role": "system",
@@ -33,8 +52,8 @@ def analyze_user_image(base64_image):
                         "Describe the person's physique only in factual, training-relevant terms. "
                         "Mention posture, symmetry, muscle tone, and any visible balance issues. "
                         "Avoid comments on attractiveness, race, or emotion. "
-                        "Keep your output concise (1-3 lines)."
-                        "Output a json object with two key 'summary', 'image_type'."
+                        "Keep your output concise (1-3 lines). "
+                        "Output MUST be a valid JSON object with exactly two keys: 'summary' and 'image_type'. "
                         "'image_type' should be one of ['back', 'side', 'front'] based on the image provided."
                     )
                 },
@@ -43,7 +62,7 @@ def analyze_user_image(base64_image):
                     "content": [
                         {
                             "type": "text",
-                            "text": "Analyze this full-body image for training-relevant observations only."
+                            "text": "Analyze this full-body image for training-relevant observations only. Respond in JSON."
                         },
                         {
                             "type": "image_url",
@@ -53,9 +72,9 @@ def analyze_user_image(base64_image):
                 }
             ]
         )
-        import json
-        analysis_result = json.loads(response.choices[0].message.content)
-        return analysis_result
+        
+        raw_content = response.choices[0].message.content
+        return robust_json_loads(raw_content)
 
     except Exception as e:
         print("Error in analyze_user_image:", e)
@@ -115,7 +134,7 @@ def analyze_single_meal(base64_image, meal_name="Meal"):
             messages=messages
         )
 
-        return json.loads(response.choices[0].message.content)
+        return robust_json_loads(response.choices[0].message.content)
 
     except Exception as e:
         return {
@@ -305,7 +324,7 @@ User Query: {current_query or "Calculate my daily calorie target."}
             messages=messages
         )
 
-        return json.loads(response.choices[0].message.content)
+        return robust_json_loads(response.choices[0].message.content)
 
     except Exception as e:
         return {"error": str(e)}
@@ -624,7 +643,7 @@ Dataset Context (workouts retrieved from your indexed dataset):
             messages=messages
         )
 
-        return json.loads(response.choices[0].message.content)
+        return robust_json_loads(response.choices[0].message.content)
 
     except Exception as e:
         return {"error": str(e)}
@@ -731,7 +750,7 @@ Image Summary: {image_summary or "N/A"}
             messages=messages
         )
  
-        return json.loads(response.choices[0].message.content)
+        return robust_json_loads(response.choices[0].message.content)
  
  
     beginner = generate_level("Beginner")
