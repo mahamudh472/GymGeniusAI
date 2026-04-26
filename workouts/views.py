@@ -821,7 +821,7 @@ class WorkoutRecommendationView(generics.ListAPIView):
     def get_queryset(self):
         user = self.request.user
         # Simple recommendation logic based on user's goal and activity level
-        queryset = UserWorkout.objects.filter(is_active=True)
+        queryset = UserWorkout.objects.filter(user=user ,is_active=True)
 
         if user.goal == 'weight_loss':
             queryset = queryset.filter(difficulty__in=['beginner', 'intermediate'])
