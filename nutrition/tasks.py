@@ -15,21 +15,18 @@ def analyze_uploaded_meal(meal_id):
     logger.info(f"Starting AI analysis for uploaded meal ID: {meal_id}")
     try:
         uploaded_meal = UserUploadedMeal.objects.get(id=meal_id)
-        logger.info(f"Found uploaded meal: {uploaded_meal.image.path}")
+        logger.info(f"Found uploaded meal: {uploaded_meal.image.name}")
         
         # Check if image file exists
-        if not uploaded_meal.image or not hasattr(uploaded_meal.image, 'path'):
+        if not uploaded_meal.image:
             logger.error(f"No image file found for meal {meal_id}")
             raise ValueError("No image file found")
         
         # Read the image file and convert to base64
         try:
-            with open(uploaded_meal.image.path, 'rb') as image_file:
+            with uploaded_meal.image.open('rb') as image_file:
                 image_data = image_file.read()
                 base64_image = base64.b64encode(image_data).decode('utf-8')
-        except FileNotFoundError:
-            logger.error(f"Image file not found at path: {uploaded_meal.image.path}")
-            raise
         except Exception as file_error:
             logger.error(f"Error reading image file: {str(file_error)}")
             raise

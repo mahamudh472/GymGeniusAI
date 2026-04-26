@@ -15,10 +15,10 @@ def analyze_gallery_image(gallery_id):
     logger.info(f"Starting AI analysis for gallery image ID: {gallery_id}")
     try:
         gallery_image = UserGallery.objects.get(id=gallery_id)
-        logger.info(f"Found gallery image: {gallery_image.image.path}")
+        logger.info(f"Found gallery image: {gallery_image.image.name}")
         
         # Read the image file and convert to base64
-        with open(gallery_image.image.path, 'rb') as image_file:
+        with gallery_image.image.open('rb') as image_file:
             image_data = image_file.read()
             base64_image = base64.b64encode(image_data).decode('utf-8')
         
