@@ -227,14 +227,23 @@ class ChallengeSerializer(serializers.ModelSerializer):
                     enriched['tips'] = exercise.tips
                     
                     # Build absolute video URL if video exists
-                    if exercise.video:
-                        request = self.context.get('request')
-                        if request and hasattr(exercise.video, 'url'):
-                            enriched['video'] = request.build_absolute_uri(exercise.video.url)
+                    request = self.context.get('request')
+                    video_url = None
+                    
+                    # 1. Try to get coach-specific video if request and user exist
+                    if request and hasattr(request, 'user') and request.user.is_authenticated and getattr(request.user, 'coach_type', None):
+                        coach_video = exercise.videos.filter(coach=request.user.coach_type).first()
+                        if coach_video and coach_video.video_file and hasattr(coach_video.video_file, 'url'):
+                            video_url = request.build_absolute_uri(coach_video.video_file.url)
+                    
+                    # 2. Fallback to default exercise video if no coach video found
+                    if not video_url and exercise.video and hasattr(exercise.video, 'url'):
+                        if request:
+                            video_url = request.build_absolute_uri(exercise.video.url)
                         else:
-                            enriched['video'] = None
-                    else:
-                        enriched['video'] = None
+                            video_url = exercise.video.url
+                    
+                    enriched['video'] = video_url
                 except Exercise.DoesNotExist:
                     # If exercise not found, keep original data
                     pass

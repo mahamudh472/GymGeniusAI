@@ -24,16 +24,22 @@ class UserExerciseSerializer(serializers.ModelSerializer):
 
     def get_video(self, obj):
         request = self.context.get('request')
-        video = obj.exercise.videos.filter(exercise=obj.exercise, coach__name=request.user.coach_type.name).first()
-        print("EXERCISE:", obj.exercise.name)
-        print("user_exercise:", obj.id)
-        print("Coach Type:", request.user.coach_type)
-        print("VIDEO URL:", video)
-        if not video:
+        if not request:
             return None
-        if video.video_file and hasattr(video.video_file, 'url'):
-            return request.build_absolute_uri(video.video_file.url)
-        return None
+            
+        video_url = None
+        
+        # 1. Try to get coach-specific video
+        if hasattr(request, 'user') and request.user.is_authenticated and getattr(request.user, 'coach_type', None):
+            video = obj.exercise.videos.filter(coach=request.user.coach_type).first()
+            if video and video.video_file and hasattr(video.video_file, 'url'):
+                video_url = request.build_absolute_uri(video.video_file.url)
+        
+        # 2. Fallback to default exercise video
+        if not video_url and obj.exercise.video and hasattr(obj.exercise.video, 'url'):
+            video_url = request.build_absolute_uri(obj.exercise.video.url)
+            
+        return video_url
 
     class Meta:
         model = UserExercise
