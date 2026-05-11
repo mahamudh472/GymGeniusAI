@@ -1,4 +1,5 @@
 # favorites/views.py
+from django.shortcuts import render
 from rest_framework import generics, permissions, views, filters, serializers
 from rest_framework.response import Response
 from rest_framework import status
@@ -268,6 +269,21 @@ class PrivacyPolicyView(views.APIView):
                 {"detail": "Privacy policy not found."},
                 status=status.HTTP_404_NOT_FOUND
             )
+
+
+class PrivacyPolicyWebView(views.APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request, *args, **kwargs):
+        try:
+            policy = PrivacyPolicy.objects.latest('updated_at')
+            context = {
+                'content': policy.content,
+                'updated_at': policy.updated_at
+            }
+            return render(request, 'privacy_policy.html', context)
+        except PrivacyPolicy.DoesNotExist:
+            return render(request, 'privacy_policy_not_found.html', status=404)
 
 
 from rest_framework.decorators import (
