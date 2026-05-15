@@ -273,7 +273,13 @@ SPECTACULAR_SETTINGS = {
 
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 PINECONE_API_KEY = os.getenv('PINECONE_API_KEY')
-CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', 'http://localhost:3000').split(',')
+
+# Handle possible spaces and strip extra quotes in CSRF_TRUSTED_ORIGINS
+raw_trusted_origins = os.getenv('CSRF_TRUSTED_ORIGINS', 'http://localhost:3000,http://127.0.0.1:3000,https://api.gymgeniusai.co.uk')
+CSRF_TRUSTED_ORIGINS = [origin.strip().strip("'\"").rstrip("/") for origin in raw_trusted_origins.split(',')]
+
+# Handle CORS_ALLOWED_ORIGINS similarly if needed, or if it uses CORS_ALLOW_ALL_ORIGINS = True as we saw
+
 
 
 import firebase_admin
