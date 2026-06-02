@@ -382,6 +382,7 @@ class DeleteAccountView(GenericAPIView):
 
 class RevenueCatWebhookView(GenericAPIView):
     permission_classes = []  # Public endpoint, verified via Bearer token
+    authentication_classes = []  # Skip global JWT authentication
     serializer_class = None
 
     def post(self, request, *args, **kwargs):
