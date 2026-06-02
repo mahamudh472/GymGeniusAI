@@ -1,3 +1,7 @@
+x-app: &app
+  build: .
+  env_file: .env
+
 services:
   redis:
     image: "redis:latest"
@@ -23,7 +27,7 @@ services:
       retries: 10
 
   web:
-    build: .
+    <<: *app
     command: >
       sh -c "python manage.py makemigrations && python manage.py migrate &&
              python manage.py collectstatic --noinput &&
@@ -31,8 +35,6 @@ services:
     environment:
       - CELERY_BROKER_URL=${CELERY_BROKER_URL}
       - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND}
-    env_file:
-      - .env
     volumes:
       - static_data:/app/staticfiles
       - media_data:/app/media
@@ -67,10 +69,8 @@ services:
       - certbot-certs:/etc/letsencrypt
 
   celery:
-    build: .
+    <<: *app
     command: celery -A GymGeniusAI worker --loglevel=info
-    env_file:
-      - .env
     volumes:
       - media_data:/app/media
     depends_on:
