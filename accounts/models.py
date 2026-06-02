@@ -92,6 +92,11 @@ class User(AbstractBaseUser, PermissionsMixin):
         """Return full name if available, else email"""
         self.full_name
 
+    @property
+    def has_active_subscription(self):
+        """Check if user has an active subscription"""
+        return self.subscriptions.filter(is_active=True).exists()
+
 
 class OTP(models.Model):
     """OTP for authentication purposes"""
@@ -123,6 +128,7 @@ class OTP(models.Model):
 class SubscriptionPlan(models.Model):
     """Subscription plans available"""
     name = models.CharField(max_length=100)
+    product_id = models.CharField(max_length=100, blank=True, null=True, unique=True, help_text="RevenueCat/Store Product ID")
     price = models.DecimalField(max_digits=10, decimal_places=2)
     duration_days = models.IntegerField(help_text="Duration in days")
     features = models.JSONField(default=dict)

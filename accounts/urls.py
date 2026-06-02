@@ -21,4 +21,5 @@ urlpatterns = [
     path('home/', views.HomeAPIView.as_view(), name='home_api'),
     path('subscription-plans/', views.SubscriptionPlanListView.as_view(), name='subscription_plans'),
     path('delete-account/', views.DeleteAccountView.as_view(), name='delete_account'),
+    path('revenuecat-webhook/', views.RevenueCatWebhookView.as_view(), name='revenuecat_webhook'),
 ]

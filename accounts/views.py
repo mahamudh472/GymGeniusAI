@@ -25,7 +25,7 @@ from articles.models import Article
 from workouts.models import UserWorkout
 from workouts.serializers import UserWorkoutListSerializer
 from articles.serializers import ArticleSerializer
-from .models import User, OTP, Coach, SubscriptionPlan
+from .models import User, OTP, Coach, SubscriptionPlan, UserSubscription
 from .permissions import IsActiveUser
 
 class LoginView(APIView):
@@ -378,4 +378,110 @@ class DeleteAccountView(GenericAPIView):
             {"message": "Account deleted successfully."},
             status=status.HTTP_200_OK
         )
+
+
+class RevenueCatWebhookView(GenericAPIView):
+    permission_classes = []  # Public endpoint, verified via Bearer token
+    serializer_class = None
+
+    def post(self, request, *args, **kwargs):
+        from datetime import datetime, timezone as dt_timezone
+
+        # 1. Authenticate the request using custom authorization token
+        auth_header = request.headers.get('Authorization')
+        expected_token = getattr(settings, 'REVENUECAT_WEBHOOK_AUTH_TOKEN', None)
+        
+        if expected_token:
+            if not auth_header or auth_header != f"Bearer {expected_token}":
+                return Response({"error": "Unauthorized"}, status=status.HTTP_401_UNAUTHORIZED)
+
+        # 2. Parse the payload
+        payload = request.data
+        if not payload or 'event' not in payload:
+            return Response({"error": "Invalid payload"}, status=status.HTTP_400_BAD_REQUEST)
+            
+        event = payload['event']
+        event_type = event.get('type')
+        app_user_id = event.get('app_user_id')
+        product_id = event.get('product_id')
+        transaction_id = event.get('id')
+        
+        # 3. Retrieve user
+        try:
+            # app_user_id might be a string representations of user UUID
+            user = User.objects.get(id=app_user_id)
+        except (User.DoesNotExist, ValueError):
+            # Fallback to checking by email if app_user_id is email or username
+            user = User.objects.filter(email=app_user_id).first()
+            if not user:
+                return Response({"error": f"User {app_user_id} not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        # 4. Map product to plan
+        plan = SubscriptionPlan.objects.filter(product_id=product_id).first()
+        if not plan:
+            # Fallback to name match
+            plan = SubscriptionPlan.objects.filter(name__iexact=product_id).first()
+            if not plan:
+                return Response({"error": f"Subscription plan for product {product_id} not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        # 5. Process event dates
+        purchased_at_ms = event.get('purchased_at_ms')
+        expiration_at_ms = event.get('expiration_at_ms')
+        
+        # Helper to convert ms to date (using aware timezone in UTC)
+        def ms_to_date(ms):
+            if ms:
+                return datetime.fromtimestamp(ms / 1000.0, tz=dt_timezone.utc).date()
+            return None
+
+        start_date = ms_to_date(purchased_at_ms) or timezone.now().date()
+        end_date = ms_to_date(expiration_at_ms) or (start_date + timezone.timedelta(days=plan.duration_days))
+
+        # Check if the subscription is still active based on expiration
+        now_ms = timezone.now().timestamp() * 1000
+        is_active = (expiration_at_ms > now_ms) if expiration_at_ms else True
+
+        if event_type in ['INITIAL_PURCHASE', 'RENEWAL', 'UNCANCELLATION', 'PRODUCT_CHANGE']:
+            UserSubscription.objects.update_or_create(
+                user=user,
+                plan=plan,
+                defaults={
+                    'start_date': start_date,
+                    'end_date': end_date,
+                    'is_active': is_active,
+                    'payment_status': 'completed',
+                    'transaction_id': transaction_id
+                }
+            )
+            # Update user profile with active subscription reference
+            user.subscription_id = plan.id
+            user.save()
+            
+        elif event_type == 'EXPIRATION':
+            UserSubscription.objects.filter(user=user, plan=plan).update(is_active=False)
+            if user.subscription_id == plan.id:
+                user.subscription_id = None
+                user.save()
+            
+        elif event_type == 'CANCELLATION':
+            # CANCELLATION event can be active if auto-renew is cancelled but period hasn't ended.
+            UserSubscription.objects.filter(user=user, plan=plan).update(
+                is_active=is_active,
+                end_date=end_date,
+                transaction_id=transaction_id
+            )
+            if not is_active and user.subscription_id == plan.id:
+                user.subscription_id = None
+                user.save()
+            
+        elif event_type == 'REFUND':
+            UserSubscription.objects.filter(user=user, plan=plan).update(
+                is_active=False,
+                payment_status='refunded'
+            )
+            if user.subscription_id == plan.id:
+                user.subscription_id = None
+                user.save()
+
+        return Response({"message": "Webhook processed successfully"}, status=status.HTTP_200_OK)
 

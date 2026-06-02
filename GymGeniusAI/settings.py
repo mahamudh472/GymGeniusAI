@@ -119,7 +119,7 @@ DATABASES = {
         'NAME': os.getenv('POSTGRES_DB'),
         'USER': os.getenv('POSTGRES_USER'),
         'PASSWORD': os.getenv('POSTGRES_PASSWORD'),
-        'HOST': 'gymgeniusai_postgres',
+        'HOST': os.getenv('POSTGRES_HOST', 'gymgeniusai_postgres'),
         'PORT': 5432,
     }
 }
@@ -273,6 +273,7 @@ SPECTACULAR_SETTINGS = {
 
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 PINECONE_API_KEY = os.getenv('PINECONE_API_KEY')
+REVENUECAT_WEBHOOK_AUTH_TOKEN = os.getenv('REVENUECAT_WEBHOOK_AUTH_TOKEN')
 
 # Handle possible spaces and strip extra quotes in CSRF_TRUSTED_ORIGINS
 raw_trusted_origins = os.getenv('CSRF_TRUSTED_ORIGINS', 'http://localhost:3000,http://127.0.0.1:3000,https://api.gymgeniusai.co.uk')
