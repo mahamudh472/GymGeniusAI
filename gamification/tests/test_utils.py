@@ -1,6 +1,3 @@
-"""
-Quick tests to verify gamification system functionality
-"""
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from gamification.models import Rank, ActivityType, UserRank, PointTransaction, UserStreak
@@ -11,46 +8,55 @@ from gamification.utils import (
 
 User = get_user_model()
 
-
 class GamificationTestCase(TestCase):
     
     def setUp(self):
         """Set up test data"""
-        # Create ranks
-        self.bronze_rank = Rank.objects.create(
+        # Ensure ranks exist (using get_or_create to avoid migration collisions)
+        self.bronze_rank, _ = Rank.objects.get_or_create(
             name='BRONZE',
-            level=1,
-            promotion_threshold=30.0,
-            demotion_threshold=0.0,
-            color_code='#CD7F32'
+            defaults={
+                'level': 1,
+                'promotion_threshold': 30.0,
+                'demotion_threshold': 0.0,
+                'color_code': '#CD7F32'
+            }
         )
-        self.silver_rank = Rank.objects.create(
+        self.silver_rank, _ = Rank.objects.get_or_create(
             name='SILVER',
-            level=2,
-            promotion_threshold=25.0,
-            demotion_threshold=20.0,
-            color_code='#C0C0C0'
+            defaults={
+                'level': 2,
+                'promotion_threshold': 25.0,
+                'demotion_threshold': 20.0,
+                'color_code': '#C0C0C0'
+            }
         )
         
-        # Create activity types
-        self.checkin_activity = ActivityType.objects.create(
-            name='Daily Check-in',
+        # Ensure activity types exist
+        self.checkin_activity, _ = ActivityType.objects.get_or_create(
             code='DAILY_CHECKIN',
-            points=10,
-            max_per_day=1
+            defaults={
+                'name': 'Daily Check-in',
+                'points': 10,
+                'max_per_day': 1
+            }
         )
-        self.workout_activity = ActivityType.objects.create(
-            name='Complete Workout',
+        self.workout_activity, _ = ActivityType.objects.get_or_create(
             code='COMPLETE_WORKOUT',
-            points=50,
-            max_per_day=3
+            defaults={
+                'name': 'Complete Workout',
+                'points': 50,
+                'max_per_day': 3
+            }
         )
         
         # Create test user
         self.user = User.objects.create_user(
             username='testuser',
             email='test@example.com',
-            password='testpass123'
+            password='testpass123',
+            full_name="Test User",
+            is_verified=True
         )
     
     def test_award_points(self):
@@ -122,9 +128,22 @@ class GamificationTestCase(TestCase):
         user2 = User.objects.create_user(
             username='testuser2',
             email='test2@example.com',
-            password='testpass123'
+            password='testpass123',
+            full_name="Test User 2",
+            is_verified=True
         )
         
+        # Reset points for user rank to ensure clean test
+        ur1 = UserRank.objects.get(user=self.user)
+        ur1.total_points = 0
+        ur1.weekly_points = 0
+        ur1.save()
+
+        ur2 = UserRank.objects.get(user=user2)
+        ur2.total_points = 0
+        ur2.weekly_points = 0
+        ur2.save()
+
         award_points(self.user, 'COMPLETE_WORKOUT')  # 50 points
         award_points(user2, 'COMPLETE_WORKOUT')  # 50 points
         award_points(user2, 'COMPLETE_WORKOUT')  # 50 points (100 total)
@@ -148,7 +167,9 @@ class GamificationTestCase(TestCase):
         new_user = User.objects.create_user(
             username='newuser',
             email='new@example.com',
-            password='testpass123'
+            password='testpass123',
+            full_name="New User",
+            is_verified=True
         )
         
         # UserRank should be created by signal

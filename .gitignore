@@ -21,3 +21,7 @@ htmlcov/
 .tox/
 .cache/
 gymgeniusai-firebase-adminsdk.json
+temp_meals/
+user_gallery/
+user_meals/
+contact_icons/
