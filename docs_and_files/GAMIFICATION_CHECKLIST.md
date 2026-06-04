@@ -26,7 +26,7 @@
   - Activity code: `COMPLETE_WORKOUT`
   
 ```python
-from gamification.utils import award_points
+from apps.gamification.utils import award_points
 
 # In workout completion view
 award_points(user, 'COMPLETE_WORKOUT', metadata={'workout_id': workout.id})
@@ -277,7 +277,7 @@ python manage.py check
 
 # Shell testing
 python manage.py shell
->>> from gamification.utils import award_points, process_daily_checkin
+>>> from apps.gamification.utils import award_points, process_daily_checkin
 >>> from django.contrib.auth import get_user_model
 >>> User = get_user_model()
 >>> user = User.objects.first()

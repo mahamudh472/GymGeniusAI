@@ -94,7 +94,7 @@ All endpoints under `/api/gamification/`:
 ### 🛠️ Utility Functions (Reusable)
 
 ```python
-from gamification.utils import (
+from apps.gamification.utils import (
     award_points,           # Award points for any activity
     process_daily_checkin,  # Handle daily check-in
     get_leaderboard_for_user, # Get rank-specific leaderboard

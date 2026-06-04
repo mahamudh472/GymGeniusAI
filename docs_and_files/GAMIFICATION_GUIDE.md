@@ -40,7 +40,7 @@ The gamification system is now fully integrated into GymGeniusAI. It provides:
 
 ### 1. Award Points When User Completes a Workout
 ```python
-from gamification.utils import award_points
+from apps.gamification.utils import award_points
 
 # In your workout completion view/signal
 success, message, points = award_points(
@@ -56,7 +56,7 @@ if success:
 
 ### 2. Award Points When User Logs a Meal
 ```python
-from gamification.utils import award_points
+from apps.gamification.utils import award_points
 
 # In your meal logging view
 success, message, points = award_points(
@@ -71,7 +71,7 @@ success, message, points = award_points(
 
 ### 3. Award Points When User Posts Progress Photo
 ```python
-from gamification.utils import award_points
+from apps.gamification.utils import award_points
 
 # In your gallery/progress photo view
 success, message, points = award_points(
@@ -83,7 +83,7 @@ success, message, points = award_points(
 
 ### 4. Award Points When User Writes Article
 ```python
-from gamification.utils import award_points
+from apps.gamification.utils import award_points
 
 # In your article creation view
 success, message, points = award_points(
@@ -95,7 +95,7 @@ success, message, points = award_points(
 
 ### 5. Check Daily Calorie/Protein Goals
 ```python
-from gamification.utils import award_points
+from apps.gamification.utils import award_points
 
 # Check if user met their calorie goal
 if user_calories >= daily_target:
@@ -119,7 +119,7 @@ if user_protein >= protein_target:
 # In your app's signals.py
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from gamification.utils import award_points
+from apps.gamification.utils import award_points
 
 @receiver(post_save, sender=YourWorkoutModel)
 def award_workout_points(sender, instance, created, **kwargs):
@@ -252,7 +252,7 @@ Test the system with:
 # Award some test points
 python manage.py shell
 >>> from django.contrib.auth import get_user_model
->>> from gamification.utils import award_points, process_daily_checkin
+>>> from apps.gamification.utils import award_points, process_daily_checkin
 >>> User = get_user_model()
 >>> user = User.objects.first()
 >>> process_daily_checkin(user)

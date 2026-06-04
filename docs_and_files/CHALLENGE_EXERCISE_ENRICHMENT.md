@@ -38,8 +38,8 @@ Created migration `gamification/migrations/0003_alter_challenge_exercises.py` to
 **Option 1: Using Exercise IDs (Recommended)**
 
 ```python
-from gamification.models import Challenge
-from workouts.models import Exercise
+from apps.gamification.models import Challenge
+from apps.workouts.models import Exercise
 from django.utils import timezone
 from datetime import timedelta
 

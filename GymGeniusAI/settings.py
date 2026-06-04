@@ -45,16 +45,17 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    'accounts',
-    'workouts',
-    'nutrition',
-    'community',
-    'gallery.apps.GalleryConfig',
-    'articles',
-    'ai_assistant',
-    'analytics',
-    'utils',
-    'gamification',
+    'apps.accounts',
+    'apps.workouts',
+    'apps.nutrition',
+    'apps.community',
+    'apps.gallery.apps.GalleryConfig',
+    'apps.articles',
+    'apps.ai_assistant',
+    'apps.analytics',
+    'apps.utils',
+    'apps.gamification',
+    'apps.notifications',
     
     'rest_framework',
     'rest_framework_simplejwt',
@@ -209,7 +210,7 @@ AUTH_USER_MODEL = 'accounts.User'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'accounts.authentication.UpdateLastLoginJWT',
+        'apps.accounts.authentication.UpdateLastLoginJWT',
     ),
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     # 'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend']
@@ -240,11 +241,11 @@ from celery.schedules import crontab
 
 CELERY_BEAT_SCHEDULE = {
     'generate-daily-workout-session': {
-        'task': 'accounts.tasks.generate_daily_workout_session_for_all_active_users',
+        'task': 'apps.accounts.tasks.generate_daily_workout_session_for_all_active_users',
         'schedule': crontab(hour=0, minute=0),
     },
     'update-daily-calorie-target': {
-        'task': 'accounts.tasks.update_daily_calorie_target_for_active_users',
+        'task': 'apps.accounts.tasks.update_daily_calorie_target_for_active_users',
         'schedule': crontab(hour=0, minute=0),
     },
 }

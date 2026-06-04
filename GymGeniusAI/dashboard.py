@@ -7,13 +7,13 @@ def dashboard_callback(request, context):
     Dashboard callback for Unfold admin.
     Gathers key platform statistics for the admin index page.
     """
-    from accounts.models import User, UserSubscription
-    from workouts.models import Exercise, UserWorkout, WorkoutProgress
-    from nutrition.models import Meal, UserUploadedMeal
-    from community.models import ForumPost
-    from articles.models import Article, WorkoutVideo
-    from ai_assistant.models import AIConversation, ConversationMessage
-    from gamification.models import (
+    from apps.accounts.models import User, UserSubscription
+    from apps.workouts.models import Exercise, UserWorkout, WorkoutProgress
+    from apps.nutrition.models import Meal, UserUploadedMeal
+    from apps.community.models import ForumPost
+    from apps.articles.models import Article, WorkoutVideo
+    from apps.ai_assistant.models import AIConversation, ConversationMessage
+    from apps.gamification.models import (
         Challenge as GamificationChallenge,
         UserChallengeProgress,
     )

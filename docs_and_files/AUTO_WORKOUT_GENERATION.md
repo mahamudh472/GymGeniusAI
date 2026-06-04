@@ -67,8 +67,8 @@ To test the feature:
 4. Verify workouts were created in the database
 
 ```python
-from accounts.models import User
-from workouts.models import UserWorkout
+from apps.accounts.models import User
+from apps.workouts.models import UserWorkout
 
 user = User.objects.get(email='test@example.com')
 print(f"Workouts generated: {user.initial_workouts_generated}")
