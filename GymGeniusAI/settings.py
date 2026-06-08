@@ -166,37 +166,28 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
 import sys
 # Django 4.2+ storage configuration
-if 'test' in sys.argv:
-    STORAGES = {
-        "default": {
-            "BACKEND": "django.core.files.storage.FileSystemStorage",
-        },
-        "staticfiles": {
-            "BACKEND": "django.core.files.storage.FileSystemStorage",
-        },
-    }
-else:
-    STORAGES = {
-        "default": {
-            "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
-        },
-        "staticfiles": {
-            "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-        },
-    }
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage" if 'test' in sys.argv else "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
-# S3 MEDIA SETTINGS
-AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
-AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
+# Media files configuration (Local serving)
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
-AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_BUCKET_NAME')
-AWS_S3_REGION_NAME = os.environ.get('AWS_REGION')
+# S3 MEDIA SETTINGS (Commented out - migrated to local serving)
+# AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
+# AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
+# AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_BUCKET_NAME')
+# AWS_S3_REGION_NAME = os.environ.get('AWS_REGION')
+# AWS_S3_FILE_OVERWRITE = False
+# AWS_DEFAULT_ACL = None
+# AWS_QUERYSTRING_AUTH = False  # public files
 
-AWS_S3_FILE_OVERWRITE = False
-AWS_DEFAULT_ACL = None
-AWS_QUERYSTRING_AUTH = False  # public files
-
-MEDIA_URL = f'https://{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/'
 
 
 # Default primary key field type
