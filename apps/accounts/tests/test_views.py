@@ -27,6 +27,7 @@ class AccountsViewsTests(APITestCase):
         self.change_password_url = reverse('change_password')
         self.profile_url = reverse('profile')
         self.profile_update_url = reverse('profile_update')
+        self.profile_completion_status_url = reverse('profile_completion_status')
         self.coach_list_url = reverse('coach_list')
         self.home_api_url = reverse('home_api')
         self.subscription_plans_url = reverse('subscription_plans')
@@ -203,6 +204,28 @@ class AccountsViewsTests(APITestCase):
         expected_age = today.year - 1995 - ((today.month, today.day) < (5, 15))
         self.assertEqual(self.user.age, expected_age)
         self.assertEqual(response.data.get('age'), expected_age)
+
+    def test_profile_completion_status(self):
+        self.authenticate_client()
+        # Initially profile is incomplete
+        response = self.client.get(self.profile_completion_status_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertFalse(response.data['is_profile_completed'])
+        self.assertIn('gender', response.data['missing_fields'])
+
+        # Update all required profile fields
+        self.user.gender = 'male'
+        self.user.date_of_birth = '1995-05-15'
+        self.user.height_cm = 175.0
+        self.user.weight_kg = 70.0
+        self.user.goal = 'weight_loss'
+        self.user.activity_level = 'intermediate'
+        self.user.save()
+
+        response = self.client.get(self.profile_completion_status_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(response.data['is_profile_completed'])
+        self.assertEqual(len(response.data['missing_fields']), 0)
 
     def test_coach_list(self):
         self.authenticate_client()

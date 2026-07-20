@@ -54,6 +54,9 @@ class UserSerializer(serializers.ModelSerializer):
         source='preferred_workout_days'
     )
     rank = serializers.SerializerMethodField()
+    is_profile_completed = serializers.BooleanField(read_only=True)
+    missing_profile_fields = serializers.ListField(child=serializers.CharField(), read_only=True)
+
     class Meta:
         model = User
         fields = ['id', 'email', 'phone_number', 'avatar',
@@ -61,7 +64,8 @@ class UserSerializer(serializers.ModelSerializer):
                   'age', 'date_of_birth', 'height_cm',
                   'weight_kg', 'goal', 'activity_level',
                   'coach_type', 'preferred_workout_time', 'rank',
-                  'preferred_workout_days', 'preferred_workout_day_ids', 'joined_at']
+                  'preferred_workout_days', 'preferred_workout_day_ids', 'joined_at',
+                  'is_profile_completed', 'missing_profile_fields']
     
     def get_rank(self, obj):
         if hasattr(obj, 'user_rank') and obj.user_rank.current_rank:

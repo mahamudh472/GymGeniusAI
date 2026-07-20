@@ -28,9 +28,9 @@ class ConversationMessageView(GenericAPIView):
         
         # Validate required user attributes
         user = request.user
-        if not all([user.gender, user.age, user.weight_kg, user.height_cm, user.goal, user.activity_level]):
+        if not user.is_profile_completed:
             return Response({
-                "error": "Please complete your profile with gender, age, weight, height, goal, and activity level before using AI assistant."
+                "error": f"Please complete your profile before using AI assistant. Missing fields: {', '.join(user.missing_profile_fields)}"
             }, status=400)
         
         if not user.coach_type:

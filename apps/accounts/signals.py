@@ -20,18 +20,8 @@ def check_and_generate_workouts(sender, instance, created, **kwargs):
     if instance.initial_workouts_generated:
         return
     
-    # Check if all necessary fields are filled
-    required_fields = [
-        instance.gender,
-        instance.age,
-        instance.weight_kg,
-        instance.height_cm,
-        instance.goal,
-        instance.activity_level,
-    ]
-    
-    # Check if all required fields have values
-    if all(field is not None for field in required_fields):
+    # Check if profile is completed
+    if instance.is_profile_completed:
         # All necessary data is available, trigger the celery task
         logger.info(f"Triggering workout generation for user {instance.email}")
         
@@ -56,15 +46,7 @@ def generate_daily_workout(sender, instance, created, update_fields=None, **kwar
         return
 
     # Check for required profile fields
-    required_fields = [
-        instance.gender,
-        instance.age,
-        instance.weight_kg,
-        instance.height_cm,
-        instance.goal,
-        instance.activity_level,
-    ]
-    if not all(field is not None for field in required_fields):
+    if not instance.is_profile_completed:
         return
 
     # --- 1. Daily Workout Generation ---

@@ -113,6 +113,32 @@ class User(AbstractBaseUser, PermissionsMixin):
         """Check if user has an active subscription"""
         return self.subscriptions.filter(is_active=True).exists()
 
+    @property
+    def is_profile_completed(self):
+        """Check if all required profile fields are completed for AI functionality."""
+        required_fields = [
+            self.gender,
+            self.age or self.date_of_birth,
+            self.height_cm,
+            self.weight_kg,
+            self.goal,
+            self.activity_level,
+        ]
+        return all(val is not None for val in required_fields)
+
+    @property
+    def missing_profile_fields(self):
+        """Return a list of required profile fields that are missing."""
+        fields = {
+            'gender': self.gender,
+            'age': self.age or self.date_of_birth,
+            'height_cm': self.height_cm,
+            'weight_kg': self.weight_kg,
+            'goal': self.goal,
+            'activity_level': self.activity_level,
+        }
+        return [field for field, val in fields.items() if val is None]
+
 
 class OTP(models.Model):
     """OTP for authentication purposes"""

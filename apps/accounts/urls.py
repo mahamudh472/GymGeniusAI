@@ -17,6 +17,7 @@ urlpatterns = [
     path('change-password/', views.ChangePasswordView.as_view(), name='change_password'),
     path('profile/', views.ProfileView.as_view(), name='profile'),
     path('profile/update/', views.UpdateProfileView.as_view(), name='profile_update'),
+    path('profile/completion-status/', views.ProfileCompletionStatusView.as_view(), name='profile_completion_status'),
     path('coaches/', views.CoachListView.as_view(), name='coach_list'),
     path('home/', views.HomeAPIView.as_view(), name='home_api'),
     path('subscription-plans/', views.SubscriptionPlanListView.as_view(), name='subscription_plans'),

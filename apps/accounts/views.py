@@ -194,6 +194,27 @@ class UpdateProfileView(GenericAPIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class ProfileCompletionStatusView(GenericAPIView):
+    permission_classes = [IsActiveUser, IsAuthenticated]
+
+    @extend_schema(
+        responses={
+            200: inline_serializer(
+                name='ProfileCompletionStatusResponse',
+                fields={
+                    'is_profile_completed': serializers.BooleanField(),
+                    'missing_fields': serializers.ListField(child=serializers.CharField())
+                }
+            )
+        }
+    )
+    def get(self, request):
+        user = request.user
+        return Response({
+            "is_profile_completed": user.is_profile_completed,
+            "missing_fields": user.missing_profile_fields
+        }, status=status.HTTP_200_OK)
+
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
