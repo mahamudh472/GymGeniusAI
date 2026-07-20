@@ -86,6 +86,22 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
+
+    def save(self, *args, **kwargs):
+        if self.date_of_birth:
+            dob = self.date_of_birth
+            if isinstance(dob, str):
+                from datetime import datetime
+                dob = datetime.strptime(dob, "%Y-%m-%d").date()
+            today = timezone.now().date()
+            self.age = today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
+            update_fields = kwargs.get('update_fields')
+            if update_fields is not None:
+                update_fields = set(update_fields)
+                if 'date_of_birth' in update_fields or 'age' in update_fields:
+                    update_fields.add('age')
+                    kwargs['update_fields'] = list(update_fields)
+        super().save(*args, **kwargs)
     
     @property
     def profile_name(self):

@@ -190,6 +190,20 @@ class AccountsViewsTests(APITestCase):
         self.user.refresh_from_db()
         self.assertEqual(self.user.full_name, "Updated Default User")
 
+    def test_profile_update_calculates_age_from_dob(self):
+        self.authenticate_client()
+        payload = {
+            "date_of_birth": "1995-05-15"
+        }
+        response = self.client.patch(self.profile_update_url, payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        
+        self.user.refresh_from_db()
+        today = timezone.now().date()
+        expected_age = today.year - 1995 - ((today.month, today.day) < (5, 15))
+        self.assertEqual(self.user.age, expected_age)
+        self.assertEqual(response.data.get('age'), expected_age)
+
     def test_coach_list(self):
         self.authenticate_client()
         # Create some coaches
