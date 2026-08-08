@@ -36,6 +36,17 @@ class RegisterView(GenericAPIView):
     serializer_class = RegisterSerializer
 
     def post(self, request):
+        email = request.data.get('email')
+        if email and isinstance(email, str):
+            normalized_email = email.strip()
+            if '@' in normalized_email:
+                email_name, domain_part = normalized_email.rsplit('@', 1)
+                normalized_email = email_name + '@' + domain_part.lower()
+            
+            existing_user = User.objects.filter(email__iexact=normalized_email).first()
+            if existing_user and not existing_user.is_verified:
+                existing_user.delete()
+
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save(is_verified=False)

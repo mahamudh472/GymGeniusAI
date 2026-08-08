@@ -293,3 +293,42 @@ class AccountsViewsTests(APITestCase):
         
         # Verify user is deleted
         self.assertFalse(User.objects.filter(email="user@example.com").exists())
+
+    def test_register_with_existing_unverified_email_deletes_old_user_and_succeeds(self):
+        unverified_user = User.objects.create_user(
+            email="unverified@example.com",
+            password="password123",
+            full_name="Unverified User",
+            is_verified=False
+        )
+        old_id = unverified_user.id
+        
+        payload = {
+            "email": "UNVERIFIED@example.com ",
+            "password": "newpassword123",
+            "full_name": "New Unverified User"
+        }
+        
+        response = self.client.post(self.register_url, payload)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertIn("message", response.data)
+        
+        # Verify old user is deleted
+        self.assertFalse(User.objects.filter(id=old_id).exists())
+        
+        # Verify new user is created and is unverified
+        new_user = User.objects.get(email="unverified@example.com")
+        self.assertNotEqual(new_user.id, old_id)
+        self.assertEqual(new_user.full_name, "New Unverified User")
+        self.assertFalse(new_user.is_verified)
+
+    def test_register_with_existing_verified_email_fails(self):
+        # Default user is verified: "user@example.com"
+        payload = {
+            "email": "user@example.com",
+            "password": "newpassword123",
+            "full_name": "Verified User"
+        }
+        response = self.client.post(self.register_url, payload)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("email", response.data)
