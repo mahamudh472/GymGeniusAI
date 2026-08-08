@@ -317,7 +317,7 @@ class AccountsViewsTests(APITestCase):
         self.assertFalse(User.objects.filter(id=old_id).exists())
         
         # Verify new user is created and is unverified
-        new_user = User.objects.get(email="unverified@example.com")
+        new_user = User.objects.get(email="UNVERIFIED@example.com")
         self.assertNotEqual(new_user.id, old_id)
         self.assertEqual(new_user.full_name, "New Unverified User")
         self.assertFalse(new_user.is_verified)
