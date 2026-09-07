@@ -174,7 +174,7 @@ class SearchResultsView(generics.GenericAPIView):
             articles = Article.objects.filter(
                 Q(title__icontains=query) | Q(content__icontains=query)
             ).distinct()
-            article_serializer = ArticleSerializer(articles, many=True)
+            article_serializer = ArticleSerializer(articles, many=True, context={'request': request})
             # meal_serializer = MealSerializer(meals, many=True)
             return Response({
                 "workouts": workout_serializer.data,
