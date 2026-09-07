@@ -2,7 +2,11 @@ from rest_framework.generics import ListCreateAPIView, RetrieveAPIView, GenericA
 from rest_framework import serializers
 from drf_spectacular.utils import extend_schema, inline_serializer
 from .models import UserGallery
-from .serializers import GalleryImageSerializer
+from .serializers import (
+    GalleryImageSerializer,
+    ComparisonImageSerializer,
+    GalleryComparisonResponseSerializer,
+)
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import viewsets, pagination
 from rest_framework.response import Response
@@ -213,3 +217,46 @@ class GalleryImageDetail(RetrieveAPIView):
     queryset = UserGallery.objects.all()
     serializer_class = GalleryImageSerializer
     permission_classes = [IsAuthenticated]
+
+
+class GalleryComparisonView(GenericAPIView):
+    """
+    Returns the first and last uploaded pictures for each image type ('front', 'back', 'side').
+    If a type has only 1 image, 'first' contains that image and 'last' is null.
+    If a type has 0 images, both 'first' and 'last' are null.
+    """
+    permission_classes = [IsAuthenticated]
+    serializer_class = GalleryComparisonResponseSerializer
+
+    @extend_schema(
+        responses={200: GalleryComparisonResponseSerializer}
+    )
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        types = ['front', 'back', 'side']
+        result = {}
+
+        for img_type in types:
+            qs = UserGallery.objects.filter(user=user, image_type=img_type)
+            first_obj = qs.order_by('uploaded_at').first()
+            last_obj = qs.order_by('-uploaded_at').first()
+
+            if first_obj and last_obj and first_obj.id == last_obj.id:
+                last_obj = None
+
+            first_data = (
+                ComparisonImageSerializer(first_obj, context={'request': request}).data
+                if first_obj else None
+            )
+            last_data = (
+                ComparisonImageSerializer(last_obj, context={'request': request}).data
+                if last_obj else None
+            )
+
+            result[img_type] = {
+                'first': first_data,
+                'last': last_data,
+            }
+
+        return Response(result)
+

@@ -85,3 +85,74 @@ class GalleryViewsTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['total_images'], 1)
         self.assertEqual(response.data['consecutive_days_streak'], 1)
+
+    def test_gallery_comparison(self):
+        comparison_url = reverse('gallery-comparison')
+
+        # Currently we only have 1 front image from setUp
+        response = self.client.get(comparison_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        
+        # front has 1 image -> first is present, last is None
+        self.assertIsNotNone(response.data['front']['first'])
+        self.assertEqual(response.data['front']['first']['id'], self.gallery_image.id)
+        self.assertIn('date', response.data['front']['first'])
+        self.assertIsNone(response.data['front']['last'])
+
+        # back and side have 0 images -> both None
+        self.assertIsNone(response.data['back']['first'])
+        self.assertIsNone(response.data['back']['last'])
+        self.assertIsNone(response.data['side']['first'])
+        self.assertIsNone(response.data['side']['last'])
+
+        # Create more images for front, back, side with ai_detected=True
+        front_2 = UserGallery.objects.create(
+            user=self.user,
+            image=generate_valid_image(),
+            image_type="front",
+            ai_detected=True
+        )
+        back_1 = UserGallery.objects.create(
+            user=self.user,
+            image=generate_valid_image(),
+            image_type="back",
+            ai_detected=True
+        )
+        back_2 = UserGallery.objects.create(
+            user=self.user,
+            image=generate_valid_image(),
+            image_type="back",
+            ai_detected=True
+        )
+        side_1 = UserGallery.objects.create(
+            user=self.user,
+            image=generate_valid_image(),
+            image_type="side",
+            ai_detected=True
+        )
+        side_2 = UserGallery.objects.create(
+            user=self.user,
+            image=generate_valid_image(),
+            image_type="side",
+            ai_detected=True
+        )
+
+        response = self.client.get(comparison_url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # front
+        self.assertEqual(response.data['front']['first']['id'], self.gallery_image.id)
+        self.assertEqual(response.data['front']['last']['id'], front_2.id)
+
+        # back
+        self.assertEqual(response.data['back']['first']['id'], back_1.id)
+        self.assertEqual(response.data['back']['last']['id'], back_2.id)
+
+        # side
+        self.assertEqual(response.data['side']['first']['id'], side_1.id)
+        self.assertEqual(response.data['side']['last']['id'], side_2.id)
+
+        # Unauthenticated
+        self.client.credentials()  # clear auth
+        response_unauth = self.client.get(comparison_url)
+        self.assertEqual(response_unauth.status_code, status.HTTP_401_UNAUTHORIZED)
