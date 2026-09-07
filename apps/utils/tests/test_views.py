@@ -205,11 +205,28 @@ class UtilsViewsTests(APITestCase):
         self.assertTrue(response.data['success'])
         self.assertTrue(FCMDevice.objects.filter(user=self.user, registration_id="some-fcm-device-token").exists())
 
+        # Test another user registering the same device token (no IntegrityError, reassigns to new user)
+        other_user = User.objects.create_user(
+            email="otheruser@example.com",
+            password="password123",
+            full_name="Other User",
+            is_verified=True
+        )
+        self.client.force_authenticate(user=other_user)
+        response_other = self.client.post(self.register_device_url, payload, format='json')
+        self.assertEqual(response_other.status_code, status.HTTP_200_OK)
+        self.assertTrue(FCMDevice.objects.filter(user=other_user, registration_id="some-fcm-device-token").exists())
+        self.assertFalse(FCMDevice.objects.filter(user=self.user, registration_id="some-fcm-device-token").exists())
+
+        # Switch back to self.user for remaining tests
+        self.client.force_authenticate(user=self.user)
+
         # Unregister
+        self.client.force_authenticate(user=other_user)
         response_unreg = self.client.post(self.unregister_device_url)
         self.assertEqual(response_unreg.status_code, status.HTTP_200_OK)
         self.assertTrue(response_unreg.data['success'])
-        self.assertFalse(FCMDevice.objects.filter(user=self.user).exists())
+        self.assertFalse(FCMDevice.objects.filter(user=other_user).exists())
 
     @patch('apps.utils.views.FCMDevice.send_message')
     def test_create_demo_notification(self, mock_send_message):

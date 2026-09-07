@@ -308,22 +308,25 @@ def register_device_token(request):
 
 
     FCMDevice.objects.update_or_create(
-        user=request.user,
+        registration_id=device_token,
         defaults={
-            'registration_id': device_token,
+            'user': request.user,
+            'active': True,
         }
     )
     return Response({
         "success": True
     })
- 
- 
-# @extend_schema(request=DeviceTokenRegisterRequest)
+
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def unregister_device_token(request):
-    FCMDevice.objects.filter(user=request.user).delete()
+    device_token = request.data.get('device_token')
+    if device_token:
+        FCMDevice.objects.filter(user=request.user, registration_id=device_token).delete()
+    else:
+        FCMDevice.objects.filter(user=request.user).delete()
     return Response({
         "success": True
     })
