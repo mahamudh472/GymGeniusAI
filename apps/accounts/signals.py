@@ -50,7 +50,7 @@ def generate_daily_workout(sender, instance, created, update_fields=None, **kwar
         return
 
     # --- 1. Daily Workout Generation ---
-    if not UserWorkout.objects.filter(user=instance, created_by_ai=True, created_at__date=timezone.now().date()).exists():
+    if not UserWorkout.objects.filter(user=instance, origin='daily', created_at__date=timezone.now().date()).exists():
         try:
             generate_daily_workout_session_for_all_active_users.apply_async(
                 args=[str(instance.id)],

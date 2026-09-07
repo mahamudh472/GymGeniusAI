@@ -49,7 +49,7 @@ class UserWorkoutListSerializer(serializers.ModelSerializer):
     exercise_count = serializers.IntegerField(source='user_exercises.count', read_only=True)
     class Meta:
         model = UserWorkout
-        fields = ['id', 'name', 'description', 'image', 'estimated_duration', 'estimated_calories', 'exercise_count', 'difficulty']
+        fields = ['id', 'name', 'description', 'image', 'origin', 'estimated_duration', 'estimated_calories', 'exercise_count', 'difficulty']
         
     def to_representation(self, instance):
         representation = super().to_representation(instance)
@@ -62,7 +62,7 @@ class UserWorkoutSerializer(serializers.ModelSerializer):
     exercise_count = serializers.IntegerField(source='user_exercises.count', read_only=True)
     class Meta:
         model = UserWorkout
-        fields = ['id', 'name', 'description', 'image', 'estimated_duration', 'estimated_calories', 'user_exercises', 'exercise_count']
+        fields = ['id', 'name', 'description', 'image', 'origin', 'estimated_duration', 'estimated_calories', 'user_exercises', 'exercise_count']
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)

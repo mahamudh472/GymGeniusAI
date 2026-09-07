@@ -81,11 +81,38 @@ class WorkoutsViewsTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]['name'], "Morning Cardio Blast")
+        self.assertEqual(response.data[0]['origin'], "initial")
+
+    def test_list_workouts_filtered_by_origin(self):
+        # Create a daily workout
+        daily_workout = UserWorkout.objects.create(
+            user=self.user,
+            name="Daily Evening Blast",
+            description="Daily routine",
+            difficulty="intermediate",
+            origin="daily",
+            estimated_duration=45,
+            estimated_calories=300
+        )
+        # Filter by origin=daily
+        response_daily = self.client.get(f"{self.workout_list_url}?origin=daily")
+        self.assertEqual(response_daily.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response_daily.data), 1)
+        self.assertEqual(response_daily.data[0]['id'], daily_workout.id)
+        self.assertEqual(response_daily.data[0]['origin'], "daily")
+
+        # Filter by origin=initial
+        response_initial = self.client.get(f"{self.workout_list_url}?origin=initial")
+        self.assertEqual(response_initial.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response_initial.data), 1)
+        self.assertEqual(response_initial.data[0]['id'], self.workout.id)
+        self.assertEqual(response_initial.data[0]['origin'], "initial")
 
     def test_workout_detail(self):
         response = self.client.get(self.workout_detail_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['name'], "Morning Cardio Blast")
+        self.assertEqual(response.data['origin'], "initial")
 
     def test_track_progress_post_and_get(self):
         payload = {

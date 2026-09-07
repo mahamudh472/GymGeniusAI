@@ -65,8 +65,8 @@ class UserExerciseInline(admin.TabularInline):
 
 @admin.register(UserWorkout)
 class UserWorkoutAdmin(ModelAdmin):
-    list_display = ['name', 'user', 'difficulty', 'created_by_ai', 'is_active', 'estimated_duration', 'estimated_calories', 'created_at']
-    list_filter = ['created_by_ai', 'is_active', 'difficulty', 'created_at']
+    list_display = ['name', 'user', 'origin', 'difficulty', 'created_by_ai', 'is_active', 'estimated_duration', 'estimated_calories', 'created_at']
+    list_filter = ['origin', 'created_by_ai', 'is_active', 'difficulty', 'created_at']
     search_fields = ['name', 'user__email', 'description']
     inlines = [UserExerciseInline]
     ordering = ['-created_at']
@@ -79,7 +79,7 @@ class UserWorkoutAdmin(ModelAdmin):
             'fields': ('user', 'name', 'description', 'image')
         }),
         ('Workout Details', {
-            'fields': ('difficulty', 'created_by_ai', 'is_active')
+            'fields': ('origin', 'difficulty', 'created_by_ai', 'is_active')
         }),
         ('Estimates', {
             'fields': ('estimated_duration', 'estimated_calories'),

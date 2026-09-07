@@ -28,7 +28,7 @@ class UserWorkoutListAPIView(generics.ListAPIView):
 
     @extend_schema(
         summary="List user workouts",
-        description="Get a list of all workouts for the authenticated user. Can be filtered by difficulty level.",
+        description="Get a list of all workouts for the authenticated user. Can be filtered by difficulty level and origin (initial, daily, manual).",
         parameters=[
             OpenApiParameter(
                 name='difficulty',
@@ -37,6 +37,14 @@ class UserWorkoutListAPIView(generics.ListAPIView):
                 required=False,
                 description='Filter workouts by difficulty level',
                 enum=['Beginner', 'Intermediate', 'Advanced']
+            ),
+            OpenApiParameter(
+                name='origin',
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description='Filter workouts by origin (initial, daily, manual)',
+                enum=['initial', 'daily', 'manual']
             )
         ],
         responses={
@@ -51,6 +59,9 @@ class UserWorkoutListAPIView(generics.ListAPIView):
         difficulty = self.request.query_params.get('difficulty', None)
         if difficulty:
             queryset = queryset.filter(difficulty=difficulty.lower())
+        origin = self.request.query_params.get('origin', None)
+        if origin:
+            queryset = queryset.filter(origin=origin.lower())
         return queryset
 
 class UserWorkoutDetailAPIView(generics.RetrieveAPIView):

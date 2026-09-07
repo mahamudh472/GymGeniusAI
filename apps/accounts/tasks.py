@@ -45,8 +45,8 @@ def generate_initial_workouts_task(self, user_id):
         if not workouts:
             raise ValueError("No workouts were generated")
         
-        # Create workout records for the user
-        generate_workouts_for_user(workout_list=workouts, user=user)
+        # Create workout records for the user with initial origin
+        generate_workouts_for_user(workout_list=workouts, user=user, origin='initial')
         
         # Mark as completed
         user.initial_workouts_generated = True
@@ -59,27 +59,17 @@ def generate_initial_workouts_task(self, user_id):
             'message': f'Generated {len(workouts)} workouts successfully',
             'workout_count': len(workouts)
         }
-        
-    except User.DoesNotExist:
-        logger.error(f"User with id {user_id} does not exist")
-        return {
-            'status': 'error',
-            'message': 'User not found'
-        }
-    
     except Exception as e:
-        logger.error(f"Error generating workouts for user {user_id}: {str(e)}")
-        # Retry the task with exponential backoff
-        raise self.retry(exc=e, countdown=60 * (2 ** self.request.retries))
+        logger.error(f"Error generating initial workouts for user {user_id}: {str(e)}")
+        # Retry the task
+        raise self.retry(exc=e, countdown=60)
 
 
 @shared_task
 def generate_daily_workout_session_for_all_active_users(user_id=None):
-
-    # users that logged in within the last 3 days
     from django.utils import timezone
     from datetime import timedelta
-    
+
     if user_id:
         try:
             user = User.objects.get(id=user_id)
@@ -102,7 +92,7 @@ def generate_daily_workout_session_for_all_active_users(user_id=None):
             logger.info(f"Skipping user {user.email} due to incomplete profile data")
             continue
 
-        if UserWorkout.objects.filter(user=user, created_by_ai=True, created_at__date=timezone.now().date()).exists():
+        if UserWorkout.objects.filter(user=user, origin='daily', created_at__date=timezone.now().date()).exists():
             logger.info(f"Daily workout already generated for user {user.email} today")
             continue
 
@@ -120,7 +110,7 @@ def generate_daily_workout_session_for_all_active_users(user_id=None):
                 image_summary=UserGallery.objects.filter(user=user).first().ai_summary if UserGallery.objects.filter(user=user).exists() else "",
                 workout_logs=workout_logs
             )
-            generate_workouts_for_user(workout_list=[workouts], user=user)
+            generate_workouts_for_user(workout_list=[workouts], user=user, origin='daily')
             logger.info(f"Generated daily workout session for user {user.email}")
         except Exception as e:
             logger.error(f"Failed to generate daily workout for user {user.email}: {str(e)}")

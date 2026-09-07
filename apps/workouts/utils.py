@@ -3,7 +3,7 @@ from django.conf import settings
 import json
 
 
-def generate_workouts_for_user(workout_list=None, user=None):
+def generate_workouts_for_user(workout_list=None, user=None, origin='initial'):
     """
     Given a list of workout names and a user, return a list of Exercise objects
     that match the names in the workout_list.
@@ -17,7 +17,8 @@ def generate_workouts_for_user(workout_list=None, user=None):
             difficulty=workout.get('difficulty', 'beginner').lower(),
             estimated_duration=workout.get('estimated_duration', 0),
             estimated_calories=workout.get('estimated_calories', 0),
-            created_by_ai=True
+            created_by_ai=True,
+            origin=origin
         )
         exercise_order = 1
         for exercise in workout['exercises']:

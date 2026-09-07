@@ -94,6 +94,11 @@ class UserWorkout(models.Model):
         ('intermediate', 'Intermediate'),
         ('advanced', 'Advanced'),
     ]
+    ORIGIN_CHOICES = [
+        ('initial', 'Initial'),
+        ('daily', 'Daily'),
+        ('manual', 'Manual'),
+    ]
     
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='workouts')
     name = models.CharField(max_length=255, default=generate_workout_name)
@@ -101,6 +106,12 @@ class UserWorkout(models.Model):
     
     # Workout metadata
     created_by_ai = models.BooleanField(default=False, help_text="Whether this was created by AI")
+    origin = models.CharField(
+        max_length=20,
+        choices=ORIGIN_CHOICES,
+        default='initial',
+        help_text="Origin of the workout (initial account creation, daily session, or manual)"
+    )
     difficulty = models.CharField(max_length=20, choices=DIFFICULTY_CHOICES, blank=True, null=True)
     estimated_duration = models.IntegerField(blank=True, null=True, 
                                             help_text="Estimated duration in minutes")
