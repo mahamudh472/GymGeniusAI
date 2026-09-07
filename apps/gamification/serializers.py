@@ -177,6 +177,39 @@ class ChallengeExerciseSerializer(serializers.Serializer):
     tips = serializers.CharField(required=False, allow_blank=True, allow_null=True)
 
 
+class ChallengeListSerializer(serializers.ModelSerializer):
+    """Serializer for Challenge model list/summary view (without nested exercise list)"""
+    challenge_type_display = serializers.CharField(source='get_challenge_type_display', read_only=True)
+    difficulty_display = serializers.CharField(source='get_difficulty_display', read_only=True)
+    is_available = serializers.SerializerMethodField()
+    time_remaining_seconds = serializers.SerializerMethodField()
+    exercise_count = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Challenge
+        fields = [
+            'id', 'name', 'description', 'challenge_type', 'challenge_type_display',
+            'difficulty', 'difficulty_display', 'completion_points', 'start_date',
+            'end_date', 'exercise_count', 'estimated_duration', 'estimated_calories',
+            'is_active', 'is_available', 'time_remaining_seconds', 'created_at'
+        ]
+        read_only_fields = ['id', 'created_at']
+    
+    def get_is_available(self, obj):
+        return obj.is_available()
+    
+    def get_time_remaining_seconds(self, obj):
+        remaining = obj.time_remaining()
+        if remaining:
+            return remaining.total_seconds()
+        return None
+
+    def get_exercise_count(self, obj):
+        if isinstance(obj.exercises, list):
+            return len(obj.exercises)
+        return 0
+
+
 class ChallengeSerializer(serializers.ModelSerializer):
     """Serializer for Challenge model"""
     challenge_type_display = serializers.CharField(source='get_challenge_type_display', read_only=True)

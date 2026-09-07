@@ -240,26 +240,64 @@ class AccountsViewsTests(APITestCase):
         self.assertEqual(response.data[0]['name'], "Coach John")
 
     def test_home_api(self):
+        from apps.gamification.models import Challenge
+        from datetime import timedelta
         self.authenticate_client()
-        # Create a workout and an article
-        UserWorkout.objects.create(
+        
+        # Create a regular workout and a daily workout
+        initial_workout = UserWorkout.objects.create(
             user=self.user,
-            name="Morning Cardio"
+            name="Initial Upper Body",
+            origin="initial"
         )
-        Article.objects.create(
-            title="Importance of Hydration",
-            description="Hydrate well",
-            content="Drink more water.",
-            category="tips",
-            created_by=self.user
+        daily_workout = UserWorkout.objects.create(
+            user=self.user,
+            name="Today Daily Workout",
+            origin="daily"
         )
+        
+        # Create a daily challenge
+        now = timezone.now()
+        daily_challenge = Challenge.objects.create(
+            name="Daily Pushup Challenge",
+            description="Complete 50 pushups",
+            challenge_type="DAILY",
+            difficulty="beginner",
+            completion_points=50,
+            start_date=now - timedelta(hours=1),
+            end_date=now + timedelta(hours=23),
+            is_active=True
+        )
+
+        # Create multiple articles
+        for i in range(7):
+            Article.objects.create(
+                title=f"Article {i}",
+                description=f"Desc {i}",
+                content=f"Content {i}",
+                category="tips",
+                created_by=self.user
+            )
         
         response = self.client.get(self.home_api_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn('daily_workout_session', response.data)
+        self.assertIn('daily_challenge', response.data)
         self.assertIn('workouts', response.data)
         self.assertIn('articles', response.data)
-        self.assertEqual(len(response.data['workouts']), 1)
-        self.assertEqual(len(response.data['articles']), 1)
+        
+        # Check daily workout session and challenge populated
+        self.assertIsNotNone(response.data['daily_workout_session'])
+        self.assertEqual(response.data['daily_workout_session']['id'], daily_workout.id)
+        self.assertNotIn('user_exercises', response.data['daily_workout_session'])
+        self.assertIsNotNone(response.data['daily_challenge'])
+        self.assertEqual(response.data['daily_challenge']['id'], daily_challenge.id)
+        self.assertNotIn('exercises', response.data['daily_challenge'])
+        self.assertIn('exercise_count', response.data['daily_challenge'])
+
+        # Check limits (at most 5 returned)
+        self.assertLessEqual(len(response.data['workouts']), 5)
+        self.assertLessEqual(len(response.data['articles']), 5)
 
     def test_subscription_plans(self):
         # Create a plan

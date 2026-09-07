@@ -25,6 +25,8 @@ from apps.articles.models import Article
 from apps.workouts.models import UserWorkout
 from apps.workouts.serializers import UserWorkoutListSerializer
 from apps.articles.serializers import ArticleSerializer
+from apps.gamification.models import Challenge
+from apps.gamification.serializers import ChallengeListSerializer
 from .models import User, OTP, Coach, SubscriptionPlan, UserSubscription
 from .permissions import IsActiveUser
 
@@ -357,20 +359,61 @@ class HomeAPIView(GenericAPIView):
             200: inline_serializer(
                 name='HomeAPIResponse',
                 fields={
-                    'workouts': UserWorkoutListSerializer(many=True).child,
-                    'articles': ArticleSerializer(many=True).child
+                    'daily_workout_session': UserWorkoutListSerializer(allow_null=True),
+                    'daily_challenge': ChallengeListSerializer(allow_null=True),
+                    'workouts': UserWorkoutListSerializer(many=True),
+                    'articles': ArticleSerializer(many=True)
                 }
             )
         }
     )
     def get(self, request):
-        workouts = UserWorkout.objects.filter(user=request.user)
-        articles = Article.objects.all()
+        today = timezone.now().date()
+        now = timezone.now()
+
+        # Today's daily workout session for the authenticated user
+        daily_workout = UserWorkout.objects.filter(
+            user=request.user,
+            origin='daily',
+            created_at__date=today,
+            is_active=True
+        ).first()
+
+        # Today's active daily challenge
+        daily_challenge = Challenge.objects.filter(
+            challenge_type='DAILY',
+            is_active=True,
+            start_date__lte=now,
+            end_date__gte=now
+        ).order_by('-start_date').first()
+
+        if not daily_challenge:
+            daily_challenge = Challenge.objects.filter(
+                challenge_type='DAILY',
+                is_active=True
+            ).order_by('-start_date').first()
+
+        # Regular/initial workouts (limited to 5)
+        workouts = UserWorkout.objects.filter(
+            user=request.user,
+            is_active=True
+        ).exclude(origin='daily').order_by('-created_at')[:5]
+
+        if not workouts.exists():
+            workouts = UserWorkout.objects.filter(
+                user=request.user,
+                is_active=True
+            ).order_by('-created_at')[:5]
+
+        # Articles (limited to 5)
+        articles = Article.objects.all().order_by('-created_at')[:5]
+
         return Response(
             {
-                "workouts": UserWorkoutListSerializer(workouts, many=True).data,
-                "articles": ArticleSerializer(articles, many=True).data
-
+                "daily_workout_session": UserWorkoutListSerializer(daily_workout, context={'request': request}).data if daily_workout else None,
+                "daily_challenge": ChallengeListSerializer(daily_challenge, context={'request': request}).data if daily_challenge else None,
+                "workouts": UserWorkoutListSerializer(workouts, many=True, context={'request': request}).data,
+                "articles": ArticleSerializer(articles, many=True, context={'request': request}).data,
             },
             status=status.HTTP_200_OK
         )
