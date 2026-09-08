@@ -335,12 +335,11 @@ def unregister_device_token(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_demo_notification(request):
-    from apps.utils.views import add_notification
     add_notification(
         user=request.user,
         title="Demo Notification",
         message="This is a demo notification.",
-        notification_type="info"
+        notification_type="system"
     )
     return Response({
         "success": True

@@ -236,7 +236,9 @@ class UtilsViewsTests(APITestCase):
         self.assertTrue(response.data['success'])
         
         # Verify notification created
-        self.assertTrue(Notification.objects.filter(user=self.user, title="Demo Notification").exists())
+        notification = Notification.objects.filter(user=self.user, title="Demo Notification").first()
+        self.assertIsNotNone(notification)
+        self.assertEqual(notification.notification_type, "system")
 
     def test_notification_settings_get_and_update(self):
         # GET notification settings

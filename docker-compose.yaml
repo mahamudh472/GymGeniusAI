@@ -36,6 +36,7 @@ services:
       - CELERY_BROKER_URL=${CELERY_BROKER_URL}
       - CELERY_RESULT_BACKEND=${CELERY_RESULT_BACKEND}
     volumes:
+      - .:/app
       - static_data:/app/staticfiles
       - /root/media:/app/media
       - "/home/ubuntu/Exercise videos:/mnt/videos"
@@ -72,6 +73,7 @@ services:
     <<: *app
     command: celery -A GymGeniusAI worker --loglevel=info
     volumes:
+      - .:/app
       - /root/media:/app/media
     depends_on:
       - redis
