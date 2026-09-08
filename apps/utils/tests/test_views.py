@@ -198,6 +198,38 @@ class UtilsViewsTests(APITestCase):
         self.notification.refresh_from_db()
         self.assertTrue(self.notification.is_read)
 
+    def test_mark_all_notifications_read_by_type(self):
+        reminder_notification = Notification.objects.create(
+            user=self.user,
+            title="Reminder 1",
+            message="Time to workout",
+            notification_type="reminder",
+            is_read=False
+        )
+        system_notification = Notification.objects.create(
+            user=self.user,
+            title="System Alert 1",
+            message="System update",
+            notification_type="system",
+            is_read=False
+        )
+
+        # Mark only reminder notifications as read via body
+        response = self.client.post(self.mark_all_read_url, {"notification_type": "reminder"}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        reminder_notification.refresh_from_db()
+        system_notification.refresh_from_db()
+        self.assertTrue(reminder_notification.is_read)
+        self.assertFalse(system_notification.is_read)
+
+        # Mark system notifications as read via query param
+        response_query = self.client.post(f"{self.mark_all_read_url}?notification_type=system")
+        self.assertEqual(response_query.status_code, status.HTTP_200_OK)
+
+        system_notification.refresh_from_db()
+        self.assertTrue(system_notification.is_read)
+
     def test_register_and_unregister_device_token(self):
         payload = {"device_token": "some-fcm-device-token"}
         response = self.client.post(self.register_device_url, payload, format='json')

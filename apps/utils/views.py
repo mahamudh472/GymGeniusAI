@@ -76,7 +76,27 @@ class MarkAllNotificationsReadView(generics.GenericAPIView):
     serializer_class = NotificationSerializer  # Add serializer_class for schema generation
 
     @extend_schema(
-        request=None,  # This endpoint doesn't require a request body
+        parameters=[
+            OpenApiParameter(
+                name='notification_type',
+                description='Optional notification type to filter by (e.g. "reminder", "system")',
+                required=False,
+                type=OpenApiTypes.STR,
+                enum=['reminder', 'system'],
+            )
+        ],
+        request=inline_serializer(
+            name='MarkAllNotificationsReadRequest',
+            fields={
+                'notification_type': serializers.ChoiceField(
+                    choices=[('reminder', 'Reminders'), ('system', 'System Alerts')],
+                    required=False,
+                    allow_null=True,
+                    allow_blank=True
+                )
+            },
+            required=False
+        ),
         responses={
             200: inline_serializer(
                 name='MarkAllNotificationsReadResponse',
@@ -88,7 +108,17 @@ class MarkAllNotificationsReadView(generics.GenericAPIView):
     )
     def post(self, request, *args, **kwargs):
         user = request.user
-        updated_count = Notification.objects.filter(user=user, is_read=False).update(is_read=True)
+        notification_type = (
+            request.data.get('notification_type') 
+            if isinstance(request.data, dict) 
+            else None
+        ) or request.query_params.get('notification_type')
+
+        queryset = Notification.objects.filter(user=user, is_read=False)
+        if notification_type:
+            queryset = queryset.filter(notification_type=notification_type)
+
+        updated_count = queryset.update(is_read=True)
         return Response(
             {"detail": f"Marked {updated_count} notifications as read."},
             status=status.HTTP_200_OK
