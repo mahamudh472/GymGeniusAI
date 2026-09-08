@@ -24,6 +24,7 @@ class AccountsViewsTests(APITestCase):
         self.verify_email_url = reverse('verify_email')
         self.send_otp_url = reverse('password_reset')  # points to SendOTPView
         self.password_reset_confirm_url = reverse('password_reset_confirm')
+        self.check_otp_url = reverse('check_otp')
         self.change_password_url = reverse('change_password')
         self.profile_url = reverse('profile')
         self.profile_update_url = reverse('profile_update')
@@ -159,6 +160,88 @@ class AccountsViewsTests(APITestCase):
         # Verify password is changed
         self.user.refresh_from_db()
         self.assertTrue(self.user.check_password("newpassword456"))
+
+    def test_check_otp_valid(self):
+        OTP.objects.create(
+            user=self.user,
+            code="1122",
+            purpose="password_reset",
+            expires_at=timezone.now() + timezone.timedelta(minutes=10)
+        )
+        response = self.client.post(self.check_otp_url, {
+            "email": "user@example.com",
+            "otp": "1122"
+        })
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(response.data.get('is_valid'))
+
+    def test_check_otp_with_purpose(self):
+        OTP.objects.create(
+            user=self.user,
+            code="3344",
+            purpose="password_reset",
+            expires_at=timezone.now() + timezone.timedelta(minutes=10)
+        )
+        # Matching purpose
+        response = self.client.post(self.check_otp_url, {
+            "email": "user@example.com",
+            "otp": "3344",
+            "purpose": "password_reset"
+        })
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(response.data.get('is_valid'))
+
+        # Mismatched purpose
+        response_mismatch = self.client.post(self.check_otp_url, {
+            "email": "user@example.com",
+            "otp": "3344",
+            "purpose": "signup"
+        })
+        self.assertEqual(response_mismatch.status_code, status.HTTP_200_OK)
+        self.assertFalse(response_mismatch.data.get('is_valid'))
+
+    def test_check_otp_invalid(self):
+        response = self.client.post(self.check_otp_url, {
+            "email": "user@example.com",
+            "otp": "0000"
+        })
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertFalse(response.data.get('is_valid'))
+
+    def test_check_otp_expired(self):
+        OTP.objects.create(
+            user=self.user,
+            code="5566",
+            purpose="password_reset",
+            expires_at=timezone.now() - timezone.timedelta(minutes=10)
+        )
+        response = self.client.post(self.check_otp_url, {
+            "email": "user@example.com",
+            "otp": "5566"
+        })
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertFalse(response.data.get('is_valid'))
+
+    def test_check_otp_used(self):
+        OTP.objects.create(
+            user=self.user,
+            code="7788",
+            purpose="password_reset",
+            is_used=True,
+            expires_at=timezone.now() + timezone.timedelta(minutes=10)
+        )
+        response = self.client.post(self.check_otp_url, {
+            "email": "user@example.com",
+            "otp": "7788"
+        })
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertFalse(response.data.get('is_valid'))
+
+    def test_check_otp_validation_error(self):
+        response = self.client.post(self.check_otp_url, {
+            "email": "invalid-email"
+        })
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_change_password_success(self):
         self.authenticate_client()

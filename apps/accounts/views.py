@@ -18,6 +18,7 @@ from apps.accounts.serializers import (
     SubscriptionPlanSerializer, 
     UserSerializer, 
     VerifyEmailSerializer,
+    CheckOTPSerializer,
     CoachSerializer,
     ChangePasswordSerializer
 )
@@ -185,6 +186,53 @@ class PasswordResetConfirmView(GenericAPIView):
                 "error": "Failed to reset password.",
                 "detail": str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class CheckOTPView(GenericAPIView):
+    serializer_class = CheckOTPSerializer
+
+    @extend_schema(
+        request=CheckOTPSerializer,
+        responses={
+            200: inline_serializer(
+                name='CheckOTPResponse',
+                fields={
+                    'is_valid': serializers.BooleanField(),
+                    'message': serializers.CharField()
+                }
+            )
+        }
+    )
+    def post(self, request):
+        serializer = self.get_serializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        email = serializer.validated_data.get('email')
+        input_otp = serializer.validated_data.get('otp')
+        purpose = serializer.validated_data.get('purpose')
+
+        otp_query = OTP.objects.filter(
+            user__email__iexact=email.strip(),
+            code=input_otp,
+            is_used=False,
+            expires_at__gt=timezone.now()
+        )
+
+        if purpose:
+            otp_query = otp_query.filter(purpose=purpose)
+
+        is_valid = otp_query.exists()
+
+        if is_valid:
+            return Response({
+                "is_valid": True,
+                "message": "OTP is valid."
+            }, status=status.HTTP_200_OK)
+        else:
+            return Response({
+                "is_valid": False,
+                "message": "Invalid or expired OTP."
+            }, status=status.HTTP_200_OK)
 
 class ProfileView(GenericAPIView):
     serializer_class = UserSerializer

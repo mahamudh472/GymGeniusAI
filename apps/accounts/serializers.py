@@ -27,6 +27,11 @@ class VerifyEmailSerializer(serializers.Serializer):
     email = serializers.EmailField()
     otp = serializers.CharField(max_length=6)
 
+class CheckOTPSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    otp = serializers.CharField(max_length=6)
+    purpose = serializers.CharField(max_length=50, required=False, allow_blank=True, default=None)
+
 class ResetPasswordConfirmSerializer(serializers.Serializer):
     email = serializers.EmailField()
     otp = serializers.CharField(max_length=6)
