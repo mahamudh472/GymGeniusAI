@@ -119,10 +119,12 @@ class ChallengeAdmin(ModelAdmin):
         if obj.exercises:
             count = len(obj.exercises)
             return format_html(
-                '<span style="background-color: #e3f2fd; padding: 3px 8px; border-radius: 3px; font-weight: 500;">{} exercises</span>',
+                '<span style="background-color: rgba(37, 99, 235, 0.1); color: #2563eb; border: 1px solid rgba(37, 99, 235, 0.25); padding: 3px 10px; border-radius: 6px; font-weight: 600; font-size: 0.78rem; display: inline-flex; align-items: center; gap: 4px;">'
+                '<span class="material-symbols-outlined" style="font-size: 15px;">fitness_center</span>'
+                '{} exercises</span>',
                 count
             )
-        return format_html('<span style="color: #999;">No exercises</span>')
+        return format_html('<span style="color: #94a3b8; font-size: 0.78rem;">No exercises</span>')
     
     def get_urls(self):
         urls = super().get_urls()

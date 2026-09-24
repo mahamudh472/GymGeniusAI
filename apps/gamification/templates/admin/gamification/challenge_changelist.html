@@ -2,14 +2,13 @@
 {% load i18n admin_urls static %}
 
 {% block object-tools-items %}
-    <li>
-        <a href="{% url 'admin:gamification_challenge_create' %}" class="addlink">
-            {% trans 'Add Challenge' %}
-        </a>
-    </li>
-    {% if has_add_permission %}
-    <li style="display: none;">
-        {{ block.super }}
-    </li>
-    {% endif %}
+    <div class="flex flex-row items-center gap-2">
+        {% if has_add_permission %}
+            <a href="{% url 'admin:gamification_challenge_create' %}" class="bg-primary-600 hover:bg-primary-700 text-white flex items-center gap-1.5 h-9 px-4 rounded-lg text-sm font-semibold transition-all shadow-xs" title="{% trans 'Add Challenge' %}">
+                <span class="material-symbols-outlined text-[18px]">add</span>
+                <span>{% trans 'Add Challenge' %}</span>
+            </a>
+        {% endif %}
+    </div>
 {% endblock %}
+

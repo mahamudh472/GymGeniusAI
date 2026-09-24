@@ -21,39 +21,66 @@
 {% block extrastyle %}
 {{ block.super }}
 <style>
+    :root {
+        --dash-card-bg: #ffffff;
+        --dash-card-border: #e2e8f0;
+        --dash-text-main: #0f172a;
+        --dash-text-muted: #64748b;
+        --dash-text-sub: #94a3b8;
+        --dash-accent-blue: #2563eb;
+        --dash-accent-blue-hover: #1d4ed8;
+        --dash-exercise-bg: #f8fafc;
+        --dash-input-bg: #ffffff;
+    }
+    
+    .dark {
+        --dash-card-bg: #1e293b;
+        --dash-card-border: #334155;
+        --dash-text-main: #f8fafc;
+        --dash-text-muted: #94a3b8;
+        --dash-text-sub: #64748b;
+        --dash-accent-blue: #3b82f6;
+        --dash-accent-blue-hover: #2563eb;
+        --dash-exercise-bg: rgba(30, 41, 59, 0.45);
+        --dash-input-bg: #0f172a;
+    }
+
     #content-main {
         max-width: 100%;
     }
     
     .challenge-form-container {
-        width: 100%;
-        padding: 0;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0.5rem 0 2rem;
     }
     
     .challenge-form-container h1 {
-        font-size: 1.875rem;
+        font-size: 1.5rem;
         font-weight: 700;
         margin-bottom: 1.5rem;
-        color: #111827;
+        color: var(--dash-text-main);
+        letter-spacing: -0.02em;
     }
     
     .form-section {
-        background: white;
-        border-radius: 0.5rem;
+        background: var(--dash-card-bg);
+        border-radius: 12px;
         padding: 1.5rem;
         margin-bottom: 1.5rem;
-        border: 1px solid #e5e7eb;
-        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        border: 1px solid var(--dash-card-border);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
     }
     
     .form-section h2 {
         margin-top: 0;
         margin-bottom: 20px;
-        font-size: 1.3em;
-        font-weight: 600;
-        color: #111827;
-        border-bottom: 2px solid #10b981;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--dash-text-main);
+        border-bottom: 2px solid var(--dash-accent-blue);
         padding-bottom: 10px;
+        letter-spacing: -0.01em;
     }
     
     .form-row {
@@ -63,8 +90,9 @@
     .form-row label {
         display: block;
         font-weight: 600;
-        margin-bottom: 8px;
-        color: #555;
+        margin-bottom: 6px;
+        color: var(--dash-text-muted);
+        font-size: 0.8125rem;
     }
     
     .form-row input[type="text"],
@@ -73,10 +101,21 @@
     .form-row textarea,
     .form-row select {
         width: 100%;
-        padding: 10px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
+        padding: 10px 14px;
+        background: var(--dash-input-bg);
+        color: var(--dash-text-main);
+        border: 1px solid var(--dash-card-border);
+        border-radius: 8px;
         font-size: 14px;
+        transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    
+    .form-row input:focus,
+    .form-row textarea:focus,
+    .form-row select:focus {
+        border-color: var(--dash-accent-blue);
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
     }
     
     .form-row textarea {
@@ -87,22 +126,21 @@
     .form-row .helptext {
         display: block;
         font-size: 12px;
-        color: #666;
+        color: var(--dash-text-sub);
         margin-top: 5px;
-        font-style: italic;
     }
     
     .form-row.errors input,
     .form-row.errors select,
     .form-row.errors textarea {
-        border-color: #dc3545;
+        border-color: #ef4444;
     }
     
     .errorlist {
         list-style: none;
         padding: 0;
         margin: 5px 0;
-        color: #dc3545;
+        color: #ef4444;
         font-size: 13px;
     }
     
@@ -118,15 +156,21 @@
         gap: 20px;
     }
     
+    @media (max-width: 768px) {
+        .two-column-row, .three-column-row {
+            grid-template-columns: 1fr;
+        }
+    }
+    
     /* Exercise Formset Styles */
     .exercise-formset {
         margin-top: 20px;
     }
     
     .exercise-form {
-        background: #f8f9fa;
-        border: 1px solid #e0e0e0;
-        border-radius: 6px;
+        background: var(--dash-exercise-bg);
+        border: 1px solid var(--dash-card-border);
+        border-radius: 10px;
         padding: 20px;
         margin-bottom: 16px;
         position: relative;
@@ -138,30 +182,38 @@
         align-items: center;
         margin-bottom: 16px;
         padding-bottom: 12px;
-        border-bottom: 2px solid #10b981;
+        border-bottom: 2px solid var(--dash-accent-blue);
     }
     
     .exercise-form-header h3 {
         margin: 0;
-        font-size: 1.1em;
-        color: #111827;
-        font-weight: 600;
+        font-size: 1.05rem;
+        color: var(--dash-text-main);
+        font-weight: 700;
     }
     
     .delete-exercise-btn {
-        background: #ef4444;
-        color: white;
-        border: none;
-        padding: 6px 12px;
+        background: #fee2e2;
+        color: #dc2626;
+        border: 1px solid #fecaca;
+        padding: 6px 14px;
         border-radius: 6px;
         cursor: pointer;
         font-size: 13px;
         transition: all 0.2s;
-        font-weight: 500;
+        font-weight: 600;
+    }
+    
+    .dark .delete-exercise-btn {
+        background: rgba(239, 68, 68, 0.15);
+        color: #f87171;
+        border-color: rgba(239, 68, 68, 0.3);
     }
     
     .delete-exercise-btn:hover {
-        background: #dc2626;
+        background: #ef4444;
+        color: white;
+        border-color: #ef4444;
     }
     
     .exercise-form-grid {
@@ -171,33 +223,43 @@
         margin-bottom: 12px;
     }
     
+    @media (max-width: 900px) {
+        .exercise-form-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+    
     .exercise-notes {
         grid-column: 1 / -1;
     }
     
     .add-exercise-btn {
-        background: #10b981;
+        background: var(--dash-accent-blue);
         color: white;
         border: none;
-        padding: 12px 24px;
-        border-radius: 6px;
+        padding: 10px 20px;
+        border-radius: 8px;
         cursor: pointer;
         font-size: 14px;
         font-weight: 600;
-        transition: all 0.2s;
+        transition: background 0.2s, transform 0.15s;
         margin-top: 12px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
     }
     
     .add-exercise-btn:hover {
-        background: #059669;
+        background: var(--dash-accent-blue-hover);
+        transform: translateY(-1px);
     }
     
     /* Submit Buttons */
     .submit-row {
-        background: white;
-        padding: 20px;
-        border-radius: 8px;
-        border: 1px solid #e5e7eb;
+        background: var(--dash-card-bg);
+        padding: 18px 24px;
+        border-radius: 12px;
+        border: 1px solid var(--dash-card-border);
         display: flex;
         gap: 12px;
         justify-content: flex-end;
@@ -207,9 +269,9 @@
     .submit-row input[type="submit"],
     .submit-row button,
     .submit-row .cancel-btn {
-        padding: 10px 20px;
+        padding: 10px 22px;
         border: none;
-        border-radius: 6px;
+        border-radius: 8px;
         font-size: 14px;
         font-weight: 600;
         cursor: pointer;
@@ -219,21 +281,32 @@
     }
     
     .submit-row input[type="submit"] {
-        background: #10b981;
+        background: var(--dash-accent-blue);
         color: white;
     }
     
     .submit-row input[type="submit"]:hover {
-        background: #059669;
+        background: var(--dash-accent-blue-hover);
+        transform: translateY(-1px);
     }
     
     .submit-row .cancel-btn {
-        background: #6b7280;
-        color: white;
+        background: #f1f5f9;
+        color: var(--dash-text-muted);
+        border: 1px solid var(--dash-card-border);
+    }
+    
+    .dark .submit-row .cancel-btn {
+        background: #334155;
+        color: #cbd5e1;
     }
     
     .submit-row .cancel-btn:hover {
-        background: #4b5563;
+        background: #e2e8f0;
+    }
+    
+    .dark .submit-row .cancel-btn:hover {
+        background: #475569;
     }
     
     .empty-form {
@@ -250,20 +323,21 @@
     .messagelist li {
         padding: 12px 20px;
         margin-bottom: 10px;
-        border-radius: 4px;
+        border-radius: 8px;
         font-size: 14px;
+        font-weight: 500;
     }
     
     .messagelist .success {
-        background: #d4edda;
-        color: #155724;
-        border: 1px solid #c3e6cb;
+        background: rgba(0, 184, 148, 0.12);
+        color: #009475;
+        border: 1px solid rgba(0, 184, 148, 0.25);
     }
     
     .messagelist .error {
-        background: #f8d7da;
-        color: #721c24;
-        border: 1px solid #f5c6cb;
+        background: #fee2e2;
+        color: #b91c1c;
+        border: 1px solid #fecaca;
     }
 </style>
 {% endblock %}

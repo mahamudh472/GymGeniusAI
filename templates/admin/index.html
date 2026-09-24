@@ -10,200 +10,722 @@
 {% block extrahead %}
 {{ block.super }}
 <style>
-/* Inherit Unfold's own variables wherever possible */
+/* Dashboard Styles matching modern SaaS overview */
+:root {
+    --dash-card-bg: #ffffff;
+    --dash-card-border: #e2e8f0;
+    --dash-text-main: #0f172a;
+    --dash-text-muted: #64748b;
+    --dash-text-sub: #94a3b8;
+    --dash-accent-teal: #00b894;
+    --dash-grid-line: rgba(0, 0, 0, 0.05);
+}
+
+.dark {
+    --dash-card-bg: #1e293b;
+    --dash-card-border: #334155;
+    --dash-text-main: #f8fafc;
+    --dash-text-muted: #94a3b8;
+    --dash-text-sub: #64748b;
+    --dash-grid-line: rgba(255, 255, 255, 0.06);
+}
+
+.dash-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0.5rem 0 2rem;
+}
+
+/* Header */
+.dash-header {
+    margin-bottom: 1.75rem;
+}
+
+.dash-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--dash-text-main);
+    letter-spacing: -0.02em;
+    margin: 0 0 0.35rem 0;
+}
+
+.dash-subtitle {
+    font-size: 0.875rem;
+    color: var(--dash-text-muted);
+    margin: 0;
+}
+
+/* KPI Cards Grid */
 .dash-kpi-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 1rem;
-    margin-bottom: 2.5rem;
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
 }
-@media (max-width: 900px) { .dash-kpi-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 520px) { .dash-kpi-grid { grid-template-columns: 1fr; } }
 
-.dash-kpi {
-    border: 1px solid var(--color-base-200, #e5e7eb);
-    border-radius: var(--border-radius, 8px);
+@media (max-width: 1024px) {
+    .dash-kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 560px) {
+    .dash-kpi-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.dash-kpi-card {
+    background: var(--dash-card-bg);
+    border: 1px solid var(--dash-card-border);
+    border-radius: 12px;
     padding: 1.25rem 1.5rem;
-    transition: border-color .15s;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
 }
-.dash-kpi:hover { border-color: var(--color-primary-400, #a5b4fc); }
+
+.dash-kpi-card:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+.dark .dash-kpi-card:hover {
+    border-color: #475569;
+}
+
+.dash-kpi-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
 .dash-kpi-label {
-    font-size: 0.78rem;
-    font-weight: 500;
-    color: var(--color-base-500, #6b7280);
-    margin-bottom: 0.35rem;
-}
-.dash-kpi-value {
-    font-size: 1.75rem;
+    font-size: 0.72rem;
     font-weight: 700;
-    color: var(--color-base-900, #111827);
-    line-height: 1;
-    letter-spacing: -0.025em;
-}
-.dark .dash-kpi {
-    border-color: var(--color-base-700, #374151);
-}
-.dark .dash-kpi:hover { border-color: var(--color-primary-500, #818cf8); }
-.dark .dash-kpi-label { color: var(--color-base-400, #9ca3af); }
-.dark .dash-kpi-value { color: var(--color-base-100, #f3f4f6); }
-
-/* Section */
-.dash-section-title {
-    font-size: 0.82rem;
-    font-weight: 600;
+    color: var(--dash-text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--color-base-400, #9ca3af);
-    margin: 0 0 0.75rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid var(--color-base-200, #e5e7eb);
-}
-.dark .dash-section-title {
-    color: var(--color-base-500, #6b7280);
-    border-color: var(--color-base-700, #374151);
+    letter-spacing: 0.05em;
 }
 
-/* Metric rows */
-.dash-metrics {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 1rem;
-    margin-bottom: 2.5rem;
+.dash-kpi-icon-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
-.dash-metric {
-    border: 1px solid var(--color-base-200, #e5e7eb);
-    border-radius: var(--border-radius, 8px);
-    padding: 1rem 1.25rem;
-    transition: border-color .15s;
+
+.dash-kpi-icon-circle {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1.5px solid #cbd5e1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--dash-text-muted);
+    font-size: 0.85rem;
+    font-weight: 600;
 }
-.dash-metric:hover { border-color: var(--color-primary-400, #a5b4fc); }
-.dash-metric-value {
-    font-size: 1.35rem;
+
+.dash-kpi-icon-badge {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: #eff6ff;
+    border: 1px solid #dbeafe;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #2563eb;
+}
+
+.dark .dash-kpi-icon-badge {
+    background: rgba(37, 99, 235, 0.15);
+    border-color: rgba(37, 99, 235, 0.3);
+    color: #60a5fa;
+}
+
+.dash-kpi-icon-plain {
+    color: var(--dash-text-sub);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dash-kpi-value {
+    font-size: 2.1rem;
     font-weight: 700;
-    color: var(--color-base-900, #111827);
-    line-height: 1;
-    margin-bottom: 0.3rem;
-    letter-spacing: -0.02em;
+    color: var(--dash-text-main);
+    line-height: 1.15;
+    letter-spacing: -0.025em;
+    margin: 0.25rem 0 0.5rem;
 }
-.dash-metric-label {
-    font-size: 0.76rem;
-    font-weight: 500;
-    color: var(--color-base-500, #6b7280);
-}
-.dark .dash-metric {
-    border-color: var(--color-base-700, #374151);
-}
-.dark .dash-metric:hover { border-color: var(--color-primary-500, #818cf8); }
-.dark .dash-metric-value { color: var(--color-base-100, #f3f4f6); }
-.dark .dash-metric-label { color: var(--color-base-400, #9ca3af); }
 
-/* Two-col */
-.dash-two-col {
+.dash-kpi-trend {
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.dash-trend-green {
+    color: #10b981;
+}
+
+.dash-trend-neutral {
+    color: var(--dash-text-muted);
+}
+
+/* Charts Grid */
+.dash-charts-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 2rem;
-    margin-bottom: 2.5rem;
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
 }
-@media (max-width: 768px) { .dash-two-col { grid-template-columns: 1fr; } }
+
+@media (max-width: 900px) {
+    .dash-charts-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.dash-chart-card {
+    background: var(--dash-card-bg);
+    border: 1px solid var(--dash-card-border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.dash-chart-header {
+    margin-bottom: 1.25rem;
+}
+
+.dash-chart-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--dash-text-main);
+    margin: 0 0 0.2rem 0;
+    letter-spacing: -0.015em;
+}
+
+.dash-chart-subtitle {
+    font-size: 0.8125rem;
+    color: var(--dash-text-muted);
+    margin: 0;
+}
+
+.dash-canvas-wrap {
+    position: relative;
+    width: 100%;
+    height: 220px;
+    margin-bottom: 1.25rem;
+}
+
+.dash-chart-footer {
+    padding-top: 1rem;
+    border-top: 1px solid var(--dash-card-border);
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+}
+
+.dash-footer-stat {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--dash-text-main);
+    line-height: 1.1;
+    margin-bottom: 0.2rem;
+}
+
+.dash-footer-label {
+    font-size: 0.78rem;
+    color: var(--dash-text-muted);
+}
+
+/* Platform Activity Section (Detailed breakdown) */
+.dash-breakdown-card {
+    background: var(--dash-card-bg);
+    border: 1px solid var(--dash-card-border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.dash-breakdown-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--dash-card-border);
+}
+
+.dash-breakdown-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--dash-text-main);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin: 0;
+}
+
+.dash-breakdown-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.25rem;
+}
+
+@media (max-width: 1024px) {
+    .dash-breakdown-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
+    .dash-breakdown-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.dash-group-box {
+    background: rgba(248, 250, 252, 0.6);
+    border: 1px solid var(--dash-card-border);
+    border-radius: 10px;
+    padding: 1rem 1.15rem;
+}
+
+.dark .dash-group-box {
+    background: rgba(30, 41, 59, 0.4);
+}
+
+.dash-group-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--dash-text-muted);
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.dash-submetric-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.35rem 0;
+    font-size: 0.8125rem;
+    border-bottom: 1px dashed var(--dash-card-border);
+}
+
+.dash-submetric-row:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.dash-submetric-name {
+    color: var(--dash-text-muted);
+}
+
+.dash-submetric-count {
+    font-weight: 700;
+    color: var(--dash-text-main);
+}
 </style>
 {% endblock %}
 
 {% block content %}
+<div class="dash-container">
+    <!-- Header -->
+    <div class="dash-header">
+        <h1 class="dash-title">Dashboard Overview</h1>
+        <p class="dash-subtitle">Welcome back! Here's what's happening with your platform.</p>
+    </div>
 
-<!-- KPI — Top level -->
-<div class="dash-kpi-grid">
-    <div class="dash-kpi">
-        <div class="dash-kpi-label">Total Users</div>
-        <div class="dash-kpi-value">{{ total_users }}</div>
+    <!-- 4 Key Stat Cards Row -->
+    <div class="dash-kpi-grid">
+        <!-- 1. TOTAL REVENUE -->
+        <div class="dash-kpi-card">
+            <div class="dash-kpi-top">
+                <span class="dash-kpi-label">TOTAL REVENUE</span>
+                <div class="dash-kpi-icon-wrap">
+                    <div class="dash-kpi-icon-circle">&euro;</div>
+                </div>
+            </div>
+            <div class="dash-kpi-value">&euro;{{ total_revenue|floatformat:0 }}</div>
+            <div class="dash-kpi-trend dash-trend-green">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                    <polyline points="17 6 23 6 23 12"></polyline>
+                </svg>
+                <span>+100% YTD</span>
+            </div>
+        </div>
+
+        <!-- 2. ACTIVE SUBSCRIPTIONS -->
+        <div class="dash-kpi-card">
+            <div class="dash-kpi-top">
+                <span class="dash-kpi-label">ACTIVE SUBSCRIPTIONS</span>
+                <div class="dash-kpi-icon-wrap">
+                    <div class="dash-kpi-icon-badge">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                            <polyline points="9 12 11 14 15 10"></polyline>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+            <div class="dash-kpi-value">{{ active_subscriptions }}</div>
+            <div class="dash-kpi-trend dash-trend-neutral">
+                <span>&sim; 0% vs last month</span>
+            </div>
+        </div>
+
+        <!-- 3. TOTAL USERS -->
+        <div class="dash-kpi-card">
+            <div class="dash-kpi-top">
+                <span class="dash-kpi-label">TOTAL USERS</span>
+                <div class="dash-kpi-icon-wrap">
+                    <div class="dash-kpi-icon-plain">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+            <div class="dash-kpi-value">{{ total_users }}</div>
+            <div class="dash-kpi-trend dash-trend-neutral">
+                <span>&sim; {{ user_mom_growth }}% vs last month</span>
+            </div>
+        </div>
+
+        <!-- 4. ACTIVE COACHES / AGENCIES -->
+        <div class="dash-kpi-card">
+            <div class="dash-kpi-top">
+                <span class="dash-kpi-label">ACTIVE COACHES</span>
+                <div class="dash-kpi-icon-wrap">
+                    <div class="dash-kpi-icon-plain">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect>
+                            <line x1="9" y1="22" x2="9" y2="22.01"></line>
+                            <line x1="15" y1="22" x2="15" y2="22.01"></line>
+                            <line x1="8" y1="6" x2="10" y2="6"></line>
+                            <line x1="14" y1="6" x2="16" y2="6"></line>
+                            <line x1="8" y1="10" x2="10" y2="10"></line>
+                            <line x1="14" y1="10" x2="16" y2="10"></line>
+                            <line x1="8" y1="14" x2="10" y2="14"></line>
+                            <line x1="14" y1="14" x2="16" y2="14"></line>
+                            <line x1="8" y1="18" x2="10" y2="18"></line>
+                            <line x1="14" y1="18" x2="16" y2="18"></line>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+            <div class="dash-kpi-value">{{ total_coaches }}</div>
+            <div class="dash-kpi-trend dash-trend-neutral">
+                <span>&sim; 0% vs last month</span>
+            </div>
+        </div>
     </div>
-    <div class="dash-kpi">
-        <div class="dash-kpi-label">New Users (7d)</div>
-        <div class="dash-kpi-value">{{ new_users_7d }}</div>
+
+    <!-- Charts Row: Revenue Overview & User Growth -->
+    <div class="dash-charts-grid">
+        <!-- Revenue Overview -->
+        <div class="dash-chart-card">
+            <div class="dash-chart-header">
+                <h3 class="dash-chart-title">Revenue Overview</h3>
+                <p class="dash-chart-subtitle">Monthly subscription revenue (MRR)</p>
+            </div>
+            <div class="dash-canvas-wrap">
+                <canvas id="revenueChart"></canvas>
+            </div>
+            <div class="dash-chart-footer">
+                <div>
+                    <div class="dash-footer-stat">&euro;{{ total_revenue|floatformat:0 }}</div>
+                    <div class="dash-footer-label">Total revenue (YTD)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Growth -->
+        <div class="dash-chart-card">
+            <div class="dash-chart-header">
+                <h3 class="dash-chart-title">User Growth</h3>
+                <p class="dash-chart-subtitle">Monthly platform user registration trends</p>
+            </div>
+            <div class="dash-canvas-wrap">
+                <canvas id="userGrowthChart"></canvas>
+            </div>
+            <div class="dash-chart-footer">
+                <div>
+                    <div class="dash-footer-stat">{{ total_users }}</div>
+                    <div class="dash-footer-label">Total Users</div>
+                </div>
+                <div class="dash-kpi-trend dash-trend-neutral" style="font-size: 0.85rem;">
+                    <span>&sim; {{ user_mom_growth }}% MoM</span>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="dash-kpi">
-        <div class="dash-kpi-label">New Users (30d)</div>
-        <div class="dash-kpi-value">{{ new_users_30d }}</div>
-    </div>
-    <div class="dash-kpi">
-        <div class="dash-kpi-label">Active Subscriptions</div>
-        <div class="dash-kpi-value">{{ active_subscriptions }}</div>
+
+    <!-- Detailed Platform Activity Breakdown -->
+    <div class="dash-breakdown-card">
+        <div class="dash-breakdown-header">
+            <h2 class="dash-breakdown-title">Platform Activity Breakdown</h2>
+            <span class="dash-footer-label">Live System Counters</span>
+        </div>
+        <div class="dash-breakdown-grid">
+            <!-- Workouts -->
+            <div class="dash-group-box">
+                <div class="dash-group-title">
+                    <span class="material-symbols-outlined" style="font-size: 16px;">fitness_center</span>
+                    Workouts
+                </div>
+                <div class="dash-submetric-row">
+                    <span class="dash-submetric-name">Exercises</span>
+                    <span class="dash-submetric-count">{{ total_exercises }}</span>
+                </div>
+                <div class="dash-submetric-row">
+                    <span class="dash-submetric-name">User Workouts</span>
+                    <span class="dash-submetric-count">{{ total_user_workouts }}</span>
+                </div>
+                <div class="dash-submetric-row">
+                    <span class="dash-submetric-name">Completed</span>
+                    <span class="dash-submetric-count">{{ total_completed_workouts }}</span>
+                </div>
+            </div>
+
+            <!-- Nutrition -->
+            <div class="dash-group-box">
+                <div class="dash-group-title">
+                    <span class="material-symbols-outlined" style="font-size: 16px;">restaurant</span>
+                    Nutrition
+                </div>
+                <div class="dash-submetric-row">
+                    <span class="dash-submetric-name">Total Meals</span>
+                    <span class="dash-submetric-count">{{ total_meals }}</span>
+                </div>
+                <div class="dash-submetric-row">
+                    <span class="dash-submetric-name">Uploaded Meals</span>
+                    <span class="dash-submetric-count">{{ total_uploaded_meals }}</span>
+                </div>
+                <div class="dash-submetric-row">
+                    <span class="dash-submetric-name">Active Diet Plans</span>
+                    <span class="dash-submetric-count">{{ total_users }}</span>
+                </div>
+            </div>
+
+            <!-- Community & Content -->
+            <div class="dash-group-box">
+                <div class="dash-group-title">
+                    <span class="material-symbols-outlined" style="font-size: 16px;">article</span>
+                    Content & Social
+                </div>
+                <div class="dash-submetric-row">
+                    <span class="dash-submetric-name">Articles</span>
+                    <span class="dash-submetric-count">{{ total_articles }}</span>
+                </div>
+                <div class="dash-submetric-row">
+                    <span class="dash-submetric-name">Workout Videos</span>
+                    <span class="dash-submetric-count">{{ total_workout_videos }}</span>
+                </div>
+                <div class="dash-submetric-row">
+                    <span class="dash-submetric-name">Forum Posts</span>
+                    <span class="dash-submetric-count">{{ total_forum_posts }}</span>
+                </div>
+            </div>
+
+            <!-- AI & Gamification -->
+            <div class="dash-group-box">
+                <div class="dash-group-title">
+                    <span class="material-symbols-outlined" style="font-size: 16px;">smart_toy</span>
+                    AI & Gamification
+                </div>
+                <div class="dash-submetric-row">
+                    <span class="dash-submetric-name">AI Conversations</span>
+                    <span class="dash-submetric-count">{{ total_conversations }}</span>
+                </div>
+                <div class="dash-submetric-row">
+                    <span class="dash-submetric-name">AI Messages</span>
+                    <span class="dash-submetric-count">{{ total_messages }}</span>
+                </div>
+                <div class="dash-submetric-row">
+                    <span class="dash-submetric-name">Active Challenges</span>
+                    <span class="dash-submetric-count">{{ active_challenges }}</span>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
-<!-- Workouts & Nutrition -->
-<div class="dash-two-col">
-    <div>
-        <div class="dash-section-title">Workouts</div>
-        <div class="dash-metrics">
-            <div class="dash-metric">
-                <div class="dash-metric-value">{{ total_exercises }}</div>
-                <div class="dash-metric-label">Exercises</div>
-            </div>
-            <div class="dash-metric">
-                <div class="dash-metric-value">{{ total_user_workouts }}</div>
-                <div class="dash-metric-label">User Workouts</div>
-            </div>
-            <div class="dash-metric">
-                <div class="dash-metric-value">{{ total_completed_workouts }}</div>
-                <div class="dash-metric-label">Completed</div>
-            </div>
-        </div>
-    </div>
-    <div>
-        <div class="dash-section-title">Nutrition</div>
-        <div class="dash-metrics">
-            <div class="dash-metric">
-                <div class="dash-metric-value">{{ total_meals }}</div>
-                <div class="dash-metric-label">Meals</div>
-            </div>
-            <div class="dash-metric">
-                <div class="dash-metric-value">{{ total_uploaded_meals }}</div>
-                <div class="dash-metric-label">Uploaded Meals</div>
-            </div>
-        </div>
-    </div>
-</div>
+<script>
+(function() {
+    function initCharts() {
+        if (typeof Chart === 'undefined') {
+            setTimeout(initCharts, 100);
+            return;
+        }
 
-<!-- Community & Content / AI & Gamification -->
-<div class="dash-two-col">
-    <div>
-        <div class="dash-section-title">Community & Content</div>
-        <div class="dash-metrics">
-            <div class="dash-metric">
-                <div class="dash-metric-value">{{ total_forum_posts }}</div>
-                <div class="dash-metric-label">Forum Posts</div>
-            </div>
-            <div class="dash-metric">
-                <div class="dash-metric-value">{{ total_articles }}</div>
-                <div class="dash-metric-label">Articles</div>
-            </div>
-            <div class="dash-metric">
-                <div class="dash-metric-value">{{ total_workout_videos }}</div>
-                <div class="dash-metric-label">Workout Videos</div>
-            </div>
-        </div>
-    </div>
-    <div>
-        <div class="dash-section-title">AI & Gamification</div>
-        <div class="dash-metrics">
-            <div class="dash-metric">
-                <div class="dash-metric-value">{{ total_conversations }}</div>
-                <div class="dash-metric-label">AI Conversations</div>
-            </div>
-            <div class="dash-metric">
-                <div class="dash-metric-value">{{ total_messages }}</div>
-                <div class="dash-metric-label">AI Messages</div>
-            </div>
-            <div class="dash-metric">
-                <div class="dash-metric-value">{{ active_challenges }}</div>
-                <div class="dash-metric-label">Active Challenges</div>
-            </div>
-            <div class="dash-metric">
-                <div class="dash-metric-value">{{ completed_challenges }}</div>
-                <div class="dash-metric-label">Completed</div>
-            </div>
-        </div>
-    </div>
-</div>
+        const isDark = document.documentElement.classList.contains('dark');
+        const gridColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)';
+        const textColor = isDark ? '#94a3b8' : '#64748b';
 
+        const labels = {{ chart_labels_json|safe }};
+        const revenueData = {{ revenue_chart_json|safe }};
+        const userData = {{ user_chart_json|safe }};
+
+        // 1. Revenue Overview Area Chart
+        const revCanvas = document.getElementById('revenueChart');
+        if (revCanvas) {
+            const ctx = revCanvas.getContext('2d');
+            const gradient = ctx.createLinearGradient(0, 0, 0, 200);
+            gradient.addColorStop(0, 'rgba(0, 184, 148, 0.28)');
+            gradient.addColorStop(1, 'rgba(0, 184, 148, 0.0)');
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'MRR (€)',
+                        data: revenueData,
+                        borderColor: '#00b894',
+                        borderWidth: 2.5,
+                        backgroundColor: gradient,
+                        fill: true,
+                        tension: 0.45,
+                        pointBackgroundColor: '#00b894',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 1.5,
+                        pointRadius: 3.5,
+                        pointHoverRadius: 6,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: isDark ? '#334155' : '#0f172a',
+                            padding: 10,
+                            titleFont: { size: 12, weight: '600' },
+                            bodyFont: { size: 12 },
+                            displayColors: false,
+                            callbacks: {
+                                label: function(context) {
+                                    return '€' + (context.parsed.y || 0).toLocaleString();
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: {
+                                color: textColor,
+                                font: { size: 11, weight: '500' }
+                            },
+                            border: { display: false }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: gridColor,
+                                borderDash: [4, 4],
+                            },
+                            ticks: {
+                                color: textColor,
+                                font: { size: 11 },
+                                callback: function(val) {
+                                    if (val === 0) return '€0';
+                                    return '€' + val.toLocaleString();
+                                }
+                            },
+                            border: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 2. User Growth Bar Chart
+        const userCanvas = document.getElementById('userGrowthChart');
+        if (userCanvas) {
+            const ctx = userCanvas.getContext('2d');
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'New Users',
+                        data: userData,
+                        backgroundColor: '#00b894',
+                        hoverBackgroundColor: '#00a383',
+                        borderRadius: 4,
+                        borderSkipped: false,
+                        maxBarThickness: 32,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: isDark ? '#334155' : '#0f172a',
+                            padding: 10,
+                            titleFont: { size: 12, weight: '600' },
+                            bodyFont: { size: 12 },
+                            displayColors: false,
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: {
+                                color: textColor,
+                                font: { size: 11, weight: '500' }
+                            },
+                            border: { display: false }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: gridColor,
+                                borderDash: [4, 4],
+                            },
+                            ticks: {
+                                color: textColor,
+                                font: { size: 11 },
+                                precision: 0,
+                            },
+                            border: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initCharts);
+    } else {
+        initCharts();
+    }
+})();
+</script>
 {% endblock %}
+

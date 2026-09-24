@@ -9,6 +9,7 @@ UNFOLD = {
     "SHOW_BACK_BUTTON": True,
     "BORDER_RADIUS": "8px",
     "DASHBOARD_CALLBACK": "GymGeniusAI.dashboard.dashboard_callback",
+    "THEME": "light",
     "COLORS": {
         "primary": {
             "50": "oklch(97.5% .01 250)",
@@ -104,11 +105,6 @@ UNFOLD = {
                 "separator": True,
                 "collapsible": True,
                 "items": [
-                    {
-                        "title": "Challenges",
-                        "icon": "emoji_events",
-                        "link": "/admin/community/challenge/",
-                    },
                     {
                         "title": "Leaderboard",
                         "icon": "leaderboard",
