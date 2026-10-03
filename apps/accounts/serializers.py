@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Coach, User, WeekDay, SubscriptionPlan
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.exceptions import AuthenticationFailed
 
 class WeekDaySerializer(serializers.ModelSerializer):
     class Meta:
@@ -88,6 +89,8 @@ class UserSerializer(serializers.ModelSerializer):
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         data = super().validate(attrs)
+        if self.user.is_staff or self.user.is_superuser:
+            raise AuthenticationFailed('Admin accounts must sign in through Django admin.')
         if not self.user.is_verified:
             raise serializers.ValidationError("User account is not verified.")
 

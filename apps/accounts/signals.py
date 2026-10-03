@@ -1,8 +1,9 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
-from .models import User
-from .tasks import generate_initial_workouts_task, generate_daily_workout_session_for_all_active_users
+from .models import User, WorkoutGenerationJob
+from .tasks import queue_workout_generation
+from django.db import transaction
 import logging
 
 logger = logging.getLogger(__name__)
@@ -16,6 +17,10 @@ def check_and_generate_workouts(sender, instance, created, **kwargs):
     
     This only runs once per user (tracked by initial_workouts_generated flag).
     """
+    # Admin accounts do not receive AI-generated workouts.
+    if instance.is_staff or instance.is_superuser:
+        return
+
     # Skip if workouts have already been generated
     if instance.initial_workouts_generated:
         return
@@ -25,11 +30,13 @@ def check_and_generate_workouts(sender, instance, created, **kwargs):
         # All necessary data is available, trigger the celery task
         logger.info(f"Triggering workout generation for user {instance.email}")
         
-        # Use apply_async to schedule the task
-        generate_initial_workouts_task.apply_async(
-            args=[str(instance.id)],
-            countdown=5  # Wait 5 seconds before executing to allow transaction to complete
-        )
+        if not instance.workout_generation_jobs.filter(
+            job_type=WorkoutGenerationJob.JobType.INITIAL,
+            status__in=['pending', 'started', 'retrying'],
+        ).exists():
+            transaction.on_commit(
+                lambda: queue_workout_generation(instance, WorkoutGenerationJob.JobType.INITIAL, countdown=5)
+            )
     else:
         logger.debug(f"User {instance.email} profile incomplete, skipping workout generation")
 
@@ -40,6 +47,10 @@ def generate_daily_workout(sender, instance, created, update_fields=None, **kwar
     for the user whenever the user profile is updated or they log in.
     """
     from apps.workouts.models import UserWorkout
+
+    # Admin accounts do not receive AI-generated workouts.
+    if instance.is_staff or instance.is_superuser:
+        return
 
     # Avoid infinite recursion
     if update_fields and ('daily_calorie_target' in update_fields or 'calorie_target_updated_at' in update_fields):
@@ -52,10 +63,13 @@ def generate_daily_workout(sender, instance, created, update_fields=None, **kwar
     # --- 1. Daily Workout Generation ---
     if not UserWorkout.objects.filter(user=instance, origin='daily', created_at__date=timezone.now().date()).exists():
         try:
-            generate_daily_workout_session_for_all_active_users.apply_async(
-                args=[str(instance.id)],
-                countdown=10
-            )
+            if not instance.workout_generation_jobs.filter(
+                job_type=WorkoutGenerationJob.JobType.DAILY,
+                status__in=['pending', 'started', 'retrying'],
+            ).exists():
+                transaction.on_commit(
+                    lambda: queue_workout_generation(instance, WorkoutGenerationJob.JobType.DAILY, countdown=10)
+                )
             logger.info(f"Triggered daily workout generation for user {instance.email}")
         except Exception as e:
             logger.error(f"Error triggering workout generation for user {instance.email}: {e}")

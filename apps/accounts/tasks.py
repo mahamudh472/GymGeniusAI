@@ -1,5 +1,6 @@
 from celery import shared_task
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 import logging
 
 logger = logging.getLogger(__name__)
@@ -7,23 +8,57 @@ logger = logging.getLogger(__name__)
 User = get_user_model()
 
 
+def _is_admin_account(user):
+    return user.is_staff or user.is_superuser
+
+
+def _update_job(job_id, **fields):
+    """Update a job without letting a monitoring failure stop workout generation."""
+    if not job_id:
+        return None
+    from .models import WorkoutGenerationJob
+    WorkoutGenerationJob.objects.filter(pk=job_id).update(**fields)
+    return WorkoutGenerationJob.objects.filter(pk=job_id).first()
+
+
 @shared_task(bind=True, max_retries=3)
-def generate_initial_workouts_task(self, user_id):
+def generate_initial_workouts_task(self, user_id, job_id=None):
     """
     Celery task to generate initial workouts for a user.
     This task is triggered when a user completes their profile with all necessary data.
     It runs only once per user.
     """
     try:
+        from .models import WorkoutGenerationJob
+        if job_id and WorkoutGenerationJob.objects.filter(
+            pk=job_id, status=WorkoutGenerationJob.Status.REVOKED
+        ).exists():
+            return {'status': 'revoked', 'message': 'Job was revoked before execution'}
+        job = _update_job(
+            job_id,
+            status='started',
+            started_at=timezone.now(),
+            attempts=self.request.retries + 1,
+            error='',
+        )
         user = User.objects.get(id=user_id)
+        if _is_admin_account(user):
+            result = {
+                'status': 'skipped',
+                'message': 'Workout generation is disabled for admin accounts',
+            }
+            _update_job(job_id, status='success', result=result, completed_at=timezone.now())
+            return result
         
         # Check if workouts have already been generated
         if user.initial_workouts_generated:
             logger.info(f"Workouts already generated for user {user.email}")
-            return {
+            result = {
                 'status': 'skipped',
                 'message': 'Workouts already generated for this user'
             }
+            _update_job(job_id, status='success', result=result, completed_at=timezone.now())
+            return result
         
         # Import here to avoid circular imports
         from apps.ai_assistant.utils import generate_multi_level_workouts
@@ -54,20 +89,24 @@ def generate_initial_workouts_task(self, user_id):
         
         logger.info(f"Successfully generated {len(workouts)} workouts for user {user.email}")
         
-        return {
+        result = {
             'status': 'success',
             'message': f'Generated {len(workouts)} workouts successfully',
             'workout_count': len(workouts)
         }
+        _update_job(job_id, status='success', result=result, completed_at=timezone.now())
+        return result
     except Exception as e:
         logger.error(f"Error generating initial workouts for user {user_id}: {str(e)}")
-        # Retry the task
+        if self.request.retries >= self.max_retries:
+            _update_job(job_id, status='failure', error=str(e), completed_at=timezone.now())
+            raise
+        _update_job(job_id, status='retrying', error=str(e))
         raise self.retry(exc=e, countdown=60)
 
 
 @shared_task
-def generate_daily_workout_session_for_all_active_users(user_id=None):
-    from django.utils import timezone
+def generate_daily_workout_session_for_all_active_users(user_id=None, job_id=None):
     from datetime import timedelta
 
     if user_id:
@@ -79,10 +118,22 @@ def generate_daily_workout_session_for_all_active_users(user_id=None):
             return
     else:
         active_users = User.objects.filter(
-            last_login__gte=timezone.now() - timedelta(days=3)
+            last_login__gte=timezone.now() - timedelta(days=3),
+            is_staff=False,
+            is_superuser=False,
         )
 
+    from .models import WorkoutGenerationJob
+    if job_id and WorkoutGenerationJob.objects.filter(
+        pk=job_id, status=WorkoutGenerationJob.Status.REVOKED
+    ).exists():
+        return {'status': 'revoked', 'message': 'Job was revoked before execution'}
+    _update_job(job_id, status='started', started_at=timezone.now(), attempts=1, error='')
+    generated_count = 0
+    errors = []
     for user in active_users:
+        if _is_admin_account(user):
+            continue
         from apps.ai_assistant.utils import generate_dataset_based_workout
         from apps.gallery.models import UserGallery
         from apps.workouts.models import Activity, UserWorkout
@@ -111,9 +162,44 @@ def generate_daily_workout_session_for_all_active_users(user_id=None):
                 workout_logs=workout_logs
             )
             generate_workouts_for_user(workout_list=[workouts], user=user, origin='daily')
+            generated_count += 1
             logger.info(f"Generated daily workout session for user {user.email}")
         except Exception as e:
+            errors.append(str(e))
             logger.error(f"Failed to generate daily workout for user {user.email}: {str(e)}")
+
+    if job_id:
+        result = {
+            'status': 'failure' if errors else 'success',
+            'workout_count': generated_count,
+        }
+        _update_job(
+            job_id,
+            status='failure' if errors else 'success',
+            result=result,
+            error='\n'.join(errors),
+            completed_at=timezone.now(),
+        )
+
+
+def queue_workout_generation(user, job_type, countdown=0, job=None):
+    """Create an admin-visible job and submit its matching Celery task."""
+    from .models import WorkoutGenerationJob
+
+    if _is_admin_account(user):
+        raise ValueError('Workout generation is disabled for admin accounts.')
+
+    if job is None:
+        job = WorkoutGenerationJob.objects.create(user=user, job_type=job_type)
+    task = (
+        generate_initial_workouts_task
+        if job_type == WorkoutGenerationJob.JobType.INITIAL
+        else generate_daily_workout_session_for_all_active_users
+    )
+    result = task.apply_async(args=[str(user.id), job.pk], countdown=countdown)
+    job.celery_task_id = result.id
+    job.save(update_fields=['celery_task_id'])
+    return job
 
 
 @shared_task
@@ -174,4 +260,3 @@ def update_daily_calorie_target_for_active_users(user_id=None):
 
         except Exception as e:
             logger.error(f"Failed to update calorie target for user {user.email}: {str(e)}")
-

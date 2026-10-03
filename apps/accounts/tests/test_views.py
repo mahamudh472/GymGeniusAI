@@ -52,6 +52,22 @@ class AccountsViewsTests(APITestCase):
         response = self.client.post(self.login_url, {"email": "user@example.com", "password": "wrongpassword"})
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
+    def test_login_rejects_admin_account(self):
+        User.objects.create_user(
+            email="admin@example.com",
+            password="password123",
+            is_verified=True,
+            is_staff=True,
+        )
+
+        response = self.client.post(
+            self.login_url,
+            {"email": "admin@example.com", "password": "password123"},
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertNotIn('access', response.data)
+
     def test_register_success(self):
         # Clear outbox
         mail.outbox = []

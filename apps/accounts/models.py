@@ -140,6 +140,42 @@ class User(AbstractBaseUser, PermissionsMixin):
         return [field for field, val in fields.items() if val is None]
 
 
+class WorkoutGenerationJob(models.Model):
+    """An auditable, admin-managed request to generate a user's AI workouts."""
+
+    class JobType(models.TextChoices):
+        INITIAL = 'initial', 'Initial workouts'
+        DAILY = 'daily', 'Daily workout'
+
+    class Status(models.TextChoices):
+        PENDING = 'pending', 'Pending'
+        STARTED = 'started', 'Running'
+        RETRYING = 'retrying', 'Retrying'
+        SUCCESS = 'success', 'Completed'
+        FAILURE = 'failure', 'Failed'
+        REVOKED = 'revoked', 'Revoked'
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='workout_generation_jobs')
+    job_type = models.CharField(max_length=10, choices=JobType.choices, default=JobType.INITIAL)
+    status = models.CharField(max_length=10, choices=Status.choices, default=Status.PENDING)
+    celery_task_id = models.CharField(max_length=255, blank=True, db_index=True)
+    attempts = models.PositiveSmallIntegerField(default=0)
+    result = models.JSONField(default=dict, blank=True)
+    error = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    started_at = models.DateTimeField(null=True, blank=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'workout_generation_jobs'
+        ordering = ['-created_at']
+        verbose_name = 'Workout generation job'
+        verbose_name_plural = 'Workout generation jobs'
+
+    def __str__(self):
+        return f'{self.get_job_type_display()} for {self.user} ({self.get_status_display()})'
+
+
 class OTP(models.Model):
     """OTP for authentication purposes"""
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='otps')

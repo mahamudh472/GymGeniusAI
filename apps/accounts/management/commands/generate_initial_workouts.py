@@ -1,6 +1,7 @@
 from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
-from apps.accounts.tasks import generate_initial_workouts_task
+from apps.accounts.models import WorkoutGenerationJob
+from apps.accounts.tasks import queue_workout_generation
 
 User = get_user_model()
 
@@ -42,6 +43,8 @@ class Command(BaseCommand):
                 height_cm__isnull=False,
                 goal__isnull=False,
                 activity_level__isnull=False,
+                is_staff=False,
+                is_superuser=False,
             )
 
             if not force:
@@ -54,6 +57,10 @@ class Command(BaseCommand):
                 self.generate_for_user(user, force)
 
     def generate_for_user(self, user, force):
+        if user.is_staff or user.is_superuser:
+            self.stdout.write(self.style.WARNING(f'Skipping admin account {user.email}'))
+            return
+
         if user.initial_workouts_generated and not force:
             self.stdout.write(
                 self.style.WARNING(
@@ -64,20 +71,22 @@ class Command(BaseCommand):
 
         if force:
             # Reset the flag
+            # Use update() so the profile-save signal does not queue a duplicate job.
+            User.objects.filter(pk=user.pk).update(initial_workouts_generated=False)
             user.initial_workouts_generated = False
-            user.save(update_fields=['initial_workouts_generated'])
             self.stdout.write(
                 self.style.WARNING(f'Forcing regeneration for {user.email}')
             )
 
         # Trigger the celery task
-        result = generate_initial_workouts_task.apply_async(
-            args=[str(user.id)],
-            countdown=2
+        job = queue_workout_generation(
+            user,
+            WorkoutGenerationJob.JobType.INITIAL,
+            countdown=2,
         )
 
         self.stdout.write(
             self.style.SUCCESS(
-                f'Queued workout generation for {user.email} (Task ID: {result.id})'
+                f'Queued workout generation for {user.email} (Task ID: {job.celery_task_id})'
             )
         )
