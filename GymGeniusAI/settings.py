@@ -66,6 +66,7 @@ INSTALLED_APPS = [
     'django_filters',
     'corsheaders',
     'django_cleanup',
+    'django_celery_beat',
     'fcm_django',
     'import_export',
     'storages',
@@ -223,6 +224,7 @@ CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'Asia/Dhaka'
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
 if 'test' in sys.argv:
     CELERY_TASK_ALWAYS_EAGER = True
@@ -301,4 +303,3 @@ from firebase_admin import credentials
 
 cred = credentials.Certificate(os.path.join(BASE_DIR, 'gymgeniusai-firebase-adminsdk.json'))
 firebase_admin.initialize_app(cred)
-

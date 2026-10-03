@@ -12,6 +12,22 @@ def _is_admin_account(user):
     return user.is_staff or user.is_superuser
 
 
+def _daily_workout_from_response(response):
+    """Validate the AI response before attempting to create workout records."""
+    if not isinstance(response, dict):
+        raise ValueError('AI returned a non-object workout response.')
+    if response.get('error'):
+        raise ValueError(f"AI workout generation failed: {response['error']}")
+    if 'workout_name' not in response:
+        raise ValueError(
+            'AI response is missing workout_name. '
+            f"Received keys: {', '.join(sorted(response.keys())) or 'none'}"
+        )
+    if not isinstance(response.get('exercises'), list):
+        raise ValueError('AI response is missing a valid exercises list.')
+    return response
+
+
 def _update_job(job_id, **fields):
     """Update a job without letting a monitoring failure stop workout generation."""
     if not job_id:
@@ -148,9 +164,13 @@ def generate_daily_workout_session_for_all_active_users(user_id=None, job_id=Non
             continue
 
         try:
-            workout_logs = Activity.objects.filter(user=user).order_by('-created_at')[:5]
+            workout_logs = list(
+                Activity.objects.filter(user=user)
+                .order_by('-created_at')
+                .values('name', 'duration', 'calories')[:5]
+            )
 
-            workouts = generate_dataset_based_workout(
+            workout = _daily_workout_from_response(generate_dataset_based_workout(
                 gender=user.gender,
                 age=user.age,
                 weight_kg=user.weight_kg,
@@ -160,18 +180,19 @@ def generate_daily_workout_session_for_all_active_users(user_id=None, job_id=Non
                 username=user.profile_name,
                 image_summary=UserGallery.objects.filter(user=user).first().ai_summary if UserGallery.objects.filter(user=user).exists() else "",
                 workout_logs=workout_logs
-            )
-            generate_workouts_for_user(workout_list=[workouts], user=user, origin='daily')
+            ))
+            generate_workouts_for_user(workout_list=[workout], user=user, origin='daily')
             generated_count += 1
             logger.info(f"Generated daily workout session for user {user.email}")
         except Exception as e:
             errors.append(str(e))
-            logger.error(f"Failed to generate daily workout for user {user.email}: {str(e)}")
+            logger.exception("Failed to generate daily workout for user %s", user.email)
 
     if job_id:
         result = {
             'status': 'failure' if errors else 'success',
             'workout_count': generated_count,
+            'errors': errors,
         }
         _update_job(
             job_id,

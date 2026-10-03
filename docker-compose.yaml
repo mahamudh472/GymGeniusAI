@@ -77,6 +77,17 @@ services:
       - /root/media:/app/media
     depends_on:
       - redis
+
+  celery-beat:
+    <<: *app
+    command: celery -A GymGeniusAI beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    volumes:
+      - .:/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
   
 volumes:
   redis_data:

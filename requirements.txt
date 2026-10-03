@@ -25,6 +25,7 @@ dataclasses-json==0.6.7
 diff-match-patch==20241021
 distro==1.9.0
 Django==5.2.8
+django-celery-beat==2.8.1
 django-cleanup==9.0.0
 django-cors-headers==4.9.0
 django-crontab==0.7.1

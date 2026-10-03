@@ -177,6 +177,23 @@ UNFOLD = {
                 ],
             },
             {
+                "title": "Background Jobs",
+                "separator": True,
+                "collapsible": True,
+                "items": [
+                    {
+                        "title": "Workout Generation Jobs",
+                        "icon": "pending_actions",
+                        "link": "/admin/accounts/workoutgenerationjob/",
+                    },
+                    {
+                        "title": "Celery Beat Schedules",
+                        "icon": "schedule",
+                        "link": "/admin/django_celery_beat/periodictask/",
+                    },
+                ],
+            },
+            {
                 "title": "Utilities",
                 "separator": True,
                 "collapsible": True,
@@ -211,4 +228,3 @@ UNFOLD = {
         ],
     },
 }
-
