@@ -188,12 +188,12 @@ def generate_daily_workout_session_for_all_active_users(user_id=None, job_id=Non
             errors.append(str(e))
             logger.exception("Failed to generate daily workout for user %s", user.email)
 
+    result = {
+        'status': 'failure' if errors else 'success',
+        'workout_count': generated_count,
+        'errors': errors,
+    }
     if job_id:
-        result = {
-            'status': 'failure' if errors else 'success',
-            'workout_count': generated_count,
-            'errors': errors,
-        }
         _update_job(
             job_id,
             status='failure' if errors else 'success',
@@ -201,6 +201,7 @@ def generate_daily_workout_session_for_all_active_users(user_id=None, job_id=Non
             error='\n'.join(errors),
             completed_at=timezone.now(),
         )
+    return result
 
 
 def queue_workout_generation(user, job_type, countdown=0, job=None):
