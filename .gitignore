@@ -27,3 +27,4 @@ user_meals/
 contact_icons/
 *.sqlite3
 .venv
+db.sqlite3
