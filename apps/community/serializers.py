@@ -4,7 +4,7 @@ from .models import ForumPost, ForumComment, ForumPostLike, ForumPostReport, For
 class ForumPostSerializer(serializers.ModelSerializer):
     """Serializer for ForumPost model"""
     user_name = serializers.CharField(source='user.full_name', read_only=True)
-    user_id = serializers.IntegerField(source='user.id', read_only=True)
+    user_id = serializers.UUIDField(source='user.id', read_only=True)
     comments = serializers.IntegerField(source='comments.count', read_only=True)
     avatar = serializers.ImageField(source='user.avatar', read_only=True)
     is_owner = serializers.SerializerMethodField()
