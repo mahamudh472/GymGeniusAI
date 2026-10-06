@@ -165,7 +165,7 @@ class UserBlockSerializer(serializers.ModelSerializer):
 
 class BlockedUserListSerializer(serializers.ModelSerializer):
     """Serializer for listing blocked users"""
-    blocked_user_id = serializers.IntegerField(source='blocked.id', read_only=True)
+    blocked_user_id = serializers.UUIDField(source='blocked.id', read_only=True)
     blocked_user_name = serializers.CharField(source='blocked.full_name', read_only=True)
     blocked_user_email = serializers.CharField(source='blocked.email', read_only=True)
     blocked_user_avatar = serializers.ImageField(source='blocked.avatar', read_only=True)
