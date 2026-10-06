@@ -24,6 +24,6 @@ urlpatterns += [
 
     # Block endpoints
     path('block-user/', UserBlockAPIView.as_view(), name='block-user'),
-    path('unblock-user/<int:user_id>/', UserUnblockAPIView.as_view(), name='unblock-user'),
+    path('unblock-user/<uuid:user_id>/', UserUnblockAPIView.as_view(), name='unblock-user'),
     path('blocked-users/', BlockedUserListAPIView.as_view(), name='blocked-users'),
 ]

@@ -33,16 +33,17 @@ class ForumPostSerializer(serializers.ModelSerializer):
 class ForumCommentSerializer(serializers.ModelSerializer):
     """Serializer for ForumComment model"""
     user_name = serializers.CharField(source='user.full_name', read_only=True)
+    user_id = serializers.UUIDField(source='user.id', read_only=True)
     avatar = serializers.ImageField(source='user.avatar', read_only=True)
     is_owner = serializers.SerializerMethodField()
     
     class Meta:
         model = ForumComment
         fields = [
-            'id', 'post', 'user_name', 'avatar', 'content', 'is_owner',
+            'id', 'post', 'user_id', 'user_name', 'avatar', 'content', 'is_owner',
             'created_at', 'updated_at'
         ]
-        read_only_fields = ['id', 'user_name', 'avatar', 'is_owner', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'user_id', 'user_name', 'avatar', 'is_owner', 'created_at', 'updated_at']
     def get_is_owner(self, obj):
         request = self.context.get('request', None)
         if request:
