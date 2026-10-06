@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import ForumPost, ForumComment, ForumPostLike
+from .models import ForumPost, ForumComment, ForumPostLike, ForumPostReport, ForumCommentReport, UserBlock
 
 class ForumPostSerializer(serializers.ModelSerializer):
     """Serializer for ForumPost model"""
@@ -94,3 +94,83 @@ class ForumPostLikeSerializer(serializers.ModelSerializer):
         post.save()
 
         return attrs
+
+
+class ForumPostReportSerializer(serializers.ModelSerializer):
+    """Serializer for ForumPostReport model"""
+    reported_by_name = serializers.CharField(source='reported_by.full_name', read_only=True)
+
+    class Meta:
+        model = ForumPostReport
+        fields = [
+            'id', 'post', 'reported_by_name', 'reason', 'description',
+            'status', 'created_at'
+        ]
+        read_only_fields = ['id', 'reported_by_name', 'status', 'created_at']
+
+    def validate(self, attrs):
+        request = self.context.get('request')
+        post = attrs.get('post')
+        if request and post:
+            if post.user == request.user:
+                raise serializers.ValidationError("You cannot report your own post.")
+            if ForumPostReport.objects.filter(post=post, reported_by=request.user).exists():
+                raise serializers.ValidationError("You have already reported this post.")
+        return attrs
+
+
+class ForumCommentReportSerializer(serializers.ModelSerializer):
+    """Serializer for ForumCommentReport model"""
+    reported_by_name = serializers.CharField(source='reported_by.full_name', read_only=True)
+
+    class Meta:
+        model = ForumCommentReport
+        fields = [
+            'id', 'comment', 'reported_by_name', 'reason', 'description',
+            'status', 'created_at'
+        ]
+        read_only_fields = ['id', 'reported_by_name', 'status', 'created_at']
+
+    def validate(self, attrs):
+        request = self.context.get('request')
+        comment = attrs.get('comment')
+        if request and comment:
+            if comment.user == request.user:
+                raise serializers.ValidationError("You cannot report your own comment.")
+            if ForumCommentReport.objects.filter(comment=comment, reported_by=request.user).exists():
+                raise serializers.ValidationError("You have already reported this comment.")
+        return attrs
+
+
+class UserBlockSerializer(serializers.ModelSerializer):
+    """Serializer for blocking a user"""
+    blocked_user_name = serializers.CharField(source='blocked.full_name', read_only=True)
+    blocked_user_email = serializers.CharField(source='blocked.email', read_only=True)
+
+    class Meta:
+        model = UserBlock
+        fields = ['id', 'blocked', 'blocked_user_name', 'blocked_user_email', 'reason', 'created_at']
+        read_only_fields = ['id', 'blocked_user_name', 'blocked_user_email', 'created_at']
+
+    def validate(self, attrs):
+        request = self.context.get('request')
+        blocked = attrs.get('blocked')
+        if request and blocked:
+            if blocked == request.user:
+                raise serializers.ValidationError("You cannot block yourself.")
+            if UserBlock.objects.filter(blocker=request.user, blocked=blocked).exists():
+                raise serializers.ValidationError("You have already blocked this user.")
+        return attrs
+
+
+class BlockedUserListSerializer(serializers.ModelSerializer):
+    """Serializer for listing blocked users"""
+    blocked_user_id = serializers.IntegerField(source='blocked.id', read_only=True)
+    blocked_user_name = serializers.CharField(source='blocked.full_name', read_only=True)
+    blocked_user_email = serializers.CharField(source='blocked.email', read_only=True)
+    blocked_user_avatar = serializers.ImageField(source='blocked.avatar', read_only=True)
+
+    class Meta:
+        model = UserBlock
+        fields = ['id', 'blocked_user_id', 'blocked_user_name', 'blocked_user_email', 'blocked_user_avatar', 'reason', 'created_at']
+        read_only_fields = ['id', 'blocked_user_id', 'blocked_user_name', 'blocked_user_email', 'blocked_user_avatar', 'reason', 'created_at']

@@ -1,6 +1,10 @@
 from rest_framework.viewsets import ModelViewSet
-from .models import ForumPost, ForumComment, ForumPostLike
-from .serializers import ForumPostLikeSerializer, ForumPostSerializer, ForumCommentSerializer
+from .models import ForumPost, ForumComment, ForumPostLike, ForumPostReport, ForumCommentReport, UserBlock
+from .serializers import (
+    ForumPostLikeSerializer, ForumPostSerializer, ForumCommentSerializer,
+    ForumPostReportSerializer, ForumCommentReportSerializer,
+    UserBlockSerializer, BlockedUserListSerializer
+)
 from apps.accounts.permissions import IsActiveUser
 from rest_framework.generics import GenericAPIView, RetrieveUpdateDestroyAPIView
 from rest_framework.response import Response
@@ -26,6 +30,16 @@ class ForumPostViewSet(ModelViewSet):
     serializer_class = ForumPostSerializer  
     http_method_names = ['get', 'post', 'patch', 'delete']
     pagination_class = ForumPostPagination
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        # Filter out posts from users that the current user has blocked
+        if self.request.user.is_authenticated:
+            blocked_user_ids = UserBlock.objects.filter(
+                blocker=self.request.user
+            ).values_list('blocked_id', flat=True)
+            queryset = queryset.exclude(user_id__in=blocked_user_ids)
+        return queryset
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
@@ -57,6 +71,13 @@ class CommentListAPIView(GenericAPIView):
         else:
             comments = ForumComment.objects.all().order_by('created_at')
         
+        # Filter out comments from blocked users
+        if request.user.is_authenticated:
+            blocked_user_ids = UserBlock.objects.filter(
+                blocker=request.user
+            ).values_list('blocked_id', flat=True)
+            comments = comments.exclude(user_id__in=blocked_user_ids)
+        
         page = self.paginate_queryset(comments)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
@@ -84,3 +105,92 @@ class CommentCreateAPIView(GenericAPIView):
         serializer.is_valid(raise_exception=True)
         serializer.save(user=request.user)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+# ---- Report Views ----
+
+class ForumPostReportAPIView(GenericAPIView):
+    """Report a forum post"""
+    permission_classes = [IsActiveUser]
+    serializer_class = ForumPostReportSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        serializer.save(reported_by=request.user)
+        return Response(
+            {'detail': 'Post reported successfully. Our team will review it.'},
+            status=status.HTTP_201_CREATED
+        )
+
+
+class ForumCommentReportAPIView(GenericAPIView):
+    """Report a forum comment"""
+    permission_classes = [IsActiveUser]
+    serializer_class = ForumCommentReportSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        serializer.save(reported_by=request.user)
+        return Response(
+            {'detail': 'Comment reported successfully. Our team will review it.'},
+            status=status.HTTP_201_CREATED
+        )
+
+
+# ---- Block Views ----
+
+class UserBlockAPIView(GenericAPIView):
+    """Block a user"""
+    permission_classes = [IsActiveUser]
+    serializer_class = UserBlockSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        serializer.save(blocker=request.user)
+        return Response(
+            {'detail': 'User blocked successfully.'},
+            status=status.HTTP_201_CREATED
+        )
+
+
+class UserUnblockAPIView(GenericAPIView):
+    """Unblock a user"""
+    permission_classes = [IsActiveUser]
+
+    def delete(self, request, user_id, *args, **kwargs):
+        try:
+            block = UserBlock.objects.get(blocker=request.user, blocked_id=user_id)
+            block.delete()
+            return Response(
+                {'detail': 'User unblocked successfully.'},
+                status=status.HTTP_200_OK
+            )
+        except UserBlock.DoesNotExist:
+            return Response(
+                {'detail': 'This user is not in your block list.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+
+class BlockedUserListAPIView(GenericAPIView):
+    """List all blocked users for the current user"""
+    permission_classes = [IsActiveUser]
+    serializer_class = BlockedUserListSerializer
+    pagination_class = ForumPostPagination
+
+    def get(self, request, *args, **kwargs):
+        blocked_users = UserBlock.objects.filter(
+            blocker=request.user
+        ).select_related('blocked').order_by('-created_at')
+
+        page = self.paginate_queryset(blocked_users)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(blocked_users, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+

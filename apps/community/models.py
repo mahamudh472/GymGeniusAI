@@ -116,3 +116,92 @@ class ForumPostLike(models.Model):
     def __str__(self):
         return f"{self.user.email} liked post {self.post.id}"
 
+
+class ForumPostReport(models.Model):
+    """Reports on forum posts"""
+    REASON_CHOICES = [
+        ('spam', 'Spam'),
+        ('harassment', 'Harassment'),
+        ('hate_speech', 'Hate Speech'),
+        ('misinformation', 'Misinformation'),
+        ('inappropriate', 'Inappropriate Content'),
+        ('other', 'Other'),
+    ]
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('reviewed', 'Reviewed'),
+        ('resolved', 'Resolved'),
+        ('dismissed', 'Dismissed'),
+    ]
+
+    post = models.ForeignKey(ForumPost, on_delete=models.CASCADE, related_name='reports')
+    reported_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='post_reports')
+    reason = models.CharField(max_length=20, choices=REASON_CHOICES)
+    description = models.TextField(blank=True, null=True, help_text="Additional details about the report")
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'forum_post_reports'
+        verbose_name = 'Forum Post Report'
+        verbose_name_plural = 'Forum Post Reports'
+        unique_together = ['post', 'reported_by']
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Report on post {self.post.id} by {self.reported_by.email}"
+
+
+class ForumCommentReport(models.Model):
+    """Reports on forum comments"""
+    REASON_CHOICES = [
+        ('spam', 'Spam'),
+        ('harassment', 'Harassment'),
+        ('hate_speech', 'Hate Speech'),
+        ('misinformation', 'Misinformation'),
+        ('inappropriate', 'Inappropriate Content'),
+        ('other', 'Other'),
+    ]
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('reviewed', 'Reviewed'),
+        ('resolved', 'Resolved'),
+        ('dismissed', 'Dismissed'),
+    ]
+
+    comment = models.ForeignKey(ForumComment, on_delete=models.CASCADE, related_name='reports')
+    reported_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='comment_reports')
+    reason = models.CharField(max_length=20, choices=REASON_CHOICES)
+    description = models.TextField(blank=True, null=True, help_text="Additional details about the report")
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'forum_comment_reports'
+        verbose_name = 'Forum Comment Report'
+        verbose_name_plural = 'Forum Comment Reports'
+        unique_together = ['comment', 'reported_by']
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Report on comment {self.comment.id} by {self.reported_by.email}"
+
+
+class UserBlock(models.Model):
+    """User blocking functionality"""
+    blocker = models.ForeignKey(User, on_delete=models.CASCADE, related_name='blocked_users')
+    blocked = models.ForeignKey(User, on_delete=models.CASCADE, related_name='blocked_by')
+    reason = models.TextField(blank=True, null=True, help_text="Optional reason for blocking")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'user_blocks'
+        verbose_name = 'User Block'
+        verbose_name_plural = 'User Blocks'
+        unique_together = ['blocker', 'blocked']
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.blocker.email} blocked {self.blocked.email}"
