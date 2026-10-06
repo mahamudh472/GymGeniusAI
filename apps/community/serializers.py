@@ -4,19 +4,19 @@ from .models import ForumPost, ForumComment, ForumPostLike, ForumPostReport, For
 class ForumPostSerializer(serializers.ModelSerializer):
     """Serializer for ForumPost model"""
     user_name = serializers.CharField(source='user.full_name', read_only=True)
+    user_id = serializers.IntegerField(source='user.id', read_only=True)
     comments = serializers.IntegerField(source='comments.count', read_only=True)
     avatar = serializers.ImageField(source='user.avatar', read_only=True)
     is_owner = serializers.SerializerMethodField()
     is_liked = serializers.SerializerMethodField()
-    
 
     class Meta:
         model = ForumPost
         fields = [
-            'id', 'user_name', 'avatar', 'content', 'likes', 'comments', 'is_owner', 'is_liked',
+            'id', 'user_id', 'user_name', 'avatar', 'content', 'likes', 'comments', 'is_owner', 'is_liked',
             'created_at', 'updated_at'
         ]
-        read_only_fields = ['id', 'user_name', 'is_owner', 'is_liked', 'avatar', 'likes', 'comments', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'user_name', 'user_id', 'is_owner', 'is_liked', 'avatar', 'likes', 'comments', 'created_at', 'updated_at']
     
     def get_is_owner(self, obj):
         request = self.context.get('request', None)
