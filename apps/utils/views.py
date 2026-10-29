@@ -383,3 +383,8 @@ class NotificationSettingsView(generics.RetrieveUpdateAPIView):
         # Get or create notification settings for the user
         obj, created = NotificationSetting.objects.get_or_create(user=self.request.user)
         return obj
+
+def privacy_policy_view(request):
+    from django.shortcuts import redirect
+
+    return redirect('https://gymgeniusai.co.uk/privacy-policy')

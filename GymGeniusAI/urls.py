@@ -20,8 +20,10 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, Spec
 from django.views.generic import RedirectView
 from django.conf import settings
 from django.conf.urls.static import static
+from apps.utils.views import privacy_policy_view
 
 urlpatterns = [
+    path('privacy-policy/', privacy_policy_view),
     path('', RedirectView.as_view(url='/admin/', permanent=False), name='index'),
     path('api/utils/', include('apps.utils.urls')),
     path('api/accounts/', include('apps.accounts.urls')),
